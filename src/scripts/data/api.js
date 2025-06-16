@@ -51,19 +51,12 @@ const Api = {
     return response.json();
   },
 
-  async resetPassword({ token, newPassword }) {
+  async postResetPassword(payload) {
     const response = await fetch(`${CONFIG.BASE_URL}/reset-password`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ token, password: newPassword }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     });
-
-    if (!response.ok) {
-      throw new Error("Gagal reset password");
-    }
-
     return response.json();
   },
 

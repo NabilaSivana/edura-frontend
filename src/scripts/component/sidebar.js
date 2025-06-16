@@ -31,9 +31,9 @@ function createSidebar(totalCourse = 0) {
 
   // Menu List
   const menuList = [
-    { name: "Dashboard", icon: "📊", path: "/dashboard" },
-    { name: "Upgrade", icon: "🛡️", path: "/dashboard/upgrade" },
-    { name: "Profile", icon: "👤", path: "/dashboard/profile" },
+    { name: "Dashboard", icon: "📊", path: "#/dashboard" },
+    { name: "Upgrade", icon: "🛡️", path: "#/dashboard/upgrade" },
+    { name: "Profile", icon: "👤", path: "#/dashboard/profile" },
   ];
 
   const menuWrapper = document.createElement("div");
