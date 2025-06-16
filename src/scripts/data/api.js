@@ -51,14 +51,36 @@ const Api = {
     return response.json();
   },
 
-  async postResetPassword(payload) {
-    const response = await fetch(`${CONFIG.BASE_URL}/reset-password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    return response.json();
-  },
+async postVerifyEmail({ token }) {
+  const response = await fetch(`${CONFIG.BASE_URL}/verify-email?token=${token}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Verification failed.");
+  }
+
+  return response.json();
+},
+
+async postResetPassword({ token, new_password }) {
+  const response = await fetch(`${CONFIG.BASE_URL}/reset-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ token, new_password }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Reset password failed.");
+  }
+
+  return response.json();
+},
 
   async sendMagicLink(email) {
     const response = await fetch(`${CONFIG.BASE_URL}/send-magic-link`, {
@@ -71,18 +93,6 @@ const Api = {
 
     if (!response.ok) {
       throw new Error("Gagal mengirim magic link");
-    }
-
-    return response.json();
-  },
-
-  async verifyEmail(token) {
-    const response = await fetch(
-      `${CONFIG.BASE_URL}/verify-email?token=${token}`
-    );
-
-    if (!response.ok) {
-      throw new Error("Verifikasi email gagal");
     }
 
     return response.json();
