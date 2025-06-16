@@ -4,7 +4,13 @@ const OtpPresenter = {
   async handleOtp(email, otp, onSuccess, onError) {
     try {
       const result = await OtpModel.verifyOtp(email, otp);
-      if (onSuccess) onSuccess(result.message || "OTP berhasil diverifikasi");
+
+      // Simpan token dan data penting ke localStorage
+      localStorage.setItem("token", result.token);
+      localStorage.setItem("user_id", result.user_id);
+      localStorage.setItem("role", result.role);
+
+      onSuccess("Verifikasi berhasil! Anda akan diarahkan...");
     } catch (error) {
       if (onError) onError(error.message);
     }

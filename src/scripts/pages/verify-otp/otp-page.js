@@ -11,10 +11,10 @@ const OtpPage = {
           <form id="otp-form" class="flex flex-col items-center space-y-6">
             <div id="otp-inputs" class="flex justify-center gap-3">
               ${[...Array(6)]
-                .map(
-                  () => `<input type="text" maxlength="1" class="otp-box" />`
-                )
-                .join("")}
+        .map(
+          () => `<input type="text" maxlength="1" class="otp-box" />`
+        )
+        .join("")}
             </div>
             <button type="submit" class="w-full bg-[#2C2F8C] hover:bg-[#1e1f6c] text-white font-semibold py-3 rounded-md transition">
               Verifikasi
@@ -58,10 +58,12 @@ const OtpPage = {
     // Auto focus ke input selanjutnya saat diisi
     inputs.forEach((input, index) => {
       input.addEventListener("input", () => {
+        input.value = input.value.replace(/[^0-9]/g, ""); // hanya angka
         if (input.value.length === 1 && index < inputs.length - 1) {
           inputs[index + 1].focus();
         }
       });
+
 
       input.addEventListener("keydown", (e) => {
         if (e.key === "Backspace" && input.value === "" && index > 0) {

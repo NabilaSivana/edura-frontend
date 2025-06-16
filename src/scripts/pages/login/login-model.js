@@ -4,11 +4,6 @@ const LoginModel = {
     try {
       const response = await Api.login({ email, password });
 
-      // Hanya simpan token jika ada
-      if (response.token) {
-        localStorage.setItem("authToken", response.token);
-      }
-
       return response;
     } catch (error) {
       throw new Error(error.message);

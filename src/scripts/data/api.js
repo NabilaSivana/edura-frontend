@@ -12,7 +12,7 @@ const Api = {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || "Gagal login");
+      throw new Error(errorData.message || "Email atau password salah");
     }
 
     return response.json();
@@ -103,20 +103,106 @@ const Api = {
 
     return response.json();
   },
+  async getProfile() {
+    const response = await fetch(`${CONFIG.BASE_URL}/profile`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error("Profil tidak ditemukan");
+      }
+      throw new Error("Gagal mengambil profil");
+    }
+
+    const result = await response.json();
+    return result.profile; // ambil hanya object profile saja
+  },
+
   async getStudentCourses() {
     const response = await fetch(`${CONFIG.BASE_URL}/student/courses`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     });
 
     if (!response.ok) {
+      if (response.status === 404) {
+        return []; // Jika belum punya kursus
+      }
       throw new Error("Gagal mengambil data kursus");
+    }
+
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
+  },
+
+  async getStudentProfile() {
+    const response = await fetch(`${CONFIG.BASE_URL}/student/profile`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (response.status === 404) {
+      throw new Error("Gagal mengambil profil siswa"); //ganti dengan muncul modal form untuk isi data profil student
+    }
+
+    return response.json();
+  }
+  ,
+  async getTeacherProfile() {
+    const response = await fetch(`${CONFIG.BASE_URL}/teacher/profile`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (response.status === 404) {
+      throw new Error("Gagal mengambil profil guru"); //ganti dengan muncul modal form untuk isi data profil teacher
     }
 
     return response.json();
   },
+  async createStudentProfile(data) {
+    const response = await fetch(`${CONFIG.BASE_URL}/student/profile`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) throw new Error("Gagal menyimpan profil siswa");
+    return response.json();
+  },
+
+  async createTeacherProfile(data) {
+    const response = await fetch(`${CONFIG.BASE_URL}/teacher/profile`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) throw new Error("Gagal menyimpan profil guru");
+    return response.json();
+  },
+
+
 };
 
 export default Api;

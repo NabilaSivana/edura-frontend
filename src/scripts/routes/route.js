@@ -1,3 +1,4 @@
+//routes/route.js
 import LandingPage from "../pages/landingpage/landing-page.js";
 import LoginPage from "../pages/login/login-page.js";
 import RegisterPage from "../pages/register/register-page.js";
@@ -14,7 +15,7 @@ const routes = {
   "/verify": LoginPage,
   "/otp": OtpPage,
   "/dashboard": DashboardPage,
-  "/forgot-password": ForgotPasswordPage, // Assuming forgot password is handled in login page
+  "/forgot-password": ForgotPasswordPage,
   "/reset-password": ResetPasswordPage,
   "/verify-email": VerifyEmailPage,
 };
