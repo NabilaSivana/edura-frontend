@@ -45,16 +45,13 @@ const DashboardPresenter = {
       }
       return false;
     } catch (error) {
-      if (role === "student") {
-        RoleProfileView.renderStudentForm(container);
-        RoleProfilePresenter.handleStudentSubmit();
-      } else {
-        RoleProfileView.renderTeacherForm(container);
-        RoleProfilePresenter.handleTeacherSubmit();
-      }
+      RoleProfileView.init();
+      RoleProfileView.renderFormFields(role);
+      RoleProfilePresenter.setupFormHandler(role);
       return true;
     }
-  },
+  }
+  ,
 
   async renderDashboardByRole(role) {
     const studentSection = document.getElementById("student-section");
