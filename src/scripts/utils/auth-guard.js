@@ -10,7 +10,7 @@ const AuthGuard = {
     isBlockedProtectedRoute() {
         const token = localStorage.getItem("token");
         const currentRoute = window.location.hash.replace("#", "");
-        const protectedRoutes = ["/dashboard"]; // Bisa kamu tambah nanti
+        const protectedRoutes = ["/dashboard", "/create"]; // Bisa kamu tambah nanti
         return !token && protectedRoutes.includes(currentRoute);
     },
 };

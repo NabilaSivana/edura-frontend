@@ -51,36 +51,36 @@ const Api = {
     return response.json();
   },
 
-async postVerifyEmail({ token }) {
-  const response = await fetch(`${CONFIG.BASE_URL}/verify-email?token=${token}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  async postVerifyEmail({ token }) {
+    const response = await fetch(`${CONFIG.BASE_URL}/verify-email?token=${token}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-  if (!response.ok) {
-    throw new Error("Verification failed.");
-  }
+    if (!response.ok) {
+      throw new Error("Verification failed.");
+    }
 
-  return response.json();
-},
+    return response.json();
+  },
 
-async postResetPassword({ token, new_password }) {
-  const response = await fetch(`${CONFIG.BASE_URL}/reset-password`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ token, new_password }),
-  });
+  async postResetPassword({ token, new_password }) {
+    const response = await fetch(`${CONFIG.BASE_URL}/reset-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ token, new_password }),
+    });
 
-  if (!response.ok) {
-    throw new Error("Reset password failed.");
-  }
+    if (!response.ok) {
+      throw new Error("Reset password failed.");
+    }
 
-  return response.json();
-},
+    return response.json();
+  },
 
   async sendMagicLink(email) {
     const response = await fetch(`${CONFIG.BASE_URL}/send-magic-link`, {
@@ -157,32 +157,29 @@ async postResetPassword({ token, new_password }) {
     const response = await fetch(`${CONFIG.BASE_URL}/student/profile`, {
       method: "GET",
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     });
 
-    if (response.status === 404) {
-      throw new Error("Gagal mengambil profil siswa"); //ganti dengan muncul modal form untuk isi data profil student
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
     }
 
-    return response.json();
-  }
-  ,
+    return await response.json();
+  },
   async getTeacherProfile() {
     const response = await fetch(`${CONFIG.BASE_URL}/teacher/profile`, {
       method: "GET",
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     });
 
-    if (response.status === 404) {
-      throw new Error("Gagal mengambil profil guru"); //ganti dengan muncul modal form untuk isi data profil teacher
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
     }
 
-    return response.json();
+    return await response.json();
   },
   async createStudentProfile(data) {
     const response = await fetch(`${CONFIG.BASE_URL}/student/profile`, {

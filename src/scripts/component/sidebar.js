@@ -15,7 +15,7 @@ function createSidebar(totalCourse = 0) {
 
   // Create Button
   const createLink = document.createElement("a");
-  createLink.href = "/create";
+  createLink.href = "#/create";
   createLink.className = "w-full block mt-10";
 
   const createBtn = document.createElement("button");
