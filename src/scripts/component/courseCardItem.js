@@ -17,7 +17,7 @@ export function createCourseCard(course) {
   const levelColors = {
     beginner: "bg-blue-600",
     intermediate: "bg-orange-500",
-    advanced: "bg-red-600",
+    expert: "bg-red-600",
   };
   const badgeColor = levelColors[level] || "bg-gray-400";
 
@@ -67,18 +67,20 @@ export function createCourseCard(course) {
   card.appendChild(status);
 
   // Footer
-  const footer = document.createElement("div");
+ const footer = document.createElement("div");
   footer.className = "mt-3 flex justify-end";
-
-  const viewLink = document.createElement("a");
-  viewLink.href = `/course/${course.course_id}`;
 
   const viewButton = document.createElement("button");
   viewButton.className = "bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 transition";
   viewButton.textContent = course.is_completed ? "Lihat Hasil" : "Lanjut Belajar";
 
-  viewLink.appendChild(viewButton);
-  footer.appendChild(viewLink);
+  // ✅ Simpan ID dan navigasikan ke route tanpa ID
+  viewButton.addEventListener("click", () => {
+    sessionStorage.setItem("current_course_id", course.course_id);
+    window.location.hash = "#/course";
+  });
+
+  footer.appendChild(viewButton);
   card.appendChild(footer);
 
   return card;

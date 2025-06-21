@@ -113,6 +113,22 @@ const Api = {
 
     return response.json();
   },
+  async resendOtp({ email }) {
+    const response = await fetch(`${CONFIG.BASE_URL}/resend-otp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Gagal mengirim ulang OTP");
+    }
+
+    return response.json();
+  },
+  
   async getProfile() {
     const response = await fetch(`${CONFIG.BASE_URL}/profile`, {
       method: "GET",

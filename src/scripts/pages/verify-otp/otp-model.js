@@ -9,6 +9,14 @@ const OtpModel = {
       throw new Error(error.message);
     }
   },
+  async resendOtp(email) {
+    try {
+      const response = await Api.resendOtp({ email });
+      return response; // <- tambahkan ini
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
 };
 
 export default OtpModel;

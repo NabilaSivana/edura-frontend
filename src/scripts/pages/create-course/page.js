@@ -29,7 +29,7 @@ const CreateCoursePage = {
             <option value="" class="text-gray-400">Difficulty Level</option>
             <option value="beginner">Beginner</option>
             <option value="intermediate">Intermediate</option>
-            <option value="advanced">Advance</option>
+            <option value="expert">Expert</option>
           </select>
         </div>
 

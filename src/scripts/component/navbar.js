@@ -88,8 +88,6 @@ async function afterRenderNavbar() {
     logoutBtn.addEventListener("click", () => {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      localStorage.removeItem("role");
-      localStorage.removeItem("user_id");
 
       window.location.hash = "#/login";
       window.location.reload(); // Refresh agar navbar ikut berubah

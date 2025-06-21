@@ -9,7 +9,7 @@ const CreateCoursePresenter = {
 
         function validateForm() {
             const subjectFilled = subjectInput.value.trim().length > 0;
-            const levelValid = ["beginner", "intermediate", "advanced"].includes(
+            const levelValid = ["beginner", "intermediate", "expert"].includes(
                 levelSelect.value
             );
             if (subjectFilled && levelValid) {

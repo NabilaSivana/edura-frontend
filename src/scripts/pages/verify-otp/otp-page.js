@@ -1,3 +1,4 @@
+// otp-page.js
 import OtpPresenter from "./otp-presenter.js";
 
 const OtpPage = {
@@ -10,16 +11,16 @@ const OtpPage = {
 
           <form id="otp-form" class="flex flex-col items-center space-y-6">
             <div id="otp-inputs" class="flex justify-center gap-3">
-              ${[...Array(6)]
-        .map(
-          () => `<input type="text" maxlength="1" class="otp-box" />`
-        )
-        .join("")}
+              ${[...Array(6)].map(() => `<input type="text" maxlength="1" class="otp-box" />`).join("")}
             </div>
             <button type="submit" class="w-full bg-[#2C2F8C] hover:bg-[#1e1f6c] text-white font-semibold py-3 rounded-md transition">
               Verifikasi
             </button>
           </form>
+
+          <p id="resend-container" class="text-sm text-gray-600 mt-4 text-center">
+            Belum menerima kode? <button id="resend-btn" class="text-blue-600 font-semibold hover:underline" disabled>Kirim Ulang (60s)</button>
+          </p>
           <p id="otp-message" class="text-sm text-center mt-4"></p>
         </div>
 
@@ -47,6 +48,7 @@ const OtpPage = {
     const form = document.querySelector("#otp-form");
     const inputs = document.querySelectorAll(".otp-box");
     const messageEl = document.querySelector("#otp-message");
+    const resendBtn = document.getElementById("resend-btn");
     const email = sessionStorage.getItem("pendingOtpEmail");
 
     if (!email) {
@@ -55,15 +57,51 @@ const OtpPage = {
       return;
     }
 
-    // Auto focus ke input selanjutnya saat diisi
+    let countdown = 60;
+    resendBtn.textContent = `Kirim Ulang (${countdown}s)`;
+
+    const interval = setInterval(() => {
+      countdown--;
+      resendBtn.textContent = `Kirim Ulang (${countdown}s)`;
+      if (countdown <= 0) {
+        clearInterval(interval);
+        resendBtn.disabled = false;
+        resendBtn.textContent = "Kirim Ulang";
+      }
+    }, 1000);
+
+    resendBtn.addEventListener("click", async () => {
+      resendBtn.disabled = true;
+      resendBtn.textContent = "Mengirim...";
+      try {
+        await OtpPresenter.resendOtp(email);
+        messageEl.textContent = "Kode OTP telah dikirim ulang.";
+        messageEl.className = "text-green-600";
+        countdown = 60;
+        resendBtn.disabled = true;
+        resendBtn.textContent = `Kirim Ulang (${countdown}s)`;
+        const newInterval = setInterval(() => {
+          countdown--;
+          resendBtn.textContent = `Kirim Ulang (${countdown}s)`;
+          if (countdown <= 0) {
+            clearInterval(newInterval);
+            resendBtn.disabled = false;
+            resendBtn.textContent = "Kirim Ulang";
+          }
+        }, 1000);
+      } catch (err) {
+        messageEl.textContent = err.message || "Gagal mengirim ulang OTP.";
+        messageEl.className = "text-red-500";
+      }
+    });
+
     inputs.forEach((input, index) => {
       input.addEventListener("input", () => {
-        input.value = input.value.replace(/[^0-9]/g, ""); // hanya angka
+        input.value = input.value.replace(/[^0-9]/g, "");
         if (input.value.length === 1 && index < inputs.length - 1) {
           inputs[index + 1].focus();
         }
       });
-
 
       input.addEventListener("keydown", (e) => {
         if (e.key === "Backspace" && input.value === "" && index > 0) {
@@ -86,9 +124,7 @@ const OtpPage = {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const otp = Array.from(inputs)
-        .map((input) => input.value)
-        .join("");
+      const otp = Array.from(inputs).map((input) => input.value).join("");
 
       if (otp.length !== 6) {
         messageEl.textContent = "Kode OTP harus 6 digit.";
@@ -102,6 +138,7 @@ const OtpPage = {
         (successMessage) => {
           messageEl.textContent = successMessage;
           messageEl.className = "text-green-600";
+          sessionStorage.removeItem("pendingOtpEmail");
           setTimeout(() => {
             window.location.href = "/#/dashboard";
           }, 1500);
@@ -112,7 +149,7 @@ const OtpPage = {
         }
       );
     });
-  },
+  }
 };
 
 export default OtpPage;

@@ -1,9 +1,9 @@
 // src/scripts/index.js
 import "../styles/style.css";
+import navbar from "./component/navbar.js";
 import routes from "./routes/route.js";
 import UrlParser from "./routes/url-parser.js";
 import AuthGuard from "./utils/auth-guard.js";
-import navbar from "./component/navbar.js";
 
 const App = {
   async renderPage() {
@@ -20,10 +20,11 @@ const App = {
         navbarElement.style.display = "block";
         const navbarComponent = navbar();
         navbarElement.innerHTML = navbarComponent.render();
-        await navbarComponent.afterRender();
+        await navbarComponent.afterRender?.();
       }
     }
 
+    // Auth guard
     if (AuthGuard.isBlockedAuthRoute()) {
       window.location.hash = "#/dashboard";
       return;
@@ -34,12 +35,15 @@ const App = {
       return;
     }
 
+    // Routing
     const url = UrlParser.parseActiveUrlWithCombiner();
     const page = routes[url];
-
     const main = document.querySelector("#main-content");
 
-    if (!main) return;
+    if (!main) {
+      console.warn("Element #main-content tidak ditemukan");
+      return;
+    }
 
     if (!page) {
       console.warn(`Route "${url}" belum tersedia di routes.`);
@@ -50,10 +54,25 @@ const App = {
       return;
     }
 
-    main.innerHTML = await page.render();
-    if (page.afterRender) await page.afterRender();
-  },
+    // Jika page.render adalah function yang mengembalikan string (seperti halaman login)
+    if (typeof page.render === "function") {
+      const content = await page.render();
+      if (content) main.innerHTML = content;
+    }
+
+    // Jika page.render tidak mengembalikan string (imperatif, manipulasi DOM)
+    else {
+      await page.render();
+    }
+
+    if (typeof page.afterRender === "function") {
+      await page.afterRender();
+    }
+  }
 };
 
-window.addEventListener("hashchange", App.renderPage);
-window.addEventListener("load", App.renderPage);
+// ✅ Pastikan DOM benar-benar siap sebelum attach event
+document.addEventListener("DOMContentLoaded", () => {
+  window.addEventListener("hashchange", App.renderPage);
+  App.renderPage(); // render pertama kali
+});
