@@ -10,11 +10,11 @@ const CreateCourseModel = {
 
         if (!response.ok) throw new Error("Gagal fetch rekomendasi");
 
-        return response.json(); // format: { message, titles: [ { title, is_verified } ] }
+        return response.json(); // format: { message, titles: [ { title,subject, level, is_verified } ] }
     },
 
     async submitCourse(payload) {
-        console.log("Payload yang dikirim:", payload); // <--- tambahkan ini
+        console.log("Payload yang dikirim:", payload); // <--- payload harus berupa subject dan level
         const response = await fetch(`${CONFIG.BASE_URL}/student/course/create`, {
             method: "POST",
             headers: {
