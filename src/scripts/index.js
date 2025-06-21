@@ -1,14 +1,29 @@
-//src/scripts/index.js
+// src/scripts/index.js
 import "../styles/style.css";
 import routes from "./routes/route.js";
 import UrlParser from "./routes/url-parser.js";
 import AuthGuard from "./utils/auth-guard.js";
+import navbar from "./component/navbar.js";
 
 const App = {
   async renderPage() {
-    const currentHash = window.location.hash.replace("#", "");
+    const currentHash = window.location.hash;
+    const hideNavbarRoutes = ["#/login", "#/register"];
 
-    // Middleware: Auth Guard
+    const navbarElement = document.querySelector("navbar");
+
+    if (navbarElement) {
+      if (hideNavbarRoutes.includes(currentHash)) {
+        navbarElement.innerHTML = "";
+        navbarElement.style.display = "none";
+      } else {
+        navbarElement.style.display = "block";
+        const navbarComponent = navbar();
+        navbarElement.innerHTML = navbarComponent.render();
+        await navbarComponent.afterRender();
+      }
+    }
+
     if (AuthGuard.isBlockedAuthRoute()) {
       window.location.hash = "#/dashboard";
       return;
@@ -19,7 +34,6 @@ const App = {
       return;
     }
 
-    // Ambil route & element utama
     const url = UrlParser.parseActiveUrlWithCombiner();
     const page = routes[url];
 
@@ -28,7 +42,6 @@ const App = {
     if (!main) return;
 
     if (!page) {
-      // Development: fallback render halaman kosong dengan warning di console
       console.warn(`Route "${url}" belum tersedia di routes.`);
       main.innerHTML = `<div class="text-center p-10 text-gray-500">
         <p>Halaman ini belum tersedia.</p>

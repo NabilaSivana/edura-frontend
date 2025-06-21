@@ -1,12 +1,10 @@
-
 import "../../../styles/style.css"; // jika pakai tailwind
-import DashboardHeader from "../../component/dashboard-header.js";
+import navbar from "../../component/navbar.js";
 
 const LandingPage = {
   async render() {
     return `
       <div>
-        ${DashboardHeader()}
         <!-- Hero Section -->
         <section class="relative z-50 pt-12 bg-white">
           <div class="py-6 px-4 sm:px-6 md:px-8 mx-auto max-w-screen-lg">

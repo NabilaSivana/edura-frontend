@@ -1,7 +1,6 @@
-// courseCardItem.js
 export function createCourseCard(course) {
   const card = document.createElement("div");
-  card.className = "border rounded-lg shadow-md p-5";
+  card.className = "border rounded-lg shadow-md p-5 bg-white hover:shadow-lg transition";
 
   // Header
   const header = document.createElement("div");
@@ -13,8 +12,17 @@ export function createCourseCard(course) {
   img.width = 50;
   img.height = 50;
 
+  // Badge with color by level
+  const level = (course.level || "").toLowerCase();
+  const levelColors = {
+    beginner: "bg-blue-600",
+    intermediate: "bg-orange-500",
+    advanced: "bg-red-600",
+  };
+  const badgeColor = levelColors[level] || "bg-gray-400";
+
   const label = document.createElement("span");
-  label.className = "text-[10px] p-1 px-2 rounded-full bg-blue-600 text-white capitalize";
+  label.className = `text-xs px-2 py-1 rounded-full text-white capitalize ${badgeColor}`;
   label.textContent = course.level || "unknown";
 
   header.appendChild(img);
@@ -23,31 +31,38 @@ export function createCourseCard(course) {
 
   // Title
   const title = document.createElement("h2");
-  title.className = "mt-3 font-medium text-lg";
+  title.className = "mt-3 font-semibold text-md line-clamp-3 break-words";
   title.textContent = course.title || "Untitled Course";
   card.appendChild(title);
 
-  // Checkpoint
-  const checkpoint = document.createElement("p");
-  checkpoint.className = "text-sm text-gray-600 mt-2";
-  // Calculate checkpoint percentage
-  const checkpointPercentage = course.checkpoint ? (course.checkpoint / 16) * 100 : 0;
-  checkpoint.textContent = `Progress: (${checkpointPercentage.toFixed(2)}%)`;
-  // Fallback if checkpoint is not available
-  if (course.checkpoint === undefined) {
-    checkpoint.textContent = "Checkpoint tidak tersedia";
-  }
-  card.appendChild(checkpoint);
+  // Progress %
+  const checkpoint = course.checkpoint ?? 0;
+  const progressPercent = Math.min((checkpoint / 16) * 100, 100).toFixed(2);
 
-  // Sessions
+  const progressLabel = document.createElement("p");
+  progressLabel.className = "text-sm text-gray-600 mt-2";
+  progressLabel.textContent = `Progress: ${progressPercent}%`;
+  card.appendChild(progressLabel);
+
+  // Progress bar visual
+  const progressBar = document.createElement("div");
+  progressBar.className = "w-full bg-gray-200 rounded-full h-2 mt-1";
+
+  const progress = document.createElement("div");
+  progress.className = "h-2 rounded-full bg-blue-600 transition-all";
+  progress.style.width = `${progressPercent}%`;
+  progressBar.appendChild(progress);
+  card.appendChild(progressBar);
+
+  // Session info
   const totalSessions = document.createElement("p");
-  totalSessions.className = "text-sm text-gray-500";
+  totalSessions.className = "text-sm text-gray-500 mt-2";
   totalSessions.textContent = `Chapter saat ini: ${course.total_sessions ?? 0}`;
   card.appendChild(totalSessions);
 
   // Status
   const status = document.createElement("p");
-  status.className = "text-xs text-gray-500 mt-1 italic";
+  status.className = "text-xs text-gray-500 italic mt-1";
   status.textContent = course.is_completed ? "Kursus selesai" : "Sedang berjalan";
   card.appendChild(status);
 
@@ -59,7 +74,7 @@ export function createCourseCard(course) {
   viewLink.href = `/course/${course.course_id}`;
 
   const viewButton = document.createElement("button");
-  viewButton.className = "bg-blue-600 text-white px-4 py-1 rounded";
+  viewButton.className = "bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 transition";
   viewButton.textContent = course.is_completed ? "Lihat Hasil" : "Lanjut Belajar";
 
   viewLink.appendChild(viewButton);

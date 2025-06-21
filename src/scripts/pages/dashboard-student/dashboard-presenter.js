@@ -23,9 +23,8 @@ const DashboardPresenter = {
       return;
     }
 
-    const sidebarTarget = document.getElementById("sidebar-container");
+  
     const welcomeTarget = document.getElementById("welcome-container");
-    if (sidebarTarget) sidebarTarget.appendChild(createSidebar());
     if (welcomeTarget) welcomeTarget.appendChild(WelcomeBanner(user.full_name || ""));
 
     const modalContainer = document.getElementById("role-profile-modal-container");

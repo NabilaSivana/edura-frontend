@@ -1,4 +1,3 @@
-// courseList.js
 import CONFIG from "../config.js";
 import { createCourseCard } from "./courseCardItem.js";
 
@@ -8,20 +7,31 @@ export async function renderCourseList(containerId = "course-container") {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  container.innerHTML = ""; // Bersihkan kontainer
+  container.innerHTML = ""; // Kosongkan isi sebelumnya
 
   const grid = document.createElement("div");
-  grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6";
+  grid.className = `
+    w-full
+    grid
+    grid-cols-1
+    sm:grid-cols-1
+    md:grid-cols-2
+    lg:grid-cols-3
+    xl:grid-cols-4
+    gap-6
+  `;
 
   try {
     loading = true;
 
-    // Skeleton Loading
+    // Skeleton loading
     for (let i = 0; i < 6; i++) {
       const skeleton = document.createElement("div");
-      skeleton.className = "h-56 w-full bg-slate-200 rounded-lg animate-pulse";
+      skeleton.className =
+        "h-56 w-full bg-slate-200 rounded-xl animate-pulse shadow-inner";
       grid.appendChild(skeleton);
     }
+
     container.appendChild(grid);
 
     const token = localStorage.getItem("token");
@@ -38,13 +48,15 @@ export async function renderCourseList(containerId = "course-container") {
     const courses = Array.isArray(data) ? data : [];
 
     loading = false;
-    grid.innerHTML = ""; // Clear skeletons
+    grid.innerHTML = ""; // Hapus skeleton
 
     if (courses.length === 0) {
-      const emptyText = document.createElement("p");
-      emptyText.textContent = "Kamu belum terdaftar dalam kursus apapun.";
-      container.innerHTML = "";
-      container.appendChild(emptyText);
+      container.innerHTML = `
+        <div class="text-center w-full p-10 bg-white rounded-lg shadow text-gray-500">
+          <p class="text-lg font-medium">Belum ada kursus</p>
+          <p class="text-sm mt-2">Yuk mulai dengan membuat kursus pertama kamu!</p>
+        </div>
+      `;
       return;
     }
 
@@ -58,6 +70,12 @@ export async function renderCourseList(containerId = "course-container") {
   } catch (error) {
     loading = false;
     console.error("Gagal mengambil kursus:", error.message);
-    container.innerHTML = "<p class='text-red-500'>Gagal memuat kursus. Coba lagi nanti.</p>";
+
+    container.innerHTML = `
+      <div class="text-center w-full p-6 bg-red-100 text-red-700 rounded-md shadow">
+        <p class="font-semibold">Gagal memuat kursus</p>
+        <p class="text-sm mt-1">Silakan coba lagi nanti.</p>
+      </div>
+    `;
   }
 }
