@@ -2,7 +2,30 @@ import CreateCourseModel from "./model.js";
 
 const CreateCoursePresenter = {
   init() {
-    const form = document.getElementById("create-course-form");
+    const form = document.getElementById("create-course-form"); // ✅ FIXED
+    const generateBtn = document.getElementById("generate-btn");
+    const subjectInput = form.subject;
+    const levelSelect = form.level;
+
+    function validateForm() {
+      const subjectFilled = subjectInput.value.trim().length > 0;
+      const levelValid = ["beginner", "intermediate", "advanced"].includes(
+        levelSelect.value
+      );
+      if (subjectFilled && levelValid) {
+        generateBtn.disabled = false;
+        generateBtn.classList.remove("bg-gray-300", "cursor-not-allowed");
+        generateBtn.classList.add("bg-blue-600", "hover:bg-blue-700");
+      } else {
+        generateBtn.disabled = true;
+        generateBtn.classList.add("bg-gray-300", "cursor-not-allowed");
+        generateBtn.classList.remove("bg-blue-600", "hover:bg-blue-700");
+      }
+    }
+
+    subjectInput.addEventListener("input", validateForm);
+    levelSelect.addEventListener("change", validateForm);
+
     const recommendBtn = document.getElementById("recommend-btn");
 
     recommendBtn.addEventListener("click", async () => {
@@ -38,24 +61,42 @@ const CreateCoursePresenter = {
     const container = document.getElementById("recommendation-list");
     container.innerHTML = "";
 
-    if (titles.length === 0) {
+    if (!titles || titles.length === 0) {
       container.innerHTML = `<p class="text-gray-500">Tidak ada rekomendasi tersedia saat ini.</p>`;
       return;
     }
 
+    // Tambahkan label judul
+    const label = document.createElement("p");
+    label.className = "text-sm font-medium text-gray-800 mb-2";
+    label.textContent = "Rekomendasi topic";
+    container.appendChild(label);
+
+    // Flex container horizontal
+    const wrapper = document.createElement("div");
+    wrapper.className = "flex flex-wrap gap-3";
+
     titles.forEach(({ title, is_verified }) => {
+      const cleanTitle = title.replace(/^\*\*\s*/, "").trim();
+
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = "block w-full text-left border px-4 py-2 rounded hover:bg-gray-100";
+      btn.className =
+        "border border-gray-300 px-4 py-2 rounded shadow-sm bg-white hover:shadow-md transition text-sm";
       btn.innerHTML = `
-        ${title} ${is_verified ? '<span class="text-green-600 text-sm ml-2">✔ Terverifikasi</span>' : ""}
-      `;
+    ${cleanTitle} ${
+        is_verified ? '<span class="ml-2 text-green-600 text-xs">✔</span>' : ""
+      }
+  `;
       btn.addEventListener("click", () => {
-        document.getElementById("subject").value = title;
+        document.getElementById("subject").value = cleanTitle;
       });
-      container.appendChild(btn);
+
+      wrapper.appendChild(btn);
     });
-  }
+
+    container.appendChild(wrapper);
+  },
 };
 
 export default CreateCoursePresenter;

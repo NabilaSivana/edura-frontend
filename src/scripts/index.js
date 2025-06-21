@@ -7,15 +7,22 @@ import navbar from "./component/navbar.js";
 
 const App = {
   async renderPage() {
-    // Render Navbar
-    const navbarElement = document.querySelector("navbar");
-    if (navbarElement) {
-      const navbarComponent = navbar();
-      navbarElement.outerHTML = navbarComponent.render();
-      await navbarComponent.afterRender();
-    }
+    const currentHash = window.location.hash;
+    const hideNavbarRoutes = ["#/login", "#/register"];
 
-    const currentHash = window.location.hash.replace("#", "");
+    const navbarElement = document.querySelector("navbar");
+
+    if (navbarElement) {
+      if (hideNavbarRoutes.includes(currentHash)) {
+        navbarElement.innerHTML = "";
+        navbarElement.style.display = "none";
+      } else {
+        navbarElement.style.display = "block";
+        const navbarComponent = navbar();
+        navbarElement.innerHTML = navbarComponent.render();
+        await navbarComponent.afterRender();
+      }
+    }
 
     if (AuthGuard.isBlockedAuthRoute()) {
       window.location.hash = "#/dashboard";

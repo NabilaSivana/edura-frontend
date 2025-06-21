@@ -5,7 +5,6 @@ const LandingPage = {
   async render() {
     return `
       <div>
-        ${navbar()}
         <!-- Hero Section -->
         <section class="relative z-50 pt-12 bg-white">
           <div class="py-6 px-4 sm:px-6 md:px-8 mx-auto max-w-screen-lg">

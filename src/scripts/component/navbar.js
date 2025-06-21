@@ -27,10 +27,15 @@ function renderNavbar() {
             <img src="/logo2.png" alt="logo" width="30" height="30" class="object-contain" />
             <h1 class="text-xl font-bold text-gray-800">Edura</h1>
           </a>
-          <div class="flex gap-4">
-            <a href="#/login" class="text-sm text-gray-700 hover:text-blue-600">Login</a>
-            <a href="#/register" class="text-sm text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700">Daftar</a>
-          </div>
+         <div class="flex gap-4">
+  <a href="#/login" class="px-4 py-2 rounded border border-gray-300 text-black hover:bg-gray-100">
+    Login
+  </a>
+  <a href="#/register" class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">
+    Daftar
+  </a>
+</div>
+
         </div>
       </nav>
     `;
@@ -51,9 +56,8 @@ function renderNavbar() {
           <div id="profile-popup" class="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg hidden z-10">
             <div class="p-4 border-b">
               <p class="text-sm font-medium text-gray-700">${
-                user?.name || "User"
+                user?.email|| "User"
               }</p>
-              <p class="text-xs text-gray-500">${user?.email || ""}</p>
             </div>
             <button id="logout-button" class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100">Logout</button>
           </div>
@@ -98,4 +102,6 @@ export default function navbar() {
     render: renderNavbar,
     afterRender: afterRenderNavbar,
   };
+
 }
+
