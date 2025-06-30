@@ -28,8 +28,8 @@ const Api = {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Gagal register");
+      const error = await response.json();
+      throw new Error(error.message);
     }
 
     return response.json();
@@ -128,7 +128,7 @@ const Api = {
 
     return response.json();
   },
-  
+
   async getProfile() {
     const response = await fetch(`${CONFIG.BASE_URL}/profile`, {
       method: "GET",
@@ -142,6 +142,8 @@ const Api = {
       if (response.status === 404) {
         throw new Error("Profil tidak ditemukan");
       }
+      localStorage.removeItem("token");
+      window.location.hash = "#/login";
       throw new Error("Gagal mengambil profil");
     }
 
@@ -225,7 +227,132 @@ const Api = {
     return response.json();
   },
 
+  //course teacher
+  async getTeacherUnverifiedCourses() {
+    const res = await fetch(`${CONFIG.BASE_URL}/teacher/courses/unverified`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res.json();
+  },
+  async getTeacherVerifiedCourses() {
+    const res = await fetch(`${CONFIG.BASE_URL}/teacher/courses/verified`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res.json();
+  },
+  async getTeacherCourseDetail(courseId) {
+    const res = await fetch(`${CONFIG.BASE_URL}/teacher/courses/${courseId}/detail`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res.json();
+  },
 
+  async editTeacherCourse(courseId, payload) {
+    const res = await fetch(`${CONFIG.BASE_URL}/teacher/courses/${courseId}/edit`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    return res.json();
+  },
+
+  async revertTeacherCourse(courseId) {
+    const res = await fetch(`${CONFIG.BASE_URL}/teacher/courses/${courseId}/revert`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res.json();
+  },
+
+  async editTeacherSession(courseId, sessionNumber, payload) {
+    const res = await fetch(`${CONFIG.BASE_URL}/teacher/courses/${courseId}/sessions/${sessionNumber}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    return res.json();
+  },
+
+  async deleteTeacherSession(courseId, sessionNumber) {
+    const res = await fetch(`${CONFIG.BASE_URL}/teacher/courses/${courseId}/sessions/${sessionNumber}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res.json();
+  },
+
+  async verifyTeacherCourse(courseId) {
+    const res = await fetch(`${CONFIG.BASE_URL}/teacher/courses/${courseId}/verify`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res.json();
+  },
+
+  async getAllstudent(page = 1, limit = 10, search = "") {
+    const url = new URL(`${CONFIG.BASE_URL}/management/list-student`);
+    url.searchParams.append("page", page);
+    url.searchParams.append("limit", limit);
+    if (search) url.searchParams.append("search", search);
+    return fetch(url, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    }).then(res => res.ok ? res.json() : Promise.reject("Gagal ambil data siswa"));
+  },
+  async getAllteacher(page = 1, limit = 10, search = "") {
+    const url = new URL(`${CONFIG.BASE_URL}/management/list-teacher`);
+    url.searchParams.append("page", page);
+    url.searchParams.append("limit", limit);
+    if (search) url.searchParams.append("search", search);
+    return fetch(url, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    }).then(res => res.ok ? res.json() : Promise.reject("Gagal ambil data guru"));
+  },
+  async getAlladmin(page = 1, limit = 10, search = "") {
+    const url = new URL(`${CONFIG.BASE_URL}/management/list-admin`);
+    url.searchParams.append("page", page);
+    url.searchParams.append("limit", limit);
+    if (search) url.searchParams.append("search", search);
+    return fetch(url, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    }).then(res => res.ok ? res.json() : Promise.reject("Gagal ambil data admin"));
+  },
+  async importUsers(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(`${CONFIG.BASE_URL}/management/import-users`, {
+      method: "POST",
+      body: formData,
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Gagal mengimpor data pengguna");
+    }
+
+    return response.json();
+  }
 };
 
 export default Api;

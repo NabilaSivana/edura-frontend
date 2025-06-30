@@ -6,6 +6,12 @@ const ProfilePresenter = {
             const userProfile = await ProfileModel.getUserProfile();
             this.renderBasic(userProfile);
 
+            // ⛔ Jangan panggil getRoleProfile kalau admin
+            if (userProfile.role === "admin") {
+                this.renderNoRoleProfile(); // Tambahkan pesan untuk admin
+                return;
+            }
+
             const roleProfile = await ProfileModel.getRoleProfile(userProfile.role);
             if (roleProfile) {
                 this.renderRoleProfile(userProfile.role, roleProfile);
@@ -47,6 +53,13 @@ const ProfilePresenter = {
       <div class="bg-yellow-100 border border-yellow-300 text-yellow-800 p-4 rounded">
         <p>Profil ${role === 'student' ? 'mahasiswa' : 'dosen'} belum lengkap. Silakan lengkapi terlebih dahulu.</p>
       </div>
+    `;
+    },
+
+    renderNoRoleProfile() {
+        // Hanya tampilkan kotak kosong atau info khusus untuk admin
+        document.getElementById("role-profile").innerHTML = `
+      <div class="text-sm text-gray-500 italic">Tidak ada data profil lanjutan untuk akun admin.</div>
     `;
     }
 };

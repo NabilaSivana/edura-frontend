@@ -1,21 +1,27 @@
-// role-profile/role-profile-presenter.js
 import Api from "../../data/api.js";
 import RoleProfileView from "./role-profile-view.js";
 
 const RoleProfilePresenter = {
     async checkAndRenderModal(role) {
+        if (role === "admin") return;
+
+        const hasProfile = await this.isProfileComplete(role);
+        if (hasProfile) return;
+
+        RoleProfileView.init(role); // Langsung render form juga
+        this.setupFormHandler(role);
+    },
+
+    async isProfileComplete(role) {
         try {
             if (role === "student") {
                 await Api.getStudentProfile();
             } else if (role === "teacher") {
                 await Api.getTeacherProfile();
             }
-            // jika sukses, tidak perlu tampilkan modal
-        } catch (error) {
-            // jika 404 (tidak punya profil), tampilkan modal isi profil
-            RoleProfileView.init();
-            RoleProfileView.renderFormFields(role);
-            this.setupFormHandler(role);
+            return true;
+        } catch {
+            return false;
         }
     },
 
@@ -38,6 +44,7 @@ const RoleProfilePresenter = {
                     await Api.createTeacherProfile(data);
                 }
                 RoleProfileView.closeModal();
+                window.location.reload(); // Refresh dashboard
             } catch (err) {
                 RoleProfileView.showError();
                 console.error("Gagal menyimpan profil:", err);

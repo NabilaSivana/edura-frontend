@@ -1,4 +1,5 @@
 //routes/route.js
+import CoursePresenter from "../pages/course/presenter.js";
 import CreateCoursePage from "../pages/create-course/page.js";
 import DashboardPage from "../pages/dashboard-student/dashboard-page.js";
 import ForgotPasswordPage from "../pages/forgot-password/forgot-password-page.js";
@@ -7,10 +8,10 @@ import LoginPage from "../pages/login/login-page.js";
 import ProfilePage from "../pages/profile/profile-page.js";
 import RegisterPage from "../pages/register/register-page.js";
 import ResetPasswordPage from "../pages/reset-password/reset-password-page.js";
+import CourseDetailPage from "../pages/teacher/detail-course/page.js";
 import UpgradePage from "../pages/upgrade/upgrade-page.js";
 import VerifyEmailPage from "../pages/verify-email/verify-email-page.js";
 import OtpPage from "../pages/verify-otp/otp-page.js";
-import CoursePresenter from "../pages/course/presenter.js";
 
 const routes = {
   "/": LandingPage,
@@ -48,7 +49,8 @@ const routes = {
 
       await view.default.render(parseInt(currentSessionNumber));
     }
-  }
+  },
+  "/teacher/course-detail": CourseDetailPage,
 
 
 };

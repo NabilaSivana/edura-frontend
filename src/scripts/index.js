@@ -4,6 +4,7 @@ import navbar from "./component/navbar.js";
 import routes from "./routes/route.js";
 import UrlParser from "./routes/url-parser.js";
 import AuthGuard from "./utils/auth-guard.js";
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const App = {
   async renderPage() {
