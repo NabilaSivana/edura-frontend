@@ -3,7 +3,12 @@ import WelcomeBanner from "../../component/wellcome-banner.js";
 import Api from "../../data/api.js";
 import RoleProfilePresenter from "../role-profile/role-profile-presenter.js";
 import RoleProfileView from "../role-profile/role-profile-view.js";
+import DashboardStudentPresenter from "./dashboard-student-presenter.js";
 import DashboardTeacherPresenter from "./dashboard-teacher-presenter.js";
+import {
+  showElementLoading,
+  hideElementLoading,
+} from "../../component/loading-screen.js";
 
 const DashboardPresenter = {
   async init() {
@@ -13,6 +18,60 @@ const DashboardPresenter = {
       return;
     }
 
+    // === CEK APAKAH SEDANG GENERATING COURSE ===
+    const courseGenerating = localStorage.getItem("course_generating") === "true";
+    const generatingId = localStorage.getItem("generating_course_id");
+    const generatingTitle = localStorage.getItem("generating_course_title");
+    const generatingLevel = localStorage.getItem("generating_course_level");
+
+    if (courseGenerating && generatingId) {
+      const genSection = document.getElementById("course-generating-section");
+      const genTitleSpan = document.getElementById("generating-title");
+      const genLevelSpan = document.getElementById("generating-level");
+
+      if (genSection && genTitleSpan && genLevelSpan) {
+        genTitleSpan.textContent = generatingTitle || "(tidak diketahui)";
+        genLevelSpan.textContent = generatingLevel || "";
+        genSection.style.display = "block";
+      }
+
+      const checkStatus = async () => {
+        try {
+          const status = await CreateCourseModel.checkGenerationStatus(generatingId);
+          if (status.complete) {
+            clearInterval(intervalId);
+            // Bersihkan localStorage dan reload dashboard
+            localStorage.removeItem("course_generating");
+            localStorage.removeItem("generating_course_id");
+            localStorage.removeItem("generating_course_title");
+            localStorage.removeItem("generating_course_level");
+            window.location.reload();
+          }
+        } catch (err) {
+          console.warn("Gagal cek status generate:", err);
+        }
+      };
+
+      // Polling setiap 7 detik
+      const intervalId = setInterval(checkStatus, 7000);
+      await checkStatus(); // cek pertama kali langsung
+
+      // Tambahkan pesan bantuan jika lebih dari 2 menit belum selesai
+      setTimeout(() => {
+        const helpBox = document.getElementById("generation-help");
+        if (helpBox) {
+          helpBox.innerHTML = `
+          🚨 Pembuatan course membutuhkan waktu lebih lama dari biasanya.<br>
+          <a href="#/create-course" class="underline text-blue-600">Klik di sini untuk buat ulang</a>
+          atau hubungi admin jika masalah berlanjut.
+        `;
+        }
+      }, 120000); // 2 menit
+
+      return; // hentikan render dashboard sampai selesai generate
+    }
+
+    // === CEK PROFIL USER ===
     let user;
     try {
       user = await Api.getProfile();
@@ -23,10 +82,14 @@ const DashboardPresenter = {
     }
 
     const welcomeTarget = document.getElementById("welcome-container");
-    if (welcomeTarget) welcomeTarget.appendChild(WelcomeBanner(user.full_name || ""));
+    if (welcomeTarget) {
+      showElementLoading("welcome-container", "Memuat sambutan...");
+      const banner = WelcomeBanner(user.full_name || "");
+      welcomeTarget.innerHTML = "";
+      welcomeTarget.appendChild(banner);
+    }
 
     const modalContainer = document.getElementById("role-profile-modal-container");
-
     const needProfile = await this.checkRoleProfile(user.role, modalContainer);
     if (needProfile) return;
 
@@ -45,12 +108,23 @@ const DashboardPresenter = {
     const otherSection = document.getElementById("other-role-section");
 
     if (role === "student") {
-      await renderCourseList("course-container");
+      showElementLoading("course-container", "Memuat daftar kursus...");
+
+      const courses = await DashboardStudentPresenter.getCourses();
+      hideElementLoading("course-container");
+
+      await renderCourseList("course-container", courses);
 
       const refreshBtn = document.getElementById("refresh-courses");
       if (refreshBtn) {
         refreshBtn.addEventListener("click", async () => {
-          await renderCourseList("course-container");
+          showElementLoading(
+            "course-container",
+            "Menyegarkan daftar kursus..."
+          );
+          const refreshedCourses = await DashboardStudentPresenter.getCourses();
+          hideElementLoading("course-container");
+          await renderCourseList("course-container", refreshedCourses);
         });
       }
 

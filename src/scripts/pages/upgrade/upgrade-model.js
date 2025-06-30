@@ -1,32 +1,12 @@
-import CONFIG from "../../config.js";
+import Api from "../../data/api.js";
 
-const UpgradeModel = {
-    async getUserProfile() {
-        const response = await fetch(`${CONFIG.BASE_URL}/profile`, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-        });
-
-        if (!response.ok) throw new Error("Gagal fetch profile");
-
-        const { profile } = await response.json();
-        return profile;
+const paymentModel = {
+    async getSnapToken() {
+        return await Api.getSnapToken(); // return { token, redirect_url }
     },
-
-    async requestUpgrade() {
-        const response = await fetch(`${CONFIG.BASE_URL}/upgrade-plan`, {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-                "Content-Type": "application/json",
-            },
-        });
-
-        if (!response.ok) throw new Error("Gagal membuat transaksi");
-
-        return response.json(); // { token, redirect_url }
-    }
+    async getCurrentUser() {
+        return await Api.getCurrentUser();
+    },
 };
 
-export default UpgradeModel;
+export default paymentModel;

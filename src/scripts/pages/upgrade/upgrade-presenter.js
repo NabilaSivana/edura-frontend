@@ -1,37 +1,49 @@
-import UpgradeModel from "./upgrade-model.js";
+// src/scripts/pages/upgrade/upgrade-presenter.js
+import PaymentModel from "./upgrade-model.js";
 
-const UpgradePresenter = {
+const PaymentPresenter = {
     async init() {
-        const formContainer = document.getElementById("upgrade-form-section");
-        const upgradeButton = document.getElementById("upgrade-button");
-
-        try {
-            const user = await UpgradeModel.getUserProfile();
-
-            if (user.plan === "premium") {
-                formContainer.innerHTML = `<p class="text-green-600">Anda sudah menggunakan plan <strong>Premium</strong>.</p>`;
-                return;
-            }
-
-            upgradeButton.addEventListener("click", async () => {
-                upgradeButton.disabled = true;
-                upgradeButton.textContent = "Mengalihkan ke pembayaran...";
-
-                try {
-                    const result = await UpgradeModel.requestUpgrade();
-                    window.location.href = result.redirect_url;
-                } catch (err) {
-                    alert("Gagal memproses upgrade.");
-                    console.error(err);
-                } finally {
-                    upgradeButton.disabled = false;
-                    upgradeButton.textContent = "Upgrade Sekarang";
-                }
-            });
-        } catch (err) {
-            formContainer.innerHTML = `<p class="text-red-600">Gagal memuat data pengguna. Coba lagi nanti.</p>`;
+        const button = document.getElementById("upgrade-btn");
+        if (!button || !window.snap) {
+            alert("Midtrans Snap belum tersedia.");
+            return;
         }
-    }
+
+        button.addEventListener("click", async () => {
+            button.disabled = true;
+            button.textContent = "Memproses...";
+
+            try {
+                const { token } = await PaymentModel.getSnapToken();
+
+                window.snap.pay(token, {
+                    onSuccess: async () => {
+                        // Tunggu beberapa detik untuk memastikan webhook selesai
+                        await new Promise((res) => setTimeout(res, 3000));
+
+                        const user = await PaymentModel.getCurrentUser();
+
+                        if (user.plan === "premium") {
+                            alert("Berhasil upgrade ke Premium!");
+                            window.location.href = "#/payment-success";
+                        } else {
+                            alert("Pembayaran berhasil, tapi status belum premium. Coba beberapa saat lagi.");
+                            window.location.href = "#/dashboard";
+                        }
+                    },
+                    onPending: () => alert("Pembayaran sedang diproses..."),
+                    onError: () => alert("Terjadi kesalahan saat pembayaran."),
+                    onClose: () => alert("Transaksi dibatalkan."),
+                });
+            } catch (err) {
+                alert("Gagal mendapatkan token pembayaran.");
+                console.error(err);
+            } finally {
+                button.disabled = false;
+                button.textContent = "Upgrade ke Premium";
+            }
+        });
+    },
 };
 
-export default UpgradePresenter;
+export default PaymentPresenter;

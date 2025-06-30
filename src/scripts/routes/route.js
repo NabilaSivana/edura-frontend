@@ -10,6 +10,7 @@ import RegisterPage from "../pages/register/register-page.js";
 import ResetPasswordPage from "../pages/reset-password/reset-password-page.js";
 import CourseDetailPage from "../pages/teacher/detail-course/page.js";
 import UpgradePage from "../pages/upgrade/upgrade-page.js";
+import PaymentSuccessPage from "../pages/upgrade/upgrade-success.js";
 import VerifyEmailPage from "../pages/verify-email/verify-email-page.js";
 import OtpPage from "../pages/verify-otp/otp-page.js";
 
@@ -51,7 +52,7 @@ const routes = {
     }
   },
   "/teacher/course-detail": CourseDetailPage,
-
+  "/payment-success": PaymentSuccessPage,
 
 };
 

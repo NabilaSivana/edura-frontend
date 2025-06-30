@@ -11,7 +11,6 @@ const DashboardStudentModel = {
     if (user.role === 'student') {
       try {
         const courses = await Api.getStudentCourses();
-        console.log("Data kursus:", courses); // Debugging
         return courses;
       } catch (error) {
         console.error("[DashboardStudentModel] Gagal mengambil kursus:", error.message);

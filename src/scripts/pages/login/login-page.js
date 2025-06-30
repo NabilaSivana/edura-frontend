@@ -1,4 +1,8 @@
 import LoginPresenter from "../login/login-presenter.js";
+import {
+  showLoadingScreen,
+  hideLoadingScreen,
+} from "../../component/loading-screen.js";
 
 const LoginPage = {
   async render() {
@@ -12,7 +16,7 @@ const LoginPage = {
     width: 100%;
     padding: 1rem 0.75rem 0.5rem;
     border: 1.5px solid #2C2F8C;
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
     background: white;
     color: black;
     font-size: 1rem;
@@ -38,98 +42,170 @@ const LoginPage = {
     font-size: 0.75rem;
     color: #2C2F8C;
   }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out;
+  }
 </style>
 
-<section class="w-screen h-screen flex flex-col md:flex-row font-sans overflow-hidden m-0 p-0">
-  <!-- LEFT LOGIN FORM -->
-  <div class="w-full md:w-1/2 h-full bg-white flex flex-col justify-center items-center px-8 md:px-12 space-y-6 animate-fade-in-left">
-  <a href="#/" class="self-start text-[#2C2F8C] hover:underline mb-2 flex items-center gap-1">
-  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-    viewBox="0 0 24 24" stroke="currentColor">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-      d="M15 19l-7-7 7-7" />
-  </svg>
-  Kembali
-</a>
-    <h2 class="text-[32px] md:text-[40px] font-extrabold text-[#2C2F8C] text-center">LOGIN</h2>
-    <p class="text-[#2C2F8C] text-center">Silahkan Login terlebih dahulu</p>
+<!-- Mobile Layout -->
+<section class="block md:hidden w-screen min-h-screen bg-[#86A6DF] text-white font-sans overflow-y-auto">
+  <div class="flex flex-col items-start px-6 pt-6">
+    <a href="#/" class="text-white hover:underline mb-4 flex items-center gap-1">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+        viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M15 19l-7-7 7-7" />
+      </svg>
+      Kembali
+    </a>
+  </div>
+  <div class="flex flex-col items-center justify-center px-6 pb-6 text-center">
+    <h1 class="text-3xl font-extrabold mb-4">Hallo, Friend!</h1>
+    <img src="maskot4.png" alt="Robot Maskot" class="w-40 mb-4" />
+    <p class="text-sm mb-4 max-w-sm">Jika belum punya akun daftar untuk masuk ke dashboard</p>
+    <a href="#/register" class="border border-white text-white px-6 py-2 rounded font-semibold hover:bg-white hover:text-[#86A6DF] transition">
+      Daftar
+    </a>
+  </div>
 
-    <form id="login-form" class="w-full max-w-sm flex flex-col space-y-4">
+  <div class="bg-white text-[#2C2F8C] rounded-t-[60px] px-8 py-10 flex flex-col items-center max-w-md mx-auto animate-slide-up">
+    <h2 class="text-2xl font-extrabold mb-1">LOGIN</h2>
+    <p class="text-center mb-6">Silahkan Login terlebih dahulu</p>
+
+    <form id="login-form-mobile" class="w-full space-y-4">
       <div class="floating-input">
-        <input type="email" id="email" placeholder=" " required />
-        <label for="email">Email</label>
+        <input type="email" id="email-mobile" placeholder=" " required />
+        <label for="email-mobile">Email</label>
       </div>
       <div class="floating-input">
-        <input type="password" id="password" placeholder=" " required />
-        <label for="password">Password</label>
+        <input type="password" id="password-mobile" placeholder=" " required />
+        <label for="password-mobile">Password</label>
+      </div>
+      <div class="flex justify-end">
+        <a href="#/forgot-password" class="text-sm hover:underline">Lupa Password?</a>
+      </div>
+      <button type="submit" class="bg-[#2C2F8C] text-white w-full py-2 rounded hover:bg-[#1e1f6c] transition">
+        Login
+      </button>
+    </form>
+    <p id="login-message" class="text-sm text-red-500 mt-2"></p>
+  </div>
+</section>
+
+<!-- Desktop Layout -->
+<section class="hidden md:flex w-screen h-screen font-sans m-0 p-0">
+  <!-- Left: Login Form -->
+  <div class="w-1/2 bg-white flex flex-col justify-center items-center px-12">
+    <a href="#/" class="self-start text-[#2C2F8C] hover:underline mb-4 flex items-center gap-1">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+        viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M15 19l-7-7 7-7" />
+      </svg>
+      Kembali
+    </a>
+    <h2 class="text-[40px] font-extrabold text-[#2C2F8C] text-center">LOGIN</h2>
+    <p class="text-[#2C2F8C] text-center mb-6">Silahkan Login terlebih dahulu</p>
+
+    <form id="login-form-desktop" class="w-full max-w-sm flex flex-col space-y-4">
+      <div class="floating-input">
+        <input type="email" id="email-desktop" placeholder=" " required />
+        <label for="email-desktop">Email</label>
+      </div>
+      <div class="floating-input">
+        <input type="password" id="password-desktop" placeholder=" " required />
+        <label for="password-desktop">Password</label>
       </div>
       <div class="flex justify-end">
         <a href="#/forgot-password" class="text-xs text-[#2C2F8C] hover:underline">Lupa Password?</a>
       </div>
-      <button
-        type="submit"
-        class="bg-[#2C2F8C] text-white py-2 rounded hover:bg-[#1e1f6c] transition-colors"
-      >
+      <button type="submit" class="bg-[#2C2F8C] text-white py-2 rounded hover:bg-[#1e1f6c] transition-colors">
         Login
       </button>
     </form>
-
-    <p id="login-message" class="text-sm text-red-500"></p>
+    <p id="login-message" class="text-sm text-red-500 mt-2"></p>
   </div>
 
-  <!-- RIGHT IMAGE AND REGISTER -->
-  <div class="w-full md:w-1/2 h-full bg-[#86A6DF] flex flex-col justify-center items-center px-10 text-white rounded-tl-[60px] md:rounded-tl-[100px] md:rounded-bl-[100px] animate-fade-in-left">
-    <h3 class="text-[28px] md:text-[32px] font-extrabold mb-6 text-center">Hallo, Friend!</h3>
-    <img src="maskot4.png" alt="Robot Maskot" class="w-48 md:w-60 mb-6" />
-    <p class="text-center text-white mb-6 text-sm md:text-base">
-      Jika belum punya akun Daftar terlebih dahulu untuk masuk ke dashboard
-    </p>
-    <a
-      href="#/register"
-      class="border border-white text-white px-6 py-2 rounded hover:bg-white hover:text-[#86A6DF] font-semibold transition"
-    >
+  <!-- Right: Image + Welcome -->
+  <div class="w-1/2 bg-[#86A6DF] flex flex-col justify-center items-center px-10 text-white rounded-tl-[100px] rounded-bl-[100px]">
+    <h3 class="text-[32px] font-extrabold mb-6 text-center">Hallo, Friend!</h3>
+    <img src="maskot4.png" alt="Robot Maskot" class="w-60 mb-6" />
+    <p class="text-center mb-6 text-base">Jika belum punya akun daftar untuk masuk ke dashboard</p>
+    <a href="#/register" class="border border-white text-white px-6 py-2 rounded hover:bg-white hover:text-[#86A6DF] font-semibold transition">
       Daftar
     </a>
   </div>
 </section>
-    `;
+  `;
   },
-
   async afterRender() {
     const footer = document.querySelector("footer");
     if (footer) footer.style.display = "none";
 
-    const form = document.querySelector("#login-form");
-    const emailInput = document.querySelector("#email");
-    const passwordInput = document.querySelector("#password");
-    const messageEl = document.querySelector("#login-message");
+    const handleLoginSubmit = (
+      formSelector,
+      emailSelector,
+      passwordSelector
+    ) => {
+      const form = document.querySelector(formSelector);
+      if (!form) return;
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-      const email = emailInput.value;
-      const password = passwordInput.value;
+        const email = document.querySelector(emailSelector).value;
+        const password = document.querySelector(passwordSelector).value;
+        const messageEl = document.querySelector("#login-message");
 
-      LoginPresenter.handleLogin(
-        email,
-        password,
-        (successMessage) => {
-          sessionStorage.setItem("pendingOtpEmail", email);
-          messageEl.textContent = successMessage;
-          messageEl.classList.remove("text-red-500");
-          messageEl.classList.add("text-green-600");
+        // Tampilkan loading
+        showLoadingScreen("Proses login...");
 
-          setTimeout(() => {
-            window.location.href = "/#/otp";
-          }, 1500);
-        },
-        (errorMessage) => {
-          messageEl.textContent = errorMessage;
-          messageEl.classList.remove("text-green-600");
-          messageEl.classList.add("text-red-500");
-        }
-      );
-    });
+        LoginPresenter.handleLogin(
+          email,
+          password,
+          (successMessage) => {
+            hideLoadingScreen();
+            sessionStorage.setItem("pendingOtpEmail", email);
+            messageEl.textContent = successMessage;
+            messageEl.classList.remove("text-red-500");
+            messageEl.classList.add("text-green-600");
+
+            setTimeout(() => {
+              window.location.href = "/#/otp";
+            }, 1500);
+          },
+          (errorMessage) => {
+            hideLoadingScreen();
+            messageEl.textContent = errorMessage;
+            messageEl.classList.remove("text-green-600");
+            messageEl.classList.add("text-red-500");
+          }
+        );
+      });
+    };
+
+    handleLoginSubmit(
+      "#login-form-mobile",
+      "#email-mobile",
+      "#password-mobile"
+    );
+    handleLoginSubmit(
+      "#login-form-desktop",
+      "#email-desktop",
+      "#password-desktop"
+    );
   },
 };
 

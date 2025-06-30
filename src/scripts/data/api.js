@@ -1,3 +1,4 @@
+// File: src/scripts/data/api.js
 import CONFIG from "../config.js";
 
 const Api = {
@@ -52,12 +53,15 @@ const Api = {
   },
 
   async postVerifyEmail({ token }) {
-    const response = await fetch(`${CONFIG.BASE_URL}/verify-email?token=${token}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetch(
+      `${CONFIG.BASE_URL}/verify-email?token=${token}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error("Verification failed.");
@@ -168,9 +172,22 @@ const Api = {
     }
 
     const data = await response.json();
-    return Array.isArray(data) ? data : [];
-  },
 
+    // Pastikan data dalam bentuk array
+    const courses = Array.isArray(data) ? data : [];
+
+    // Tambahkan field is_verified dan verified_by jika perlu
+    const enrichedCourses = courses.map((course) => {
+      const isVerified = course.is_verified === true;
+      return {
+        ...course,
+        is_verified: isVerified,
+        verified_by: isVerified ? course.verified_by : null,
+      };
+    });
+
+    return enrichedCourses;
+  },
   async getStudentProfile() {
     const response = await fetch(`${CONFIG.BASE_URL}/student/profile`, {
       method: "GET",
@@ -226,8 +243,74 @@ const Api = {
     if (!response.ok) throw new Error("Gagal menyimpan profil guru");
     return response.json();
   },
+  async createCourse({ subject, level }) {
+    const response = await fetch(`${CONFIG.BASE_URL}/student/course/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ subject, level }),
+    });
 
-  //course teacher
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Gagal membuat kursus");
+    }
+
+    return await response.json();
+  },
+  async getCourseRecommendations() {
+    const response = await fetch(`${CONFIG.BASE_URL}/student/course/recommendations`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Gagal mengambil rekomendasi kursus");
+    }
+    return await response.json();
+  },
+  async updateProfile(data) {
+    const response = await fetch(`${CONFIG.BASE_URL}/profile`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Gagal memperbarui profil");
+    }
+
+    return await response.json();
+  },
+
+  async updateStudentProfile(data) {
+    const response = await fetch(`${CONFIG.BASE_URL}/student/profile`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || "Gagal memperbarui profil mahasiswa"
+      );
+    }
+
+    return await response.json();
+  },  //course teacher
   async getTeacherUnverifiedCourses() {
     const res = await fetch(`${CONFIG.BASE_URL}/teacher/courses/unverified`, {
       headers: {
@@ -352,7 +435,21 @@ const Api = {
     }
 
     return response.json();
-  }
+  },
+
+  async getSnapToken() {
+    const response = await fetch(`${CONFIG.BASE_URL}/payment/snap-token`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    });
+    return response.json();
+  },
+
+  async getCurrentUser() {
+    const response = await fetch(`${CONFIG.BASE_URL}/me`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    });
+    return response.json();
+  },
 };
 
 export default Api;

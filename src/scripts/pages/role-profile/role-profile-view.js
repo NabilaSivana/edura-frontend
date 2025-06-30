@@ -9,7 +9,7 @@ const RoleProfileView = {
 
         const fieldsHTML = this.getFormHTML(role);
 
-        modal.innerHTML = `
+    modal.innerHTML = `
       <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-lg">
         <h2 class="text-xl font-bold mb-4">Lengkapi Profil Anda</h2>
         <form id="role-profile-form" class="space-y-4">
@@ -21,8 +21,8 @@ const RoleProfileView = {
       </div>
     `;
 
-        document.body.appendChild(modal);
-    },
+    document.body.appendChild(modal);
+  },
 
     getFormHTML(role) {
         const fields = {
@@ -70,8 +70,8 @@ const RoleProfileView = {
             data[field] = input.value.trim();
         }
 
-        return data;
-    },
+    return data;
+  },
 
     showError() {
         document.getElementById("role-profile-error")?.classList.remove("hidden");

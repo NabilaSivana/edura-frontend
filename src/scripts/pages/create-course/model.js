@@ -1,34 +1,30 @@
-import CONFIG from "../../config.js";
+import Api from "../../data/api.js";
 
 const CreateCourseModel = {
-    async getRecommendation() {
-        const response = await fetch(`${CONFIG.BASE_URL}/student/course/recommendations`, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-        });
+  async submitCourse({ subject, level }) {
+    const response = await Api.createCourse({ subject, level });
 
-        if (!response.ok) throw new Error("Gagal fetch rekomendasi");
-
-        return response.json(); // format: { message, titles: [ { title,subject, level, is_verified } ] }
-    },
-
-    async submitCourse(payload) {
-        console.log("Payload yang dikirim:", payload); // <--- payload harus berupa subject dan level
-        const response = await fetch(`${CONFIG.BASE_URL}/student/course/create`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-            body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) throw new Error("Gagal submit course");
-
-        return response.json();
+    // Kita hanya butuh info awal (misalnya course_id)
+    return response;
+  },
+  async getRecommendation() {
+    try {
+      return await Api.getCourseRecommendations();
+    } catch (error) {
+      console.error("[CreateCourseModel] Gagal mengambil rekomendasi:", error);
+      return { recommendations: [] };
     }
-    ,
+  },
+
+  // Add this new method to check generation status
+  async checkGenerationStatus(courseId) {
+    try {
+      return await Api.checkCourseGenerationStatus(courseId);
+    } catch (error) {
+      console.error("[CreateCourseModel] Gagal memeriksa status:", error);
+      return { complete: false };
+    }
+  },
 };
 
 export default CreateCourseModel;
