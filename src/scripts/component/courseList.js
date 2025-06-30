@@ -3,7 +3,10 @@ import { createCourseCard } from "./courseCardItem.js";
 
 let loading = false;
 
-export async function renderCourseList(containerId = "course-container") {
+export async function renderCourseList(
+  containerId = "course-container",
+  externalCourses = null
+) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
@@ -11,44 +14,38 @@ export async function renderCourseList(containerId = "course-container") {
 
   const grid = document.createElement("div");
   grid.className = `
-    w-full
-    grid
-    grid-cols-1
-    sm:grid-cols-1
-    md:grid-cols-2
-    lg:grid-cols-3
-    xl:grid-cols-4
-    gap-6
+    grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6
   `;
 
   try {
-    loading = true;
+    let courses;
 
-    // Skeleton loading
-    for (let i = 0; i < 6; i++) {
-      const skeleton = document.createElement("div");
-      skeleton.className =
-        "h-56 w-full bg-slate-200 rounded-xl animate-pulse shadow-inner";
-      grid.appendChild(skeleton);
+    if (externalCourses) {
+      courses = externalCourses;
+    } else {
+      // Tampilkan skeleton
+      for (let i = 0; i < 6; i++) {
+        const skeleton = document.createElement("div");
+        skeleton.className =
+          "h-56 w-full bg-slate-200 rounded-xl animate-pulse shadow-inner";
+        grid.appendChild(skeleton);
+      }
+      container.appendChild(grid);
+
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${CONFIG.BASE_URL}/student/courses`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) throw new Error("Gagal mengambil data kursus");
+      const data = await response.json();
+      courses = Array.isArray(data) ? data : [];
     }
 
-    container.appendChild(grid);
-
-    const token = localStorage.getItem("token");
-    const response = await fetch(`${CONFIG.BASE_URL}/student/courses`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) throw new Error("Gagal mengambil data kursus");
-
-    const data = await response.json();
-    const courses = Array.isArray(data) ? data : [];
-
-    loading = false;
-    grid.innerHTML = ""; // Hapus skeleton
+    grid.innerHTML = ""; // Clear skeleton
 
     if (courses.length === 0) {
       container.innerHTML = `
@@ -68,9 +65,6 @@ export async function renderCourseList(containerId = "course-container") {
     container.innerHTML = "";
     container.appendChild(grid);
   } catch (error) {
-    loading = false;
-    console.error("Gagal mengambil kursus:", error.message);
-
     container.innerHTML = `
       <div class="text-center w-full p-6 bg-red-100 text-red-700 rounded-md shadow">
         <p class="font-semibold">Gagal memuat kursus</p>

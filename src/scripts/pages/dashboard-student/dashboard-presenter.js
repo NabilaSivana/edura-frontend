@@ -4,6 +4,11 @@ import WelcomeBanner from "../../component/wellcome-banner.js";
 import Api from "../../data/api.js";
 import RoleProfilePresenter from "../role-profile/role-profile-presenter.js";
 import RoleProfileView from "../role-profile/role-profile-view.js";
+import DashboardStudentPresenter from "./dashboard-student-presenter.js";
+import {
+  showElementLoading,
+  hideElementLoading,
+} from "../../component/loading-screen.js";
 
 const DashboardPresenter = {
   async init() {
@@ -23,12 +28,17 @@ const DashboardPresenter = {
       return;
     }
 
-  
     const welcomeTarget = document.getElementById("welcome-container");
-    if (welcomeTarget) welcomeTarget.appendChild(WelcomeBanner(user.full_name || ""));
+    if (welcomeTarget) {
+      showElementLoading("welcome-container", "Memuat sambutan...");
+      const banner = WelcomeBanner(user.full_name || "");
+      welcomeTarget.innerHTML = "";
+      welcomeTarget.appendChild(banner);
+    }
 
-    const modalContainer = document.getElementById("role-profile-modal-container");
-
+    const modalContainer = document.getElementById(
+      "role-profile-modal-container"
+    );
     const needProfile = await this.checkRoleProfile(user.role, modalContainer);
     if (needProfile) return;
 
@@ -49,20 +59,30 @@ const DashboardPresenter = {
       RoleProfilePresenter.setupFormHandler(role);
       return true;
     }
-  }
-  ,
+  },
 
   async renderDashboardByRole(role) {
     const studentSection = document.getElementById("student-section");
     const otherSection = document.getElementById("other-role-section");
 
     if (role === "student") {
-      await renderCourseList("course-container");
+      showElementLoading("course-container", "Memuat daftar kursus...");
+
+      const courses = await DashboardStudentPresenter.getCourses();
+      hideElementLoading("course-container");
+
+      await renderCourseList("course-container", courses);
 
       const refreshBtn = document.getElementById("refresh-courses");
       if (refreshBtn) {
         refreshBtn.addEventListener("click", async () => {
-          await renderCourseList("course-container");
+          showElementLoading(
+            "course-container",
+            "Menyegarkan daftar kursus..."
+          );
+          const refreshedCourses = await DashboardStudentPresenter.getCourses();
+          hideElementLoading("course-container");
+          await renderCourseList("course-container", refreshedCourses);
         });
       }
 

@@ -1,15 +1,16 @@
 // role-profile/role-profile-view.js
 
 const RoleProfileView = {
-    init() {
-        // Cegah scroll latar belakang saat modal muncul
-        document.body.style.overflow = "hidden";
+  init() {
+    // Cegah scroll latar belakang saat modal muncul
+    document.body.style.overflow = "hidden";
 
-        const modal = document.createElement("div");
-        modal.id = "role-profile-modal";
-        modal.className = "fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center";
+    const modal = document.createElement("div");
+    modal.id = "role-profile-modal";
+    modal.className =
+      "fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center";
 
-        modal.innerHTML = `
+    modal.innerHTML = `
       <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-lg">
         <h2 class="text-xl font-bold mb-4">Lengkapi Profil Anda</h2>
         <form id="role-profile-form" class="space-y-4">
@@ -21,70 +22,99 @@ const RoleProfileView = {
       </div>
     `;
 
-        document.body.appendChild(modal);
-    },
+    document.body.appendChild(modal);
+  },
 
-    renderFormFields(role) {
-        const form = document.getElementById("role-profile-form");
+  renderFormFields(role) {
+    const form = document.getElementById("role-profile-form");
 
-        const fields = {
-            student: [
-                { id: "nim", label: "NIM" },
-                { id: "full_name", label: "Nama Lengkap" },
-                { id: "kelas", label: "Kelas" },
-                { id: "jurusan", label: "Jurusan" },
-                { id: "program_studi", label: "Program Studi" },
-                { id: "perguruan_tinggi", label: "Perguruan Tinggi" },
-            ],
-            teacher: [
-                { id: "nidn", label: "NIDN" },
-                { id: "full_name", label: "Nama Lengkap" },
-                { id: "fakultas", label: "Fakultas" },
-                { id: "program_studi", label: "Program Studi" },
-                { id: "perguruan_tinggi", label: "Perguruan Tinggi" },
-            ],
-        };
+    const fields = {
+      student: [
+        { id: "nim", label: "NIM" },
+        { id: "full_name", label: "Nama Lengkap" },
+        { id: "kelas", label: "Kelas" },
+        { id: "jurusan", label: "Jurusan" },
+        { id: "program_studi", label: "Program Studi" },
+        { id: "perguruan_tinggi", label: "Perguruan Tinggi" },
+      ],
+      teacher: [
+        { id: "nidn", label: "NIDN" },
+        { id: "full_name", label: "Nama Lengkap" },
+        { id: "fakultas", label: "Fakultas" },
+        { id: "program_studi", label: "Program Studi" },
+        { id: "perguruan_tinggi", label: "Perguruan Tinggi" },
+      ],
+    };
 
-        form.innerHTML = fields[role]
-            .map(
-                (field) => `
-      <div>
-        <label for="${field.id}" class="block text-sm font-medium">${field.label}</label>
-        <input type="text" id="${field.id}" name="${field.id}"
-          class="mt-1 block w-full border rounded px-3 py-2" required>
-      </div>`
-            )
-            .join("");
-    },
-
-    getFormData(role) {
-        const form = document.getElementById("role-profile-form");
-        const data = {};
-        const requiredFields = role === "student"
-            ? ["nim", "full_name", "kelas", "jurusan", "program_studi", "perguruan_tinggi"]
-            : ["nidn", "full_name", "fakultas", "program_studi", "perguruan_tinggi"];
-
-        for (const field of requiredFields) {
-            const input = form[field];
-            if (!input.value.trim()) {
-                return null; // field kosong
-            }
-            data[field] = input.value.trim();
+    form.innerHTML = fields[role]
+      .map((field) => {
+        // Ubah program_studi jadi <select> khusus student
+        if (field.id === "program_studi" && role === "student") {
+          return `
+          <div>
+            <label for="program_studi" class="block text-sm font-medium">Program Studi</label>
+            <select id="program_studi" name="program_studi" class="mt-1 block w-full border rounded px-3 py-2" required>
+              <option value="">-- Pilih Program Studi --</option>
+              <option value="Teknik Informatika">Teknik Informatika</option>
+              <option value="Teknik Listrik">Teknik Listrik</option>
+              <option value="Teknik Elektronika">Teknik Elektronika</option>
+              <option value="Teknik Mesin">Teknik Mesin</option>
+              <option value="Administrasi Bisnis">Administrasi Bisnis</option>
+              <option value="Akuntansi">Akuntansi</option>
+            </select>
+          </div>`;
+        } else {
+          return `
+          <div>
+            <label for="${field.id}" class="block text-sm font-medium">${field.label}</label>
+            <input type="text" id="${field.id}" name="${field.id}"
+              class="mt-1 block w-full border rounded px-3 py-2" required>
+          </div>`;
         }
+      })
+      .join("");
+  },
+  getFormData(role) {
+    const form = document.getElementById("role-profile-form");
+    const data = {};
+    const requiredFields =
+      role === "student"
+        ? [
+            "nim",
+            "full_name",
+            "kelas",
+            "jurusan",
+            "program_studi",
+            "perguruan_tinggi",
+          ]
+        : [
+            "nidn",
+            "full_name",
+            "fakultas",
+            "program_studi",
+            "perguruan_tinggi",
+          ];
 
-        return data;
-    },
+    for (const field of requiredFields) {
+      const input = form[field];
+      if (!input.value.trim()) {
+        return null; // field kosong
+      }
+      data[field] = input.value.trim();
+    }
 
-    showError() {
-        document.getElementById("role-profile-error").classList.remove("hidden");
-    },
+    return data;
+  },
 
-    closeModal() {
-        const modal = document.getElementById("role-profile-modal");
-        if (modal) modal.remove();
-        document.body.style.overflow = ""; // restore scroll
-    },
+  showError() {
+    document.getElementById("role-profile-error").classList.remove("hidden");
+  },
+
+  closeModal() {
+    const modal = document.getElementById("role-profile-modal");
+    if (modal) modal.remove();
+    document.body.style.overflow = ""; // restore scroll
+  },
 };
-
 
 export default RoleProfileView;

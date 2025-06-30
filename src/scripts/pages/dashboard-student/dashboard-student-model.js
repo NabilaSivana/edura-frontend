@@ -6,7 +6,10 @@ const DashboardStudentModel = {
       const courses = await Api.getStudentCourses();
       return courses;
     } catch (error) {
-      console.error("[DashboardStudentModel] Gagal mengambil kursus:", error.message);
+      console.error(
+        "[DashboardStudentModel] Gagal mengambil kursus:",
+        error.message
+      );
       return [];
     }
   },

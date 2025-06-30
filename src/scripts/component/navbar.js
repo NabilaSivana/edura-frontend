@@ -1,5 +1,3 @@
-// src/scripts/component/navbar.js
-
 function getUserFromLocalStorage() {
   try {
     const user = localStorage.getItem("user");
@@ -18,45 +16,41 @@ function renderNavbar() {
   const isLandingPage =
     hash === "#/" || hash === "#/login" || hash === "#/register";
 
-  // NAVBAR UNTUK LANDING PAGE (belum login)
   if (!isLoggedIn || isLandingPage) {
     return `
       <nav class="bg-white shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
           <a href="#/" class="flex items-center gap-2">
-            <img src="/logo2.png" alt="logo" width="30" height="30" class="object-contain" />
+            <img src="/logo2.png" alt="logo" width="30" height="30" />
             <h1 class="text-xl font-bold text-gray-800">Edura</h1>
           </a>
-         <div class="flex gap-4">
-  <a href="#/login" class="px-4 py-2 rounded border border-gray-300 text-black hover:bg-gray-100">
-    Login
-  </a>
-  <a href="#/register" class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">
-    Daftar
-  </a>
-</div>
-
+          <div class="flex gap-4">
+            <a href="#/login" class="px-4 py-2 rounded border border-gray-300 text-black hover:bg-gray-100">Login</a>
+            <a href="#/register" class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">Daftar</a>
+          </div>
         </div>
       </nav>
     `;
   }
 
-  // NAVBAR UNTUK HALAMAN SETELAH LOGIN (dashboard)
   return `
-    <nav class="bg-white shadow-md sticky top-0 z-50">
-      <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-        <a href="#/dashboard" class="flex items-center gap-2">
-          <img src="/logo2.png" alt="logo" width="30" height="30" class="object-contain" />
-          <h1 class="text-xl font-bold text-gray-800">Edura</h1>
-        </a>
+    <nav class="bg-white shadow-md sticky top-0 z-50 w-full">
+      <div class="px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center gap-4">
+          <button id="hamburger-toggle" class="md:hidden text-xl">☰</button>
+          <a href="#/dashboard" class="flex items-center gap-2">
+          
+          </a>
+        </div>
+
         <div class="relative">
-          <button id="profile-toggle" class="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center focus:outline-none">
+          <button id="profile-toggle" class="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center">
             <i class="fa-solid fa-user"></i>
           </button>
           <div id="profile-popup" class="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg hidden z-10">
             <div class="p-4 border-b">
               <p class="text-sm font-medium text-gray-700">${
-                user?.email|| "User"
+                user?.email || "User"
               }</p>
             </div>
             <button id="logout-button" class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100">Logout</button>
@@ -88,9 +82,18 @@ async function afterRenderNavbar() {
     logoutBtn.addEventListener("click", () => {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-
       window.location.hash = "#/login";
-      window.location.reload(); // Refresh agar navbar ikut berubah
+      window.location.reload();
+    });
+  }
+
+  const hamburgerBtn = document.getElementById("hamburger-toggle");
+  if (hamburgerBtn) {
+    hamburgerBtn.addEventListener("click", () => {
+      const sidebar = document.getElementById("sidebar");
+      const overlay = document.getElementById("sidebar-overlay");
+      if (sidebar) sidebar.classList.toggle("-translate-x-full");
+      if (overlay) overlay.classList.toggle("hidden");
     });
   }
 }
@@ -100,6 +103,4 @@ export default function navbar() {
     render: renderNavbar,
     afterRender: afterRenderNavbar,
   };
-
 }
-

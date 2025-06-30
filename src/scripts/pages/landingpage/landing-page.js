@@ -5,6 +5,7 @@ const LandingPage = {
   async render() {
     return `
       <div>
+      <div id="navbar-container" class="shrink-0"></div>
         <!-- Hero Section -->
         <section class="relative z-50 pt-12 bg-white">
           <div class="py-6 px-4 sm:px-6 md:px-8 mx-auto max-w-screen-lg">
@@ -124,7 +125,10 @@ const LandingPage = {
   },
 
   async afterRender() {
-    // Tidak ada interaksi dinamis untuk saat ini
+    const navbarModule = (await import("../../component/navbar.js")).default;
+    const navbarContainer = document.getElementById("navbar-container");
+    navbarContainer.innerHTML = navbarModule().render();
+    navbarModule().afterRender(); // Tidak ada interaksi dinamis untuk saat ini
   },
 };
 

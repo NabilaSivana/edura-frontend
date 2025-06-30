@@ -1,8 +1,8 @@
 export function createCourseCard(course) {
   const card = document.createElement("div");
-  card.className = "border rounded-lg shadow-md p-5 bg-white hover:shadow-lg transition";
+  card.className =
+    "border rounded-lg shadow-md p-5 bg-white hover:shadow-lg transition";
 
-  // Header
   const header = document.createElement("div");
   header.className = "flex justify-between items-center";
 
@@ -12,7 +12,6 @@ export function createCourseCard(course) {
   img.width = 50;
   img.height = 50;
 
-  // Badge with color by level
   const level = (course.level || "").toLowerCase();
   const levelColors = {
     beginner: "bg-blue-600",
@@ -29,13 +28,24 @@ export function createCourseCard(course) {
   header.appendChild(label);
   card.appendChild(header);
 
-  // Title
   const title = document.createElement("h2");
   title.className = "mt-3 font-semibold text-md line-clamp-3 break-words";
   title.textContent = course.title || "Untitled Course";
   card.appendChild(title);
 
-  // Progress %
+  // --- Tambahkan badge verifikasi di sini ---
+  const verifyBadge = document.createElement("p");
+  verifyBadge.className = "text-xs mt-1 rounded px-2 py-1 inline-block";
+  if (course.is_verified) {
+    verifyBadge.textContent = `Terverifikasi oleh ${course.verified_by} ✅`;
+    verifyBadge.classList.add("bg-green-100", "text-green-700");
+  } else {
+    verifyBadge.textContent = "Belum terverifikasi 🕗";
+    verifyBadge.classList.add("bg-yellow-100", "text-yellow-700");
+  }
+  card.appendChild(verifyBadge);
+  // -------------------------------------------
+
   const checkpoint = course.checkpoint ?? 0;
   const progressPercent = Math.min((checkpoint / 16) * 100, 100).toFixed(2);
 
@@ -44,7 +54,6 @@ export function createCourseCard(course) {
   progressLabel.textContent = `Progress: ${progressPercent}%`;
   card.appendChild(progressLabel);
 
-  // Progress bar visual
   const progressBar = document.createElement("div");
   progressBar.className = "w-full bg-gray-200 rounded-full h-2 mt-1";
 
@@ -54,31 +63,48 @@ export function createCourseCard(course) {
   progressBar.appendChild(progress);
   card.appendChild(progressBar);
 
-  // Session info
   const totalSessions = document.createElement("p");
   totalSessions.className = "text-sm text-gray-500 mt-2";
-  totalSessions.textContent = `Chapter saat ini: ${course.total_sessions ?? 0}`;
+  totalSessions.textContent = `Total Chapter: ${course.total_sessions ?? 0}`;
   card.appendChild(totalSessions);
 
-  // Status
   const status = document.createElement("p");
   status.className = "text-xs text-gray-500 italic mt-1";
-  status.textContent = course.is_completed ? "Kursus selesai" : "Sedang berjalan";
+  status.textContent = course.is_completed
+    ? "Kursus selesai"
+    : "Sedang berjalan";
   card.appendChild(status);
 
-  // Footer
- const footer = document.createElement("div");
+  const footer = document.createElement("div");
   footer.className = "mt-3 flex justify-end";
 
   const viewButton = document.createElement("button");
-  viewButton.className = "bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 transition";
-  viewButton.textContent = course.is_completed ? "Lihat Hasil" : "Lanjut Belajar";
 
-  // ✅ Simpan ID dan navigasikan ke route tanpa ID
-  viewButton.addEventListener("click", () => {
-    sessionStorage.setItem("current_course_id", course.course_id);
-    window.location.hash = "#/course";
-  });
+  if (course.isGenerating) {
+    viewButton.innerHTML = `
+      <span class="flex items-center justify-center gap-2">
+        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+        </svg>
+        Generating...
+      </span>
+    `;
+    viewButton.disabled = true;
+    viewButton.className =
+      "bg-gray-400 text-white px-4 py-1 rounded flex items-center justify-center";
+  } else {
+    viewButton.className =
+      "bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 transition";
+    viewButton.textContent = course.is_completed
+      ? "Lihat Hasil"
+      : "Lanjut Belajar";
+
+    viewButton.addEventListener("click", () => {
+      sessionStorage.setItem("current_course_id", course.course_id);
+      window.location.hash = "#/course";
+    });
+  }
 
   footer.appendChild(viewButton);
   card.appendChild(footer);

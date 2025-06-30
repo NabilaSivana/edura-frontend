@@ -1,33 +1,29 @@
 import RegisterPresenter from "../register/register-presenter.js";
+import {
+  showLoadingScreen,
+  hideLoadingScreen,
+} from "../../component/loading-screen.js";
 
 const RegisterPage = {
   async render() {
     return `
-    <section class="w-screen h-screen flex flex-col md:flex-row font-sans overflow-hidden m-0 p-0">
-      <!-- Kiri: Welcome Section -->
-      <div class="w-full md:w-1/2 bg-[#88A9DF] flex flex-col items-center justify-center rounded-tr-[60px] md:rounded-tr-[100px] md:rounded-br-[100px] animate-fade-in-right p-6 md:p-0">
-        <h3 class="text-3xl md:text-4xl font-bold text-white mb-4">Selamat Datang!</h3>
-        <img src="maskot5.png" alt="Robot Maskot" class="w-56 h-56 object-contain mb-4" />
-        <p class="text-white text-center text-sm md:text-base mb-4">Jika sudah punya akun login untuk masuk ke dashboard</p>
-        <a href="#/login" class="px-6 py-2 border border-white text-white rounded-lg hover:bg-white hover:text-[#88A9DF] transition">Login</a>
-      </div>
+    <section class="w-screen min-h-screen font-sans m-0 p-0">
+      <!-- Mobile Layout -->
+      <div class="block md:hidden bg-[#88A9DF] min-h-screen text-white overflow-y-auto">
+        <div class="flex flex-col items-center justify-center px-6 pt-10 pb-6 text-center">
+          <h1 class="text-3xl font-extrabold mb-4">Selamat Datang!</h1>
+          <img src="maskot5.png" alt="Robot Maskot" class="w-40 mb-4" />
+          <p class="text-sm mb-4 max-w-sm">Jika sudah punya akun login untuk masuk ke dashboard</p>
+          <a href="#/login" class="border border-white text-white px-6 py-2 rounded font-semibold hover:bg-white hover:text-[#88A9DF] transition">
+            Login
+          </a>
+        </div>
 
-      <!-- Kanan: Form Section -->
-      <div class="w-full md:w-1/2 bg-white flex flex-col items-center justify-center px-6 py-12 md:rounded-tr-[4rem] md:rounded-br-[4rem] animate-slide-in-right">
-      <a href="#/" class="self-start text-[#2C2F8C] hover:underline mb-2 flex items-center gap-1">
-  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-    viewBox="0 0 24 24" stroke="currentColor">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-      d="M15 19l-7-7 7-7" />
-  </svg>
-  Kembali
-</a>
+        <div class="bg-white text-[#2C2F8C] rounded-t-[60px] px-8 py-10 animate-fade-in-up flex flex-col items-center max-w-md mx-auto">
+          <h2 class="text-2xl font-extrabold mb-1">DAFTAR</h2>
+          <p class="text-center mb-6">Silahkan isi form untuk mendaftarkan akun</p>
 
-        <div class="w-full max-w-md text-center">
-          <h2 class="text-[32px] md:text-[40px] font-extrabold text-[#2C2F8C] text-center">DAFTAR</h2>
-    <p class="text-[#2C2F8C] text-center">Buat akun Anda, silahkan isi form untuk mendaftarkan akun</p>
-
-          <form id="register-form" class="space-y-4 text-left">
+          <form id="register-form" class="w-full space-y-4">
             <div class="floating-input">
               <input type="text" id="name" placeholder=" " required />
               <label for="name">Nama Lengkap</label>
@@ -40,11 +36,57 @@ const RegisterPage = {
               <input type="password" id="password" placeholder=" " required />
               <label for="password">Password</label>
             </div>
-            <button type="submit" class="w-full bg-[#2A2A7E] text-white py-3 rounded-lg font-semibold hover:bg-[#1f1f5e] transition-all">
+            <button type="submit" class="bg-[#2A2A7E] text-white w-full py-2 rounded hover:bg-[#1f1f5e] transition">
               Daftar
             </button>
             <p id="register-message" class="text-sm mt-2 text-center"></p>
           </form>
+        </div>
+      </div>
+
+      <!-- Desktop Layout -->
+      <div class="hidden md:flex w-screen h-screen font-sans">
+        <!-- Left: Form -->
+        <div class="w-1/2 bg-white flex flex-col justify-center items-center px-12">
+          <a href="#/" class="self-start text-[#2C2F8C] hover:underline mb-4 flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 19l-7-7 7-7" />
+            </svg>
+            Kembali
+          </a>
+          <h2 class="text-[40px] font-extrabold text-[#2C2F8C] text-center">DAFTAR</h2>
+          <p class="text-[#2C2F8C] text-center mb-6">Buat akun Anda, silahkan isi form untuk mendaftarkan akun</p>
+
+          <form id="register-form" class="w-full max-w-sm flex flex-col space-y-4">
+            <div class="floating-input">
+              <input type="text" id="name" placeholder=" " required />
+              <label for="name">Nama Lengkap</label>
+            </div>
+            <div class="floating-input">
+              <input type="email" id="email" placeholder=" " required />
+              <label for="email">Email</label>
+            </div>
+            <div class="floating-input">
+              <input type="password" id="password" placeholder=" " required />
+              <label for="password">Password</label>
+            </div>
+            <button type="submit" class="bg-[#2C2F8C] text-white py-2 rounded hover:bg-[#1e1f6c] transition">
+              Daftar
+            </button>
+            <p id="register-message" class="text-sm text-red-500 mt-2"></p>
+          </form>
+        </div>
+
+        <!-- Right: Welcome -->
+        <div class="w-1/2 bg-[#88A9DF] flex flex-col justify-center items-center px-10 text-white rounded-tl-[100px] rounded-bl-[100px]">
+          <h3 class="text-[32px] font-extrabold mb-6 text-center">Selamat Datang!</h3>
+          <img src="maskot5.png" alt="Robot Maskot" class="w-60 mb-6" />
+          <p class="text-center mb-6 text-base">Jika sudah punya akun login untuk masuk ke dashboard</p>
+          <a href="#/login" class="border border-white text-white px-6 py-2 rounded hover:bg-white hover:text-[#88A9DF] font-semibold transition">
+            Login
+          </a>
         </div>
       </div>
     </section>
@@ -85,78 +127,76 @@ const RegisterPage = {
         color: #5b5bd6;
       }
 
-      /* Custom slide animations */
-      @keyframes slideInLeft {
+      @keyframes fadeInUp {
         0% {
           opacity: 0;
-          transform: translateX(-50px);
+          transform: translateY(30px);
         }
         100% {
           opacity: 1;
-          transform: translateX(0);
+          transform: translateY(0);
         }
       }
 
-      @keyframes slideInRight {
-        0% {
-          opacity: 0;
-          transform: translateX(50px);
-        }
-        100% {
-          opacity: 1;
-          transform: translateX(0);
-        }
-      }
-
-      .animate-slide-in-left {
-        animation: slideInLeft 0.8s ease-out forwards;
-      }
-
-      .animate-slide-in-right {
-        animation: slideInRight 0.8s ease-out forwards;
-      }
-
-      /* Hapus margin body agar benar-benar full screen */
-      body {
-        margin: 0;
-        padding: 0;
+      .animate-fade-in-up {
+        animation: fadeInUp 0.8s ease-out forwards;
       }
     </style>
-  `;
+    `;
   },
+
   async afterRender() {
     const footer = document.querySelector("footer");
-    if (footer) {
-      footer.style.display = "none";
-    }
+    if (footer) footer.style.display = "none";
 
-    const form = document.querySelector("#register-form");
-    const nameInput = document.querySelector("#name");
-    const emailInput = document.querySelector("#email");
-    const passwordInput = document.querySelector("#password");
-    const messageEl = document.querySelector("#register-message");
+    const formMobile = document.querySelector(".block #register-form");
+    const formDesktop = document.querySelector(".md\\:flex #register-form");
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+    // Fungsi utama submit handler
+    function handleRegisterSubmit(form) {
+      const name = form.querySelector("#name")?.value;
+      const email = form.querySelector("#email")?.value;
+      const password = form.querySelector("#password")?.value;
+      const messageEl =
+        form.querySelector("#register-message") ||
+        document.querySelector("#register-message");
 
-      const name = nameInput.value;
-      const email = emailInput.value;
-      const password = passwordInput.value;
+      showLoadingScreen("Mendaftarkan akun...");
 
       RegisterPresenter.handleRegister(
         name,
         email,
         password,
         (successMessage) => {
+          hideLoadingScreen();
           messageEl.textContent = successMessage;
-          messageEl.className = "text-green-500 mt-2";
+          messageEl.className = "text-green-500 mt-2 text-center";
+          setTimeout(() => {
+            window.location.href = "/#/login";
+          }, 1500);
         },
         (errorMessage) => {
+          hideLoadingScreen();
           messageEl.textContent = errorMessage;
-          messageEl.className = "text-red-500 mt-2";
+          messageEl.className = "text-red-500 mt-2 text-center";
         }
       );
-    });
+    }
+
+    // Tambahkan event listener untuk masing-masing form
+    if (formMobile) {
+      formMobile.addEventListener("submit", (e) => {
+        e.preventDefault();
+        handleRegisterSubmit(formMobile);
+      });
+    }
+
+    if (formDesktop) {
+      formDesktop.addEventListener("submit", (e) => {
+        e.preventDefault();
+        handleRegisterSubmit(formDesktop);
+      });
+    }
   },
 };
 
