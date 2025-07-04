@@ -1,18 +1,22 @@
 //routes/route.js
-import CoursePresenter from "../pages/course/presenter.js";
-import CreateCoursePage from "../pages/create-course/page.js";
-import DashboardPage from "../pages/dashboard-student/dashboard-page.js";
-import ForgotPasswordPage from "../pages/forgot-password/forgot-password-page.js";
+import AdminCourseModel from "../pages/admin/manage-courses/model.js";
+import AdminCoursePage from "../pages/admin/manage-courses/page.js";
+import ForgotPasswordPage from "../pages/auth/forgot-password/forgot-password-page.js";
+import LoginPage from "../pages/auth/login/login-page.js";
+import RegisterPage from "../pages/auth/register/register-page.js";
+import ResetPasswordPage from "../pages/auth/reset-password/reset-password-page.js";
+import VerifyEmailPage from "../pages/auth/verify-email/verify-email-page.js";
+import OtpPage from "../pages/auth/verify-otp/otp-page.js";
+import DashboardPage from "../pages/dashboard/dashboard-page.js";
+import ProfilePage from "../pages/dashboard/profile/profile-page.js";
 import LandingPage from "../pages/landingpage/landing-page.js";
-import LoginPage from "../pages/login/login-page.js";
-import ProfilePage from "../pages/profile/profile-page.js";
-import RegisterPage from "../pages/register/register-page.js";
-import ResetPasswordPage from "../pages/reset-password/reset-password-page.js";
+import CoursePresenter from "../pages/student/course/presenter.js";
+import CreateCoursePage from "../pages/student/create-course/page.js";
+import UpgradePage from "../pages/student/upgrade/upgrade-page.js";
+import PaymentSuccessPage from "../pages/student/upgrade/upgrade-success.js";
+import TeacherClassPage from "../pages/teacher/class/page.js";
 import CourseDetailPage from "../pages/teacher/detail-course/page.js";
-import UpgradePage from "../pages/upgrade/upgrade-page.js";
-import PaymentSuccessPage from "../pages/upgrade/upgrade-success.js";
-import VerifyEmailPage from "../pages/verify-email/verify-email-page.js";
-import OtpPage from "../pages/verify-otp/otp-page.js";
+import TeacherGradePage from "../pages/teacher/grade/page.js";
 
 const routes = {
   "/": LandingPage,
@@ -39,7 +43,7 @@ const routes = {
 
   "/course/session": {
     async render() {
-      const view = await import("../pages/course/sessions/view.js");
+      const view = await import("../pages/student/course/sessions/view.js");
       const currentSessionNumber = sessionStorage.getItem("current_session_number");
 
       if (!currentSessionNumber) {
@@ -53,7 +57,10 @@ const routes = {
   },
   "/teacher/course-detail": CourseDetailPage,
   "/payment-success": PaymentSuccessPage,
-
+  "/class": TeacherClassPage,
+  "/grade": TeacherGradePage,
+  "/manage-courses" : AdminCoursePage,
 };
 
 export default routes;
+

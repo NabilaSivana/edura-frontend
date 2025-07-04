@@ -450,6 +450,95 @@ const Api = {
     });
     return response.json();
   },
+  async getEnums() {
+    const res = await fetch(`${CONFIG.BASE_URL}/enums`);
+    if (!res.ok) throw new Error("Gagal mengambil data enum");
+    return res.json();
+  },
+
+  async checkClassCode(code) {
+    const response = await fetch(`${CONFIG.BASE_URL}/public/class-code-info?code=${encodeURIComponent(code)}`);
+    if (!response.ok) throw new Error("Kode kelas tidak ditemukan");
+    const data = await response.json();
+
+    // Debug
+    console.log("Kode kelas ditemukan:", data);
+
+    return data;
+  },
+  // === CLASS MANAGEMENT ===
+  async getTeacherClasses() {
+    const response = await fetch(`${CONFIG.BASE_URL}/teacher/classes`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    return response.json();
+  },
+
+  async createTeacherClass(data) {
+    const response = await fetch(`${CONFIG.BASE_URL}/teacher/class`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify(data),
+    });
+    return response.json();
+  },
+
+  async updateTeacherClass(classId, data) {
+    const response = await fetch(`${CONFIG.BASE_URL}/teacher/class/${classId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify(data),
+    });
+    return response.json();
+  },
+
+  async deleteTeacherClass(classId) {
+    const response = await fetch(`${CONFIG.BASE_URL}/teacher/class/${classId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    return response.json();
+  },
+
+  async getClassStudents(classId) {
+    const response = await fetch(`${CONFIG.BASE_URL}/teacher/class/${classId}/students`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    return response.json();
+  },
+
+  async removeStudentFromClass(classId, studentId) {
+    const response = await fetch(`${CONFIG.BASE_URL}/teacher/class/${classId}/students/${studentId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    return response.json();
+  },
+  async getTeacherGrades(classId) {
+    const response = await fetch(`${CONFIG.BASE_URL}/teacher/class/${classId}/grades`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Gagal mengambil data nilai untuk kelas ${classId}`);
+    }
+    return response.json();
+  }
 };
 
 export default Api;

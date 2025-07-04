@@ -8,7 +8,9 @@ const AuthGuard = {
             "/register",
             "/otp",
             "/verify-email",
-            "/forgot-password"
+            "/forgot-password",
+            "/reset-password",
+            "/verify",
         ].includes(currentRoute);
 
         return token && isAuthPage;
@@ -17,7 +19,7 @@ const AuthGuard = {
     isBlockedProtectedRoute() {
         const token = localStorage.getItem("token");
         const currentRoute = window.location.hash.replace("#", "");
-        const protectedRoutes = ["/dashboard", "/create"];
+        const protectedRoutes = ["/dashboard", "/create", "/profile", "/upgrade", "/course", "/class", "/grade"];
         return !token && protectedRoutes.includes(currentRoute);
     },
 
