@@ -1,9 +1,9 @@
-import "../../../component/loading-screen.js";
-import "../../../component/navbar.js";
+import PaymentPresenter from "./upgrade-presenter.js";
+import PaymentModel from "./upgrade-model.js";
 import createSidebar from "../../../component/sidebar.js";
 import Api from "../../../data/api.js"; // Tambahan
-import PaymentModel from "./upgrade-model.js";
-import PaymentPresenter from "./upgrade-presenter.js";
+import "../../../component/loading-screen.js";
+import "../../../component/navbar.js";
 
 const UpgradePage = {
   async render() {

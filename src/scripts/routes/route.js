@@ -1,6 +1,6 @@
 //routes/route.js
-import AdminCourseModel from "../pages/admin/manage-courses/model.js";
 import AdminCoursePage from "../pages/admin/manage-courses/page.js";
+import ManagePaymentsPage from "../pages/admin/manage-payments/page.js";
 import ForgotPasswordPage from "../pages/auth/forgot-password/forgot-password-page.js";
 import LoginPage from "../pages/auth/login/login-page.js";
 import RegisterPage from "../pages/auth/register/register-page.js";
@@ -17,6 +17,8 @@ import PaymentSuccessPage from "../pages/student/upgrade/upgrade-success.js";
 import TeacherClassPage from "../pages/teacher/class/page.js";
 import CourseDetailPage from "../pages/teacher/detail-course/page.js";
 import TeacherGradePage from "../pages/teacher/grade/page.js";
+import EnvConfigPage from "../pages/admin/env-configs/page.js";
+import MonitorPage from "../pages/admin/monitor-backend/page.js";
 
 const routes = {
   "/": LandingPage,
@@ -60,6 +62,9 @@ const routes = {
   "/class": TeacherClassPage,
   "/grade": TeacherGradePage,
   "/manage-courses" : AdminCoursePage,
+  "/manage-payments" : ManagePaymentsPage,
+  "/env-config": EnvConfigPage,
+  "/monitor-backend": MonitorPage,
 };
 
 export default routes;

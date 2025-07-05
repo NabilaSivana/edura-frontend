@@ -3,7 +3,7 @@ import {
     hideElementLoading,
     showElementLoading,
 } from "../../component/loading-screen.js";
-import WelcomeBanner from "../../component/wellcome-banner.js";
+import WelcomeBanner from "../../component/welcome-banner.js";
 import Api from "../../data/api.js";
 import DashboardStudentPresenter from "../student/dashboard/dashboard-student-presenter.js";
 import DashboardTeacherPresenter from "../teacher/dashboard/dashboard-teacher-presenter.js";
