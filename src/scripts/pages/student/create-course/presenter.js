@@ -31,7 +31,7 @@ const CreateCoursePresenter = {
     recommendBtn?.addEventListener("click", async () => {
       try {
         const result = await CreateCourseModel.getRecommendation();
-        this.renderRecommendation(result.recommendations);
+        this.renderRecommendation(result.recommendations, validateForm);
       } catch (err) {
         alert("Gagal mengambil rekomendasi.");
         console.error(err);
@@ -48,25 +48,23 @@ const CreateCoursePresenter = {
       // Spinner on button
       generateBtn.disabled = true;
       generateBtn.innerHTML = `
-    <span class="flex items-center justify-center gap-2">
-      <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-      </svg>
-      Generating...
-    </span>
-  `;
+        <span class="flex items-center justify-center gap-2">
+          <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+          </svg>
+          Generating...
+        </span>
+      `;
 
       try {
         const result = await CreateCourseModel.submitCourse({ subject, level });
 
-        // Simpan ID course ke localStorage
         localStorage.setItem("course_generating", "true");
         localStorage.setItem("generating_course_id", result.course_id);
         localStorage.setItem("generating_course_title", subject);
         localStorage.setItem("generating_course_level", level);
 
-        // Langsung redirect ke dashboard
         window.location.hash = "#/dashboard";
       } catch (err) {
         console.error("Gagal membuat course:", err);
@@ -77,7 +75,7 @@ const CreateCoursePresenter = {
     });
   },
 
-  renderRecommendation(recommendations) {
+  renderRecommendation(recommendations, validateForm) {
     const container = document.getElementById("recommendation-list");
     container.innerHTML = "";
 
@@ -99,32 +97,35 @@ const CreateCoursePresenter = {
 
       const btn = document.createElement("button");
       btn.type = "button";
-
       btn.className = `
-      border px-4 py-2 rounded shadow-sm transition text-sm
-      ${is_verified
-          ? "border-blue-500 text-blue-600 font-semibold bg-blue-50 hover:bg-blue-100"
-          : "border-gray-300 text-gray-800 bg-white hover:shadow-md"}
-    `.trim();
+        border px-4 py-2 rounded shadow-sm transition text-sm
+        ${
+          is_verified
+            ? "border-blue-500 text-blue-600 font-semibold bg-blue-50 hover:bg-blue-100"
+            : "border-gray-300 text-gray-800 bg-white hover:shadow-md"
+        }
+      `.trim();
 
       btn.innerHTML = `
-      ${cleanSubject} (${level})
-      ${is_verified
-          ? '<span class="ml-2 text-blue-600 text-xs align-middle">✔️</span>'
-          : ""
+        ${cleanSubject} (${level})
+        ${
+          is_verified
+            ? '<span class="ml-2 text-blue-600 text-xs align-middle">✔️</span>'
+            : ""
         }
-    `;
+      `;
 
       btn.addEventListener("click", () => {
         document.getElementById("subject").value = cleanSubject;
         document.getElementById("level").value = level;
+        validateForm(); // Aktifkan tombol Generate
       });
 
       wrapper.appendChild(btn);
     });
 
     container.appendChild(wrapper);
-  }
+  },
 };
 
 export default CreateCoursePresenter;

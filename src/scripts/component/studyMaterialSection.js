@@ -1,4 +1,6 @@
+// File: src/scripts/component/studyMaterialSection.js
 import { createMaterialCardItem } from "./material-card-item.js";
+import Api from "../data/api.js"; // pastikan path sesuai
 
 function renderStudyMaterialSection(courseId, course) {
   const container = document.createElement("div");
@@ -16,55 +18,50 @@ function renderStudyMaterialSection(courseId, course) {
   const MaterialList = [
     {
       name: "Notes/Chapters",
-      desc: "Read notes to prepare it",
+      desc: "Baca notes untuk mempersiapkan ini",
       icon: "/notes.png",
       path: "/notes",
       type: "notes",
     },
     {
       name: "Flashcard",
-      desc: "Flashcard to remember the concepts",
+      desc: "Flashcard untuk mengingat konsep",
       icon: "/flashcard.png",
       path: "/flashcards",
       type: "flashcard",
     },
     {
-      name: "Quiz",
-      desc: "Great way to test your knowledge",
-      icon: "/quiz.png",
-      path: "/quiz",
-      type: "quiz",
-    },
-    {
-      name: "Final Exams",
-      desc: "Final exams to test your knowledge",
+      name: "Final Exam",
+      desc: "Membantu praktik belajar anda",
       icon: "/qa.png",
-      path: "/qa",
+      path: "/final-exam",
       type: "qa",
     },
   ];
 
   const getStudyMaterial = async () => {
     try {
-      const response = await fetch("", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ courseId: courseId, studyType: "ALL" }),
-      });
-      const data = await response.json();
-      grid.innerHTML = "";
+      const courseStatus = await Api.getStudentCourseStatus(courseId);
+      const studyTypeContent = {
+        notes: { ready: true }, // catatan dianggap selalu ready
+        quiz: { ready: courseStatus.quiz_ready },
+        flashcard: { ready: courseStatus.flashcard_ready },
+        qa: { ready: courseStatus.final_exam_ready },
+      };
 
+      grid.innerHTML = "";
       MaterialList.forEach((item) => {
         const card = createMaterialCardItem({
           item,
-          studyTypeContent: data,
+          studyTypeContent,
+          courseId,
           course,
           refreshData: getStudyMaterial,
         });
         grid.appendChild(card);
       });
     } catch (err) {
-      console.error("Failed to fetch material:", err);
+      console.error("Gagal memuat study material:", err);
     }
   };
 

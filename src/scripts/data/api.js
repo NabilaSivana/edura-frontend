@@ -261,16 +261,21 @@ const Api = {
     return await response.json();
   },
   async getCourseRecommendations() {
-    const response = await fetch(`${CONFIG.BASE_URL}/student/course/recommendations`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+    const response = await fetch(
+      `${CONFIG.BASE_URL}/student/course/recommendations`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || "Gagal mengambil rekomendasi kursus");
+      throw new Error(
+        errorData.message || "Gagal mengambil rekomendasi kursus"
+      );
     }
     return await response.json();
   },
@@ -310,7 +315,137 @@ const Api = {
     }
 
     return await response.json();
-  },  //course teacher
+  },
+
+  async updateStudentCheckpoint(courseId) {
+    const response = await fetch(
+      `${CONFIG.BASE_URL}/student/courses/${courseId}/checkpoint`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    if (!response.ok) throw new Error("Gagal mengupdate checkpoint");
+    return response.json();
+  },
+
+  async getStudentCourseStatus(courseId) {
+    const res = await fetch(
+      `${CONFIG.BASE_URL}/student/courses/${courseId}/status`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    if (!res.ok) throw new Error("Gagal mengambil status kursus");
+    return res.json();
+  },
+
+  async getStudentCourseContent(courseId) {
+    const response = await fetch(
+      `${CONFIG.BASE_URL}/student/courses/${courseId}/content`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    if (!response.ok) throw new Error("Gagal mengambil konten kursus");
+    return response.json();
+  },
+
+  async generateFinalExam(courseId) {
+    const res = await fetch(`${CONFIG.BASE_URL}/final-exam/generate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ course_id: courseId }),
+    });
+    if (!res.ok) throw new Error("Gagal generate final exam");
+    return res.json();
+  },
+
+  async submitFinalExam(payload) {
+    const response = await fetch(`${CONFIG.BASE_URL}/final-exam/submit`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw new Error("Gagal submit ujian akhir");
+    return response.json();
+  },
+
+  async getFlashcard(courseId, sessionNumber) {
+    const response = await fetch(
+      `${CONFIG.BASE_URL}/student/courses/${courseId}/sessions/${sessionNumber}/flashcard`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    if (!response.ok) throw new Error("Gagal mengambil flashcard");
+    return response.json();
+  },
+
+  async generateFlashcard(courseId, sessionNumber) {
+    const res = await fetch(
+      `${CONFIG.BASE_URL}/student/courses/${courseId}/sessions/${sessionNumber}/flashcard`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    if (!res.ok) throw new Error("Gagal generate flashcard");
+    return res.json();
+  },
+
+  async getQuiz(courseId, sessionNumber) {
+    const response = await fetch(
+      `${CONFIG.BASE_URL}/student/courses/${courseId}/sessions/${sessionNumber}/quiz`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    if (!response.ok) throw new Error("Gagal mengambil kuis");
+    return response.json();
+  },
+
+  async generateQuiz(courseId, sessionNumber) {
+    const res = await fetch(
+      `${CONFIG.BASE_URL}/student/courses/${courseId}/sessions/${sessionNumber}/quiz`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    const errorBody = await res.json();
+
+    if (!res.ok) {
+      console.error("Generate quiz failed:", errorBody);
+      throw new Error(errorBody.message || "Gagal generate quiz");
+    }
+
+    return errorBody;
+  },
+  //course teacher
   async getTeacherUnverifiedCourses() {
     const res = await fetch(`${CONFIG.BASE_URL}/teacher/courses/unverified`, {
       headers: {
@@ -328,65 +463,83 @@ const Api = {
     return res.json();
   },
   async getTeacherCourseDetail(courseId) {
-    const res = await fetch(`${CONFIG.BASE_URL}/teacher/courses/${courseId}/detail`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+    const res = await fetch(
+      `${CONFIG.BASE_URL}/teacher/courses/${courseId}/detail`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
     return res.json();
   },
 
   async editTeacherCourse(courseId, payload) {
-    const res = await fetch(`${CONFIG.BASE_URL}/teacher/courses/${courseId}/edit`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify(payload),
-    });
+    const res = await fetch(
+      `${CONFIG.BASE_URL}/teacher/courses/${courseId}/edit`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
     return res.json();
   },
 
   async revertTeacherCourse(courseId) {
-    const res = await fetch(`${CONFIG.BASE_URL}/teacher/courses/${courseId}/revert`, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+    const res = await fetch(
+      `${CONFIG.BASE_URL}/teacher/courses/${courseId}/revert`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
     return res.json();
   },
 
   async editTeacherSession(courseId, sessionNumber, payload) {
-    const res = await fetch(`${CONFIG.BASE_URL}/teacher/courses/${courseId}/sessions/${sessionNumber}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify(payload),
-    });
+    const res = await fetch(
+      `${CONFIG.BASE_URL}/teacher/courses/${courseId}/sessions/${sessionNumber}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
     return res.json();
   },
 
   async deleteTeacherSession(courseId, sessionNumber) {
-    const res = await fetch(`${CONFIG.BASE_URL}/teacher/courses/${courseId}/sessions/${sessionNumber}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+    const res = await fetch(
+      `${CONFIG.BASE_URL}/teacher/courses/${courseId}/sessions/${sessionNumber}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
     return res.json();
   },
 
   async verifyTeacherCourse(courseId) {
-    const res = await fetch(`${CONFIG.BASE_URL}/teacher/courses/${courseId}/verify`, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+    const res = await fetch(
+      `${CONFIG.BASE_URL}/teacher/courses/${courseId}/verify`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
     return res.json();
   },
 
@@ -397,7 +550,9 @@ const Api = {
     if (search) url.searchParams.append("search", search);
     return fetch(url, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    }).then(res => res.ok ? res.json() : Promise.reject("Gagal ambil data siswa"));
+    }).then((res) =>
+      res.ok ? res.json() : Promise.reject("Gagal ambil data siswa")
+    );
   },
   async getAllteacher(page = 1, limit = 10, search = "") {
     const url = new URL(`${CONFIG.BASE_URL}/management/list-teacher`);
@@ -406,7 +561,9 @@ const Api = {
     if (search) url.searchParams.append("search", search);
     return fetch(url, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    }).then(res => res.ok ? res.json() : Promise.reject("Gagal ambil data guru"));
+    }).then((res) =>
+      res.ok ? res.json() : Promise.reject("Gagal ambil data guru")
+    );
   },
   async getAlladmin(page = 1, limit = 10, search = "") {
     const url = new URL(`${CONFIG.BASE_URL}/management/list-admin`);
@@ -415,7 +572,9 @@ const Api = {
     if (search) url.searchParams.append("search", search);
     return fetch(url, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    }).then(res => res.ok ? res.json() : Promise.reject("Gagal ambil data admin"));
+    }).then((res) =>
+      res.ok ? res.json() : Promise.reject("Gagal ambil data admin")
+    );
   },
   async importUsers(file) {
     const formData = new FormData();
@@ -439,14 +598,14 @@ const Api = {
 
   async getSnapToken() {
     const response = await fetch(`${CONFIG.BASE_URL}/payment/snap-token`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
     return response.json();
   },
 
   async getCurrentUser() {
     const response = await fetch(`${CONFIG.BASE_URL}/me`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
     return response.json();
   },
@@ -457,7 +616,11 @@ const Api = {
   },
 
   async checkClassCode(code) {
-    const response = await fetch(`${CONFIG.BASE_URL}/public/class-code-info?code=${encodeURIComponent(code)}`);
+    const response = await fetch(
+      `${CONFIG.BASE_URL}/public/class-code-info?code=${encodeURIComponent(
+        code
+      )}`
+    );
     if (!response.ok) throw new Error("Kode kelas tidak ditemukan");
     const data = await response.json();
 
@@ -470,7 +633,7 @@ const Api = {
   async getTeacherClasses() {
     const response = await fetch(`${CONFIG.BASE_URL}/teacher/classes`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     });
     return response.json();
@@ -478,10 +641,10 @@ const Api = {
 
   async createTeacherClass(data) {
     const response = await fetch(`${CONFIG.BASE_URL}/teacher/class`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
       body: JSON.stringify(data),
     });
@@ -489,56 +652,71 @@ const Api = {
   },
 
   async updateTeacherClass(classId, data) {
-    const response = await fetch(`${CONFIG.BASE_URL}/teacher/class/${classId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-      body: JSON.stringify(data),
-    });
+    const response = await fetch(
+      `${CONFIG.BASE_URL}/teacher/class/${classId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(data),
+      }
+    );
     return response.json();
   },
 
   async deleteTeacherClass(classId) {
-    const response = await fetch(`${CONFIG.BASE_URL}/teacher/class/${classId}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
+    const response = await fetch(
+      `${CONFIG.BASE_URL}/teacher/class/${classId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
     return response.json();
   },
 
   async getClassStudents(classId) {
-    const response = await fetch(`${CONFIG.BASE_URL}/teacher/class/${classId}/students`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
+    const response = await fetch(
+      `${CONFIG.BASE_URL}/teacher/class/${classId}/students`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
     return response.json();
   },
 
   async removeStudentFromClass(classId, studentId) {
-    const response = await fetch(`${CONFIG.BASE_URL}/teacher/class/${classId}/students/${studentId}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
+    const response = await fetch(
+      `${CONFIG.BASE_URL}/teacher/class/${classId}/students/${studentId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
     return response.json();
   },
   async getTeacherGrades(classId) {
-    const response = await fetch(`${CONFIG.BASE_URL}/teacher/class/${classId}/grades`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
+    const response = await fetch(
+      `${CONFIG.BASE_URL}/teacher/class/${classId}/grades`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
     if (!response.ok) {
       throw new Error(`Gagal mengambil data nilai untuk kelas ${classId}`);
     }
     return response.json();
-  }
+  },
 };
 
 export default Api;

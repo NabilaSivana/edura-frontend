@@ -1,4 +1,5 @@
 import { renderStudyMaterialSection } from "../../../component/studyMaterialSection.js";
+import Api from "../../../data/api.js";
 
 const CourseView = {
   render(courseData) {
@@ -11,35 +12,10 @@ const CourseView = {
     const nextSession = checkpoint + 1;
     sessionStorage.setItem("current_session_number", nextSession);
 
-    const sessionItems = sessions
-      .map((session) => {
-        const isLocked = session.session_number > nextSession;
-        return `
-        <li class="border rounded-md p-4 hover:shadow-md transition ${
-          isLocked ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-        }"
-            data-session="${session.session_number}">
-          <div class="flex justify-between items-center">
-            <div>
-              <h3 class="font-semibold text-lg">
-                Chapter ${session.session_number}: ${session.title}
-              </h3>
-            </div>
-            ${
-              isLocked
-                ? `<span class="text-gray-400 text-sm">Terkunci</span>`
-                : `<span class="text-blue-600 text-sm hover:underline">Lanjut</span>`
-            }
-          </div>
-        </li>
-      `;
-      })
-      .join("");
-
     main.innerHTML = `
       <section class="max-w-4xl mx-auto p-6">
         <a href="#/dashboard" class="text-sm text-gray-600 hover:underline">&larr; Back to Dashboard</a>
-        
+
         <!-- Banner + Progress -->
         <div class="flex items-center gap-6 border rounded p-6 mt-4">
           <img src="/knowledge.png" alt="Course Icon" class="w-28 h-28 object-contain" />
@@ -61,18 +37,13 @@ const CourseView = {
 
         <div id="study-material-section" class="mt-6"></div>
 
-        <h2 class="font-medium text-xl mt-10 mb-3">Chapter</h2>
-        <ul id="session-list" class="space-y-4">
-          ${sessionItems}
-        </ul>
-
         ${
           isEligibleForFinalExam
             ? `<div class="text-center mt-8">
-              <a href="#/course/exam" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
-                Kerjakan Final Exam
-              </a>
-            </div>`
+                <a href="#/course/exam" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+                  Kerjakan Final Exam
+                </a>
+              </div>`
             : ""
         }
       </section>
@@ -80,18 +51,35 @@ const CourseView = {
 
     // Inject Study Material
     const studySection = document.getElementById("study-material-section");
-    const studySectionEl = renderStudyMaterialSection(course.courseId, course);
+    const studySectionEl = renderStudyMaterialSection(course.id, course);
     studySection.appendChild(studySectionEl);
 
-    const listEl = document.getElementById("session-list");
-    listEl.addEventListener("click", (e) => {
-      const li = e.target.closest("li[data-session]");
-      if (!li) return;
-      const sessionNum = Number(li.dataset.session);
-      if (sessionNum > nextSession) return;
-      sessionStorage.setItem("current_session_number", sessionNum);
-      window.location.hash = "#/course/session";
-    });
+    // Render Riwayat Selesai
+    const historySection = document.createElement("div");
+    historySection.className = "mt-10";
+    const historyHeading = document.createElement("h2");
+    historyHeading.innerText = "Riwayat Selesai";
+    historyHeading.className = "font-semibold text-lg mb-3";
+    historySection.appendChild(historyHeading);
+
+    sessions
+      .filter((s) => s.session_number <= checkpoint)
+      .sort((a, b) => b.session_number - a.session_number)
+      .forEach((s) => {
+        const card = document.createElement("div");
+        card.className = "border rounded-md p-4 mb-3 shadow-sm bg-white";
+
+        card.innerHTML = `
+          <h3 class="font-semibold text-md">Chapter ${s.session_number}: ${
+          s.title
+        }</h3>
+          <p class="text-sm text-gray-600">${s.overview || ""}</p>
+        `;
+
+        historySection.appendChild(card);
+      });
+
+    main.querySelector("section").appendChild(historySection);
   },
 
   showError(message = "Terjadi kesalahan saat menampilkan konten.") {

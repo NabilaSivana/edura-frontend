@@ -19,7 +19,6 @@ const CreateCoursePage = {
               <button type="button" id="recommend-btn" class="text-blue-600 text-sm hover:underline">Perlu Rekomendasi?</button>
             </div>
             <div id="recommendation-list" class="flex flex-wrap gap-2 mb-3"></div>       
-          </div>
         </div>
 
         <div>
@@ -43,8 +42,9 @@ const CreateCoursePage = {
 
       <p id="create-error" class="text-red-600 mt-4 hidden text-center">Gagal membuat course. Coba lagi.</p>
     </section>
-  `;
+    `;
   },
+
   async afterRender() {
     CreateCoursePresenter.init();
   },

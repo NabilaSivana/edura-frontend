@@ -12,6 +12,8 @@ import ProfilePage from "../pages/dashboard/profile/profile-page.js";
 import LandingPage from "../pages/landingpage/landing-page.js";
 import CoursePresenter from "../pages/student/course/presenter.js";
 import CreateCoursePage from "../pages/student/create-course/page.js";
+import CourseNotesView from "../pages/student/course/course-notes-view.js";
+import SessionView from "../pages/student/course/sessions/view.js";
 import UpgradePage from "../pages/student/upgrade/upgrade-page.js";
 import PaymentSuccessPage from "../pages/student/upgrade/upgrade-success.js";
 import TeacherClassPage from "../pages/teacher/class/page.js";
@@ -31,6 +33,7 @@ const routes = {
   "/reset-password": ResetPasswordPage,
   "/verify-email": VerifyEmailPage,
   "/create": CreateCoursePage,
+  "/course/notes": CourseNotesView,
   "/profile": ProfilePage,
   "/upgrade": UpgradePage,
   "/course": {
@@ -40,13 +43,21 @@ const routes = {
 
       container.innerHTML = `<p class="text-gray-600 text-center">Loading kursus...</p>`;
       await CoursePresenter.init();
-    }
+    },
   },
 
   "/course/session": {
     async render() {
       const view = await import("../pages/student/course/sessions/view.js");
-      const currentSessionNumber = sessionStorage.getItem("current_session_number");
+
+      // Ambil query parameter jika ada
+      const urlParams = new URLSearchParams(window.location.hash.split("?")[1]);
+      const numberParam = urlParams.get("number");
+
+      // Gunakan query param jika ada, fallback ke sessionStorage
+      const currentSessionNumber =
+        parseInt(numberParam) ||
+        parseInt(sessionStorage.getItem("current_session_number"));
 
       if (!currentSessionNumber) {
         const container = document.querySelector("#main-content");
@@ -54,18 +65,18 @@ const routes = {
         return;
       }
 
-      await view.default.render(parseInt(currentSessionNumber));
-    }
+      await view.default.render(currentSessionNumber);
+    },
   },
+
   "/teacher/course-detail": CourseDetailPage,
   "/payment-success": PaymentSuccessPage,
   "/class": TeacherClassPage,
   "/grade": TeacherGradePage,
-  "/manage-courses" : AdminCoursePage,
-  "/manage-payments" : ManagePaymentsPage,
+  "/manage-courses": AdminCoursePage,
+  "/manage-payments": ManagePaymentsPage,
   "/env-config": EnvConfigPage,
   "/monitor-backend": MonitorPage,
 };
 
 export default routes;
-
