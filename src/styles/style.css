@@ -3,12 +3,13 @@
 @tailwind utilities;
 
 html,
-body {
+body, #app {
   margin: 0;
   padding: 0;
   height: 100%;
   /* overflow-x: hidden;
   overflow-y:hidden */
+  @apply bg-white text-gray-800 dark:bg-gray-900 dark:text-white;
 }
 * {
   box-sizing: border-box;

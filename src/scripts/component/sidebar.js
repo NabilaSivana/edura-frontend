@@ -1,17 +1,14 @@
 // component/sidebar.js
 import Api from "../data/api.js";
-
 async function createSidebar(totalCourse = 0) {
   const user = await Api.getCurrentUser();
   const plan = user?.plan || "free";
   const role = user?.role || "student";
   const currentPath = window.location.hash;
 
-  // Wrapper Utama
   const wrapper = document.createElement("div");
   wrapper.className = "relative h-full";
 
-  // Sidebar
   const sidebar = document.createElement("div");
   sidebar.id = "sidebar";
   sidebar.className = `
@@ -42,22 +39,27 @@ async function createSidebar(totalCourse = 0) {
     createLink.className = "w-full";
 
     const createBtn = document.createElement("button");
-    createBtn.className = "w-full bg-blue-600 text-white py-2 rounded disabled:opacity-50";
+    createBtn.className =
+      "w-full bg-blue-600 text-white py-2 rounded disabled:opacity-50";
     createBtn.textContent = "+ Create New";
-    if (totalCourse >= 5) {
+
+    if (plan === "free" && totalCourse >= 5) {
       createBtn.disabled = true;
-      createBtn.title = "Batas maksimum kursus tercapai. Upgrade untuk menambah.";
+      createBtn.title =
+        "Batas maksimum kursus tercapai. Upgrade untuk menambah.";
     }
 
     createLink.appendChild(createBtn);
     sidebar.appendChild(createLink);
   }
 
-  // === Menu Navigasi Berdasarkan Role
+  // === Menu Navigasi
   const menus = {
     student: [
       { name: "Dashboard", icon: "📊", path: "#/dashboard" },
-      { name: "Upgrade", icon: "🛡️", path: "#/upgrade" },
+      ...(plan === "free"
+        ? [{ name: "Upgrade", icon: "🛡️", path: "#/upgrade" }]
+        : []),
       { name: "Profile", icon: "👤", path: "#/profile" },
     ],
     teacher: [
@@ -84,7 +86,9 @@ async function createSidebar(totalCourse = 0) {
     link.href = menu.path;
     const isActive = currentPath.startsWith(menu.path);
     const item = document.createElement("div");
-    item.className = `flex gap-4 items-center p-3 hover:bg-slate-200 dark:hover:bg-gray-700 rounded-lg cursor-pointer ${isActive ? "bg-slate-200 dark:bg-gray-700" : ""}`;
+    item.className = `flex gap-4 items-center p-3 hover:bg-slate-200 dark:hover:bg-gray-700 rounded-lg cursor-pointer ${
+      isActive ? "bg-slate-200 dark:bg-gray-700" : ""
+    }`;
 
     const icon = document.createElement("span");
     icon.textContent = menu.icon;
@@ -101,10 +105,11 @@ async function createSidebar(totalCourse = 0) {
 
   sidebar.appendChild(menuWrapper);
 
-  // === Kredit untuk Student Plan Free
-  if (role === "student") {
+  // === Kredit untuk Free Plan (Student only)
+  if (role === "student" && plan === "free") {
     const creditBox = document.createElement("div");
-    creditBox.className = "border p-4 bg-slate-100 dark:bg-gray-800 rounded-lg mt-auto w-full text-sm";
+    creditBox.className =
+      "border p-4 bg-slate-100 dark:bg-gray-800 rounded-lg mt-auto w-full text-sm";
 
     const availableText = document.createElement("h2");
     availableText.className = "text-base font-semibold mb-2";
@@ -136,17 +141,24 @@ async function createSidebar(totalCourse = 0) {
   // === Theme Toggle
   const themeToggle = document.createElement("button");
   themeToggle.className = "mt-4 text-xs border px-2 py-1 rounded w-full";
-  themeToggle.textContent = document.documentElement.classList.contains("dark") ? "🌞 Light Mode" : "🌙 Dark Mode";
+  themeToggle.textContent = document.documentElement.classList.contains("dark")
+    ? "🌞 Light Mode"
+    : "🌙 Dark Mode";
   themeToggle.onclick = () => {
     document.documentElement.classList.toggle("dark");
-    themeToggle.textContent = document.documentElement.classList.contains("dark") ? "🌞 Light Mode" : "🌙 Dark Mode";
+    themeToggle.textContent = document.documentElement.classList.contains(
+      "dark"
+    )
+      ? "🌞 Light Mode"
+      : "🌙 Dark Mode";
   };
   sidebar.appendChild(themeToggle);
 
   // === Overlay (Mobile)
   const overlay = document.createElement("div");
   overlay.id = "sidebar-overlay";
-  overlay.className = "fixed inset-0 bg-black bg-opacity-30 z-40 hidden md:hidden";
+  overlay.className =
+    "fixed inset-0 bg-black bg-opacity-30 z-40 hidden md:hidden";
   overlay.addEventListener("click", () => {
     sidebar.classList.add("-translate-x-full");
     overlay.classList.add("hidden");
@@ -160,7 +172,6 @@ async function createSidebar(totalCourse = 0) {
   wrapper.appendChild(overlay);
   wrapper.appendChild(sidebar);
 
-  // === Return
   return wrapper;
 }
 

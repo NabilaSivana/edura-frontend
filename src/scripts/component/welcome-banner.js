@@ -1,7 +1,7 @@
 const WelcomeBanner = (name = "User") => {
   const wrapper = document.createElement("div");
   wrapper.className =
-    "bg-[#597EB5] text-white rounded-xl p-6 flex items-center justify-between mt-[1px]";
+    "bg-blue-600 dark:bg-blue-800 text-white rounded-xl p-6 flex items-center justify-between mt-[1px]";
 
   const textWrapper = document.createElement("div");
 

@@ -1,7 +1,7 @@
 import PaymentPresenter from "./upgrade-presenter.js";
 import PaymentModel from "./upgrade-model.js";
 import createSidebar from "../../../component/sidebar.js";
-import Api from "../../../data/api.js"; // Tambahan
+import Api from "../../../data/api.js";
 import "../../../component/loading-screen.js";
 import "../../../component/navbar.js";
 
@@ -18,8 +18,8 @@ const UpgradePage = {
           <div id="sidebar-wrapper"></div>
 
           <!-- Main Content -->
-          <main id="upgrade-content" class="flex-1 overflow-y-auto p-6 md:p-10 bg-gray-50">
-            <div class="text-gray-500 animate-pulse text-center">Memuat status akun...</div>
+          <main class="flex-1 overflow-y-auto p-6 md:p-10 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white mt-16">
+            <div id="upgrade-content" class="text-gray-500 animate-pulse text-center">Memuat status akun...</div>
           </main>
         </div>
       </div>
@@ -49,38 +49,41 @@ const UpgradePage = {
 
     const expiresAt = user.plan_expires_at
       ? new Date(user.plan_expires_at).toLocaleDateString("id-ID", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })
       : "-";
 
     const content = `
       <section class="max-w-2xl mx-auto text-center">
         <h1 class="text-3xl font-bold mb-4">Upgrade ke Premium</h1>
-        ${isPremium
-        ? `
+        ${
+          isPremium
+            ? `
           <p class="mb-4 text-green-600 font-medium">
             Selamat, akun Anda sudah <strong>Premium</strong>!
           </p>
-          <p class="mb-6 text-gray-700">
+          <p class="mb-6 text-gray-700 dark:text-gray-300">
             Masa aktif hingga: <strong>${expiresAt}</strong>
           </p>
         `
-        : `
-          <p class="mb-6 text-gray-700">
+            : `
+          <p class="mb-6 text-gray-700 dark:text-gray-300">
             Nikmati fitur eksklusif hanya dengan <strong>Rp50.000</strong>
           </p>
           <button id="upgrade-btn" class="bg-blue-600 text-white px-6 py-3 rounded text-lg shadow hover:bg-blue-700">
             Upgrade ke Premium
           </button>
         `
-      }
+        }
       </section>
     `;
 
     const mainContent = document.getElementById("upgrade-content");
-    mainContent.innerHTML = content;
+    if (mainContent) {
+      mainContent.innerHTML = content;
+    }
 
     // Aktifkan tombol upgrade jika belum premium
     if (!isPremium) {

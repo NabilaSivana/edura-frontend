@@ -16,13 +16,13 @@ const DashboardPage = {
       <div id="sidebar-wrapper"></div>
 
       <!-- Main Content -->
-      <main class="flex-1 overflow-y-auto p-6 md:p-10 bg-gray-50">
+      <main class="flex-1 overflow-y-auto p-6 md:p-10 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white mt-16">
         <div id="welcome-container" class="mb-6"></div>
 
         <section class="mt-8" id="student-section">
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-xl font-semibold">Your Study Material</h2>
-            <button id="refresh-courses" class="border border-blue-600 text-blue-600 px-3 py-1 rounded hover:bg-blue-50">
+            <button id="refresh-courses" class="border border-blue-600 text-blue-600 px-3 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-800">
               Refresh
             </button>
           </div>
@@ -37,28 +37,29 @@ const DashboardPage = {
       <div id="role-profile-modal-container"></div>
     </div>
   </div>
-<section class="mt-8" id="course-generating-section" style="display: none;">
-  <div class="text-center py-10 px-4 border border-blue-100 rounded bg-blue-50">
-    <h2 class="text-xl font-bold text-blue-700 mb-2">Sedang Membuat Course...</h2>
-    <p class="text-gray-700 mb-1">
-      Course dengan topik "<span id="generating-title" class="font-semibold"></span>"
-      (<span id="generating-level" class="text-sm font-medium text-gray-600"></span>)
-      sedang dibuat.
-    </p>
-    <p class="text-sm text-gray-500">Tunggu beberapa detik. Sistem akan otomatis memuat ulang.</p>
 
-    <div class="mt-4 flex justify-center gap-2 items-center text-blue-600">
-      <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-      </svg>
-      <span>Generating...</span>
+  <section class="mt-8" id="course-generating-section" style="display: none;">
+    <div class="text-center py-10 px-4 border border-blue-100 dark:border-blue-800 rounded bg-blue-50 dark:bg-blue-900">
+      <h2 class="text-xl font-bold text-blue-700 dark:text-blue-300 mb-2">Sedang Membuat Course...</h2>
+      <p class="text-gray-700 dark:text-gray-300 mb-1">
+        Course dengan topik "<span id="generating-title" class="font-semibold"></span>"
+        (<span id="generating-level" class="text-sm font-medium text-gray-600 dark:text-gray-400"></span>)
+        sedang dibuat.
+      </p>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Tunggu beberapa detik. Sistem akan otomatis memuat ulang.</p>
+
+      <div class="mt-4 flex justify-center gap-2 items-center text-blue-600 dark:text-blue-300">
+        <svg class="animate-spin h-5 w-5 text-blue-600 dark:text-blue-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+        </svg>
+        <span>Generating...</span>
+      </div>
+
+      <!-- Help message ditambahkan via JS jika proses terlalu lama -->
+      <div id="generation-help" class="mt-4 text-sm text-red-600 dark:text-red-400"></div>
     </div>
-
-    <!-- Help message ditambahkan via JS jika proses terlalu lama -->
-    <div id="generation-help" class="mt-4 text-sm text-red-600"></div>
-  </div>
-</section>
+  </section>
 `;
   },
 
@@ -77,8 +78,7 @@ const DashboardPage = {
     navbarModule().afterRender();
 
     DashboardPresenter.init();
-  }
-
+  },
 };
 
 export default DashboardPage;

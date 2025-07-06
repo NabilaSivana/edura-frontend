@@ -38,14 +38,13 @@ const SessionView = {
 
     if (isLocked) {
       main.innerHTML = `
-        <div class="text-center p-10 text-yellow-600">
+        <div class="text-center p-10 text-yellow-600 dark:text-yellow-400">
           Chapter ${sessionNumber} masih terkunci.<br/>Selesaikan chapter sebelumnya terlebih dahulu.
         </div>
       `;
       return;
     }
 
-    // === Parsing konten long-text / JSON ===
     let rawText = "";
     try {
       const parsed = JSON.parse(session.content || "{}");
@@ -55,24 +54,21 @@ const SessionView = {
     }
 
     const formattedContent = rawText
-      ? `<div class="prose prose-blue max-w-none whitespace-pre-line">${rawText}</div>`
-      : `<p class="text-gray-500">Konten tidak tersedia.</p>`;
+      ? `<div class="prose prose-blue dark:prose-invert max-w-none whitespace-pre-line">${rawText}</div>`
+      : `<p class="text-gray-500 dark:text-gray-400">Konten tidak tersedia.</p>`;
 
     const hasNext = sessionNumber < sessions.length;
     const hasPrev = sessionNumber > 1;
 
-    // === RENDER HTML ===
-main.innerHTML = `
-  <section class="flex flex-col lg:flex-row gap-4 relative">
-    <!-- Tombol Toggle Sidebar di Mobile -->
-    <button id="toggle-sidebar" class="lg:hidden absolute top-4 right-4 z-20 bg-white border px-2 py-1 rounded shadow text-sm">
+    main.innerHTML = `
+  <section class="flex flex-col lg:flex-row gap-4 relative bg-white dark:bg-gray-900 text-gray-800 dark:text-white min-h-screen">
+    <button id="toggle-sidebar" class="lg:hidden absolute top-4 right-4 z-20 bg-white dark:bg-gray-800 border px-2 py-1 rounded shadow text-sm">
       📘 Daftar Modul
     </button>
 
-    <!-- Konten Utama -->
     <div class="flex-1 p-6">
       <div class="mb-4">
-        <a href="#/course/notes" class="text-sm text-gray-600 hover:underline">← Back to Study Material</a>
+        <a href="#/course/notes" class="text-sm text-gray-600 dark:text-gray-300 hover:underline">← Back to Study Material</a>
       </div>
 
       <h1 class="text-2xl lg:text-3xl font-bold mb-6">${session.title}</h1>
@@ -82,12 +78,12 @@ main.innerHTML = `
       <div class="flex justify-between mt-10">
         ${
           hasPrev
-            ? `<button id="prev-btn" class="px-4 py-2 border rounded text-sm hover:bg-gray-100">← Chapter Sebelumnya</button>`
+            ? `<button id="prev-btn" class="px-4 py-2 border rounded text-sm hover:bg-gray-100 dark:hover:bg-gray-800">← Chapter Sebelumnya</button>`
             : `<span></span>`
         }
         ${
           hasNext
-            ? `<button id="next-btn" class="px-4 py-2 border rounded text-sm hover:bg-gray-100">Chapter Selanjutnya →</button>`
+            ? `<button id="next-btn" class="px-4 py-2 border rounded text-sm hover:bg-gray-100 dark:hover:bg-gray-800">Chapter Selanjutnya →</button>`
             : `<span></span>`
         }
       </div>
@@ -103,12 +99,10 @@ main.innerHTML = `
       </div>
     </div>
 
-    <!-- Sidebar Modul -->
     <aside 
       id="module-sidebar"
-      class="fixed top-0 right-0 w-72 max-w-[90%] h-full z-30 bg-white p-5 border-l shadow-lg transform translate-x-full lg:static lg:translate-x-0 transition-transform duration-300 overflow-hidden"
+      class="fixed top-0 right-0 w-72 max-w-[90%] h-full z-30 bg-white dark:bg-gray-800 p-5 border-l shadow-lg transform translate-x-full lg:static lg:translate-x-0 transition-transform duration-300 overflow-hidden"
     >
-      <!-- Header Sidebar -->
       <div class="flex justify-between items-center mb-4 lg:hidden">
         <h2 class="text-lg font-semibold">Daftar Modul</h2>
         <button id="close-sidebar" class="text-xl">✖</button>
@@ -116,21 +110,19 @@ main.innerHTML = `
 
       <div class="hidden lg:block font-semibold text-lg mb-4">Daftar Modul</div>
       
-      <!-- Progress Bar -->
       <div class="mb-4">
-        <div class="w-full bg-gray-200 h-2 rounded">
+        <div class="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded">
           <div class="h-2 rounded bg-blue-500" style="width: ${Math.round(
             (checkpoint / sessions.length) * 100
           )}%"></div>
         </div>
-        <p class="text-sm text-gray-500 mt-1">${Math.round(
+        <p class="text-sm text-gray-500 dark:text-gray-300 mt-1">${Math.round(
           (checkpoint / sessions.length) * 100
         )}% Selesai</p>
       </div>
 
-      <!-- Scrollable List -->
       <div class="overflow-y-auto pr-2" style="max-height: calc(100vh - 180px);">
-        <ul class="relative pl-5 border-l-2 border-gray-300 space-y-6">
+        <ul class="relative pl-5 border-l-2 border-gray-300 dark:border-gray-600 space-y-6">
           ${sessions
             .map((s) => {
               const isDone = s.session_number <= checkpoint;
@@ -138,13 +130,15 @@ main.innerHTML = `
               return `
                 <li class="relative">
                   <div class="absolute -left-[13px] w-4 h-4 rounded-full ${
-                    isDone ? "bg-blue-500" : "bg-gray-300"
+                    isDone ? "bg-blue-500" : "bg-gray-300 dark:bg-gray-600"
                   }"></div>
-                  <a href="#/course/session?number=${s.session_number}" class="${
+                  <a href="#/course/session?number=${
+                    s.session_number
+                  }" class="${
                 isCurrent
                   ? "font-bold text-blue-600"
                   : isDone
-                  ? "text-gray-800 hover:underline"
+                  ? "text-gray-800 dark:text-white hover:underline"
                   : "text-gray-400"
               }">
                     ${s.title}
@@ -159,8 +153,6 @@ main.innerHTML = `
   </section>
 `;
 
-
-    // === Tombol Tandai Selesai ===
     const btn = document.getElementById("complete-btn");
     if (!isAlreadyCompleted) {
       btn.addEventListener("click", async () => {
@@ -203,10 +195,8 @@ main.innerHTML = `
       });
     }
 
-    // === Navigasi Prev / Next ===
     const prevBtn = document.getElementById("prev-btn");
     const nextBtn = document.getElementById("next-btn");
-    // === Toggle Sidebar di layar kecil ===
     const toggleBtn = document.getElementById("toggle-sidebar");
     const closeBtn = document.getElementById("close-sidebar");
     const sidebar = document.getElementById("module-sidebar");

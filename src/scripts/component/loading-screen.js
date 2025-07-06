@@ -10,6 +10,11 @@ export function showLoadingScreen(message = "Loading...") {
   overlay.style.width = "100%";
   overlay.style.height = "100%";
   overlay.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+  if (document.documentElement.classList.contains("dark")) {
+    overlay.style.backgroundColor = "rgba(31, 41, 55, 0.8)"; // dark:bg-gray-800/80
+    text.style.color = "#fff";
+  }
+
   overlay.style.display = "flex";
   overlay.style.flexDirection = "column";
   overlay.style.alignItems = "center";

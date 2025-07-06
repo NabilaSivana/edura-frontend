@@ -4,7 +4,9 @@ function renderNavbar() {
 
   return `
     <nav class="bg-white shadow-md fixed top-0 left-0 w-full z-40">
-      <div class="px-4 py-3 flex justify-between items-center">
+    <div class="px-4 py-3 flex justify-between items-center bg-white dark:bg-gray-800 text-gray-800 dark:text-white">
+
+
         <div class="flex items-center gap-4">
           <button id="hamburger-toggle" class="text-xl md:hidden">☰</button>
           <a href="#/dashboard" class="flex items-center gap-2">
@@ -14,8 +16,9 @@ function renderNavbar() {
         </div>
 
         <div>
-          ${isLoggedIn
-            ? `
+          ${
+            isLoggedIn
+              ? `
               <div class="relative">
                 <button id="profile-toggle" class="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center">
                   <i class="fa-solid fa-user"></i>
@@ -28,12 +31,13 @@ function renderNavbar() {
                 </div>
               </div>
             `
-            : `
+              : `
               <div class="flex gap-4">
                 <a href="#/login" class="px-4 py-2 rounded border border-gray-300 text-black hover:bg-gray-100">Login</a>
                 <a href="#/register" class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">Daftar</a>
               </div>
-            `}
+            `
+          }
         </div>
       </div>
     </nav>

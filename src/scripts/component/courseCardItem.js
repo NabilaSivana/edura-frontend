@@ -1,7 +1,7 @@
 export function createCourseCard(course) {
   const card = document.createElement("div");
   card.className =
-    "border rounded-lg shadow-md p-5 bg-white hover:shadow-lg transition";
+    "border rounded-lg shadow-md p-5 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:shadow-lg transition";
 
   const header = document.createElement("div");
   header.className = "flex justify-between items-center";
@@ -29,33 +29,44 @@ export function createCourseCard(course) {
   card.appendChild(header);
 
   const title = document.createElement("h2");
-  title.className = "mt-3 font-semibold text-md line-clamp-3 break-words";
+  title.className =
+    "mt-3 font-semibold text-md line-clamp-3 break-words text-gray-800 dark:text-white";
   title.textContent = course.title || "Untitled Course";
   card.appendChild(title);
 
-  // --- Tambahkan badge verifikasi di sini ---
   const verifyBadge = document.createElement("p");
-  verifyBadge.className = "text-xs mt-1 rounded px-2 py-1 inline-block";
+  verifyBadge.className =
+    "text-xs mt-1 rounded px-2 py-1 inline-block dark:text-white";
   if (course.is_verified) {
     verifyBadge.textContent = `Terverifikasi oleh ${course.verified_by} ✅`;
-    verifyBadge.classList.add("bg-green-100", "text-green-700");
+    verifyBadge.classList.add(
+      "bg-green-100",
+      "dark:bg-green-900",
+      "text-green-700",
+      "dark:text-green-300"
+    );
   } else {
     verifyBadge.textContent = "Belum terverifikasi 🕗";
-    verifyBadge.classList.add("bg-yellow-100", "text-yellow-700");
+    verifyBadge.classList.add(
+      "bg-yellow-100",
+      "dark:bg-yellow-900",
+      "text-yellow-700",
+      "dark:text-yellow-300"
+    );
   }
   card.appendChild(verifyBadge);
-  // -------------------------------------------
 
   const checkpoint = course.checkpoint ?? 0;
   const progressPercent = Math.min((checkpoint / 16) * 100, 100).toFixed(2);
 
   const progressLabel = document.createElement("p");
-  progressLabel.className = "text-sm text-gray-600 mt-2";
+  progressLabel.className = "text-sm text-gray-600 dark:text-gray-300 mt-2";
   progressLabel.textContent = `Progress: ${progressPercent}%`;
   card.appendChild(progressLabel);
 
   const progressBar = document.createElement("div");
-  progressBar.className = "w-full bg-gray-200 rounded-full h-2 mt-1";
+  progressBar.className =
+    "w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-1";
 
   const progress = document.createElement("div");
   progress.className = "h-2 rounded-full bg-blue-600 transition-all";
@@ -64,12 +75,12 @@ export function createCourseCard(course) {
   card.appendChild(progressBar);
 
   const totalSessions = document.createElement("p");
-  totalSessions.className = "text-sm text-gray-500 mt-2";
+  totalSessions.className = "text-sm text-gray-500 dark:text-gray-300 mt-2";
   totalSessions.textContent = `Total Chapter: ${course.total_sessions ?? 0}`;
   card.appendChild(totalSessions);
 
   const status = document.createElement("p");
-  status.className = "text-xs text-gray-500 italic mt-1";
+  status.className = "text-xs text-gray-500 dark:text-gray-400 italic mt-1";
   status.textContent = course.is_completed
     ? "Kursus selesai"
     : "Sedang berjalan";

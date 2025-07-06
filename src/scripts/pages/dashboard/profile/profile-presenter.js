@@ -2,16 +2,15 @@ import Api from "../../../data/api.js";
 import ProfileModel from "./profile-model.js";
 
 const ProfilePresenter = {
-    async init() {
-        try {
-            const userProfile = await ProfileModel.getUserProfile();
-            this.renderBasic(userProfile);
+  async init() {
+    try {
+      const userProfile = await ProfileModel.getUserProfile();
+      this.renderBasic(userProfile);
 
-            // ⛔ Jangan panggil getRoleProfile kalau admin
-            if (userProfile.role === "admin") {
-                this.renderNoRoleProfile(); // Tambahkan pesan untuk admin
-                return;
-            }
+      if (userProfile.role === "admin") {
+        this.renderNoRoleProfile();
+        return;
+      }
 
       const roleProfile = await ProfileModel.getRoleProfile(userProfile.role);
       if (roleProfile) {
@@ -20,22 +19,28 @@ const ProfilePresenter = {
         this.renderMissingRoleProfile(userProfile.role);
       }
 
-      this.setupEditForms(userProfile, roleProfile); // ← penting ditambahkan!
+      this.setupEditForms(userProfile, roleProfile);
     } catch (error) {
       console.error("Error saat mengambil profil:", error);
       document.getElementById("profile-section").innerHTML = `
-        <p class="text-red-600">Gagal memuat data profil. Coba lagi nanti.</p>
+        <p class="text-red-600 dark:text-red-400">Gagal memuat data profil. Coba lagi nanti.</p>
       `;
     }
   },
 
   renderBasic(profile) {
     document.getElementById("basic-profile").innerHTML = `
-      <h2 class="text-xl font-bold mb-2">Profil Akun</h2>
-      <p><strong>Nama:</strong> ${profile.full_name}</p>
-      <p><strong>Email:</strong> ${profile.email}</p>
-      <p><strong>Role:</strong> ${profile.role}</p>
-      <p><strong>Verifikasi:</strong> ${
+      <h2 class="text-xl font-bold mb-2 dark:text-white">Profil Akun</h2>
+      <p class="text-gray-700 dark:text-gray-200"><strong>Nama:</strong> ${
+        profile.full_name
+      }</p>
+      <p class="text-gray-700 dark:text-gray-200"><strong>Email:</strong> ${
+        profile.email
+      }</p>
+      <p class="text-gray-700 dark:text-gray-200"><strong>Role:</strong> ${
+        profile.role
+      }</p>
+      <p class="text-gray-700 dark:text-gray-200"><strong>Verifikasi:</strong> ${
         profile.is_verified ? "✔ Terverifikasi" : "❌ Belum"
       }</p>
     `;
@@ -43,36 +48,43 @@ const ProfilePresenter = {
 
   renderRoleProfile(role, data) {
     const container = document.getElementById("role-profile");
-    container.innerHTML = `<h2 class="text-xl font-bold mb-2">Profil ${
-      role === "student" ? "Mahasiswa" : "Dosen"
-    }</h2>`;
+    container.innerHTML = `
+      <h2 class="text-xl font-bold mb-2 dark:text-white">Profil ${
+        role === "student" ? "Mahasiswa" : "Dosen"
+      }</h2>
+    `;
 
     const fields = Object.entries(data).filter(
       ([key]) => key !== "id" && key !== "user_id"
     );
+
     fields.forEach(([key, value]) => {
       const formattedKey = key
         .replace(/_/g, " ")
         .replace(/\b\w/g, (l) => l.toUpperCase());
-      container.innerHTML += `<p><strong>${formattedKey}:</strong> ${value}</p>`;
+
+      container.innerHTML += `
+        <p class="text-gray-700 dark:text-gray-200"><strong>${formattedKey}:</strong> ${value}</p>
+      `;
     });
   },
 
   renderMissingRoleProfile(role) {
     const container = document.getElementById("role-profile");
     container.innerHTML = `
-      <div class="bg-yellow-100 border border-yellow-300 text-yellow-800 p-4 rounded">
+      <div class="bg-yellow-100 dark:bg-yellow-200 border border-yellow-300 text-yellow-800 dark:text-yellow-900 p-4 rounded">
         <p>Profil ${
           role === "student" ? "mahasiswa" : "dosen"
         } belum lengkap. Silakan lengkapi terlebih dahulu.</p>
       </div>
     `;
-    },
+  },
 
-    renderNoRoleProfile() {
-        // Hanya tampilkan kotak kosong atau info khusus untuk admin
-        document.getElementById("role-profile").innerHTML = `
-      <div class="text-sm text-gray-500 italic">Tidak ada data profil lanjutan untuk akun admin.</div>
+  renderNoRoleProfile() {
+    document.getElementById("role-profile").innerHTML = `
+      <div class="text-sm text-gray-500 dark:text-gray-400 italic">
+        Tidak ada data profil lanjutan untuk akun admin.
+      </div>
     `;
   },
 
@@ -97,7 +109,7 @@ const ProfilePresenter = {
           document
             .getElementById("edit-account-overlay")
             .classList.add("hidden");
-          this.init(); // reload data
+          this.init();
         } catch (err) {
           alert("Gagal memperbarui akun: " + err.message);
         }
@@ -124,7 +136,7 @@ const ProfilePresenter = {
           await Api.updateStudentProfile(payload);
           alert("Berhasil memperbarui profil mahasiswa.");
           document.getElementById("edit-role-overlay").classList.add("hidden");
-          this.init(); // reload
+          this.init();
         } catch (err) {
           alert("Gagal memperbarui profil: " + err.message);
         }

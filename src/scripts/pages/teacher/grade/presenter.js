@@ -1,129 +1,169 @@
+// FILE: presenter.js
 import TeacherGradeModel from "./model.js";
 
 const TeacherGradePresenter = {
-    async init() {
-        this.loadClassList();
-    },
+  studentsData: [],
+  filteredData: [],
+  sortAsc: true,
 
-    async loadClassList() {
-        const wrapper = document.getElementById("class-list");
-        const loading = document.getElementById("class-loading");
+  async init() {
+    this.loadClassList();
+  },
 
-        try {
-            const classes = await TeacherGradeModel.getClasses();
-            loading.style.display = "none";
+  async loadClassList() {
+    const wrapper = document.getElementById("class-list");
+    const loading = document.getElementById("class-loading");
 
-            if (!classes.length) {
-                wrapper.innerHTML = `<p class="text-gray-500">Belum ada kelas.</p>`;
-                return;
-            }
+    try {
+      const classes = await TeacherGradeModel.getClasses();
+      loading.style.display = "none";
 
-            classes.forEach((cls) => {
-                const card = this.createClassCard(cls);
-                wrapper.appendChild(card);
-            });
-        } catch (err) {
-            wrapper.innerHTML = `<p class="text-red-600">Gagal memuat kelas.</p>`;
-            console.error(err);
-        }
-    },
+      if (!classes.length) {
+        wrapper.innerHTML = `<p class="text-gray-500 dark:text-gray-400">Belum ada kelas.</p>`;
+        return;
+      }
 
-    createClassCard(cls) {
+      classes.forEach((cls) => {
         const card = document.createElement("div");
         card.className =
-            "bg-white p-4 rounded-lg border shadow hover:bg-gray-50 cursor-pointer transition";
+          "bg-white dark:bg-gray-800 p-4 rounded-lg border dark:border-gray-700 shadow-md hover:shadow-lg hover:scale-[1.01] transition cursor-pointer";
         card.innerHTML = `
-      <h3 class="text-lg font-semibold mb-1">${cls.name}</h3>
-      <p class="text-sm text-gray-500">Kode: <span class="font-mono">${cls.class_code}</span></p>
-      <p class="text-sm text-gray-500">${cls.program_studi} • ${cls.perguruan_tinggi}</p>
-    `;
-
-        card.addEventListener("click", () => this.showGradesModal(cls.id, cls.name));
-        return card;
-    },
-
-    async showGradesModal(classId, className) {
-        const modal = document.createElement("div");
-        modal.id = "grade-modal";
-        modal.className =
-            "fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center";
-
-        const contentWrapper = document.createElement("div");
-        contentWrapper.className =
-            "bg-white rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-xl";
-
-        contentWrapper.innerHTML = `<h2 class="text-xl font-bold mb-4">Siswa Kelas: ${className}</h2>
-      <div id="grade-table-container">
-        <p class="text-blue-600">Memuat data siswa...</p>
-      </div>
-      <div class="text-right mt-6">
-        <button id="close-grade-modal" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-          Tutup
-        </button>
-      </div>`;
-
-        modal.appendChild(contentWrapper);
-        document.body.appendChild(modal);
-        document.body.style.overflow = "hidden";
-
-        document.getElementById("close-grade-modal").addEventListener("click", () => {
-            modal.remove();
-            document.body.style.overflow = "";
-        });
-
-        try {
-            const students = await TeacherGradeModel.getStudentsByClass(classId);
-            const table = this.createClassGradeTable(students);
-            const container = document.getElementById("grade-table-container");
-            container.innerHTML = "";
-            container.appendChild(table);
-        } catch (error) {
-            document.getElementById("grade-table-container").innerHTML =
-                `<p class="text-red-600">Gagal mengambil data siswa.</p>`;
-        }
-    },
-
-    createClassGradeTable(students = []) {
-        const wrapper = document.createElement("div");
-        wrapper.className = "overflow-x-auto mt-4";
-
-        if (students.length === 0) {
-            wrapper.innerHTML = `<p class="text-sm text-gray-500">Belum ada siswa tergabung dalam kelas ini.</p>`;
-            return wrapper;
-        }
-
-        let tableHTML = `
-      <table class="min-w-full border text-sm">
-        <thead class="bg-gray-100">
-          <tr>
-            <th class="px-4 py-2 border">No</th>
-            <th class="px-4 py-2 border">Nama</th>
-            <th class="px-4 py-2 border">NIM</th>
-            <th class="px-4 py-2 border">Program Studi</th>
-            <th class="px-4 py-2 border">Jurusan</th>
-            <th class="px-4 py-2 border">Perguruan Tinggi</th>
-          </tr>
-        </thead>
-        <tbody>
-    `;
-
-        students.forEach((student, index) => {
-            tableHTML += `
-          <tr>
-            <td class="border px-4 py-2">${index + 1}</td>
-            <td class="border px-4 py-2">${student.full_name}</td>
-            <td class="border px-4 py-2">${student.nim}</td>
-            <td class="border px-4 py-2">${student.program_studi}</td>
-            <td class="border px-4 py-2">${student.jurusan}</td>
-            <td class="border px-4 py-2">${student.perguruan_tinggi}</td>
-          </tr>
+          <h3 class="text-lg font-semibold mb-1">${cls.name}</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Kode: <span class="font-mono">${cls.class_code}</span></p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">${cls.program_studi} • ${cls.perguruan_tinggi}</p>
+          <button class="mt-3 text-sm text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">View</button>
         `;
+
+        card.addEventListener("click", () =>
+          this.loadClassDetail(cls.id, cls.name)
+        );
+        wrapper.appendChild(card);
+      });
+    } catch (err) {
+      wrapper.innerHTML = `<p class="text-red-600">Gagal memuat kelas.</p>`;
+      console.error(err);
+    }
+  },
+
+  async loadClassDetail(classId, className) {
+    document.getElementById("grade-class-list-section").classList.add("hidden");
+    document.getElementById("grade-detail-section").classList.remove("hidden");
+
+    document.getElementById("back-to-class-list").onclick = () => {
+      document.getElementById("grade-detail-section").classList.add("hidden");
+      document
+        .getElementById("grade-class-list-section")
+        .classList.remove("hidden");
+    };
+
+    try {
+      const students = await TeacherGradeModel.getStudentsByClass(classId);
+      this.studentsData = students;
+      this.filteredData = [...students];
+      this.renderTable();
+
+      document
+        .getElementById("student-search")
+        .addEventListener("input", (e) => {
+          const keyword = e.target.value.toLowerCase();
+          this.filteredData = this.studentsData.filter(
+            (s) =>
+              s.full_name.toLowerCase().includes(keyword) ||
+              s.nim.toLowerCase().includes(keyword)
+          );
+          this.renderTable();
         });
 
-        tableHTML += `</tbody></table>`;
-        wrapper.innerHTML = tableHTML;
-        return wrapper;
-    },
+      document.getElementById("sort-by-name").addEventListener("click", () => {
+        this.sortAsc = !this.sortAsc;
+        this.filteredData.sort((a, b) => {
+          return this.sortAsc
+            ? a.full_name.localeCompare(b.full_name)
+            : b.full_name.localeCompare(a.full_name);
+        });
+        this.renderTable();
+      });
+
+      document.getElementById("download-csv").addEventListener("click", () => {
+        this.exportCSV(`${className}_grades.csv`, this.filteredData);
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  },
+
+  renderTable() {
+    const tbody = document.getElementById("grade-detail-body");
+    tbody.innerHTML = "";
+
+    if (!this.filteredData.length) {
+      tbody.innerHTML = `<tr><td class="px-4 py-2 border text-center" colspan="8">Tidak ada data ditemukan.</td></tr>`;
+      return;
+    }
+
+    this.filteredData.forEach((s, i) => {
+      const tr = document.createElement("tr");
+      tr.className =
+        "odd:bg-white even:bg-gray-50 dark:odd:bg-gray-800 dark:even:bg-gray-900";
+
+      const courseList =
+        s.courses?.map((c) => `<div>${c.title}</div>`).join("") || "-";
+      const gradeList =
+        s.courses?.map((c) => `<div>${c.grade ?? "-"}</div>`).join("") || "-";
+
+      tr.innerHTML = `
+        <td class="border px-4 py-2">${s.full_name}</td>
+        <td class="border px-4 py-2">${s.nim}</td>
+        <td class="border px-4 py-2">${s.program_studi}</td>
+        <td class="border px-4 py-2">${s.jurusan}</td>
+        <td class="border px-4 py-2">${s.perguruan_tinggi}</td>
+        <td class="border px-4 py-2 italic text-gray-400" colspan="2">Belum mengikuti course</td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+  },
+
+  exportCSV(filename, data) {
+    if (!data || data.length === 0) return;
+
+    const headers = [
+      "Nama",
+      "NIM",
+      "Program Studi",
+      "Jurusan",
+      "Perguruan Tinggi",
+      "Course",
+      "Nilai",
+    ];
+    const csvRows = [headers.join(",")];
+
+    data.forEach((s, i) => {
+      const courseList = s.courses?.map((c) => c.title).join(" | ") || "-";
+      const gradeList =
+        s.courses?.map((c) => c.grade ?? "-").join(" | ") || "-";
+      const row = [
+        i + 1,
+        s.full_name,
+        s.nim,
+        s.program_studi,
+        s.jurusan,
+        s.perguruan_tinggi,
+        courseList,
+        gradeList,
+      ];
+      csvRows.push(row.map((v) => `"${v}"`).join(","));
+    });
+
+    const csv = csvRows.join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  },
 };
 
 export default TeacherGradePresenter;

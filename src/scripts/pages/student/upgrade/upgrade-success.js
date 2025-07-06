@@ -3,7 +3,9 @@ const PaymentSuccessPage = {
     return `
       <div class="flex w-screen h-screen bg-gray-50">
         <div id="sidebar-container"></div>
-        <main class="flex-1 flex items-center justify-center">
+       <main class="flex-1 overflow-y-auto p-6 md:p-10 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white">
+
+
           <div class="bg-white shadow-lg rounded-2xl p-8 max-w-md text-center">
             <div class="text-green-600 mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -21,7 +23,7 @@ const PaymentSuccessPage = {
 
   async afterRender() {
     document.getElementById("sidebar-container").appendChild(createSidebar());
-  }
+  },
 };
 
 export default PaymentSuccessPage;
