@@ -155,6 +155,7 @@ const Api = {
     return result.profile; // ambil hanya object profile saja
   },
 
+  //API STUDENTS
   async getStudentCourses() {
     const response = await fetch(`${CONFIG.BASE_URL}/student/courses`, {
       method: "GET",
@@ -357,95 +358,47 @@ const Api = {
     if (!response.ok) throw new Error("Gagal mengambil konten kursus");
     return response.json();
   },
-
-  async generateFinalExam(courseId) {
-    const res = await fetch(`${CONFIG.BASE_URL}/final-exam/generate`, {
-      method: "POST",
+  async getFlashcards(course_id) {
+    const res = await fetch(`${CONFIG.BASE_URL}/student/flashcard?course_id=${course_id}`, {
+      method: 'GET',
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
-      body: JSON.stringify({ course_id: courseId }),
     });
-    if (!res.ok) throw new Error("Gagal generate final exam");
     return res.json();
   },
 
-  async submitFinalExam(payload) {
-    const response = await fetch(`${CONFIG.BASE_URL}/final-exam/submit`, {
-      method: "POST",
+  async generateFlashcards(courseId) {
+    const res = await fetch(`${CONFIG.BASE_URL}/student/flashcards/generate`, {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        course_id: courseId,
+      }),
     });
-    if (!response.ok) throw new Error("Gagal submit ujian akhir");
-    return response.json();
-  },
 
-  async getFlashcard(courseId, sessionNumber) {
-    const response = await fetch(
-      `${CONFIG.BASE_URL}/student/courses/${courseId}/sessions/${sessionNumber}/flashcard`,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-    if (!response.ok) throw new Error("Gagal mengambil flashcard");
-    return response.json();
-  },
-
-  async generateFlashcard(courseId, sessionNumber) {
-    const res = await fetch(
-      `${CONFIG.BASE_URL}/student/courses/${courseId}/sessions/${sessionNumber}/flashcard`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-    if (!res.ok) throw new Error("Gagal generate flashcard");
     return res.json();
+  }
+  ,
+  async getQuiz() {
+
   },
+  async generateQuiz() {
 
-  async getQuiz(courseId, sessionNumber) {
-    const response = await fetch(
-      `${CONFIG.BASE_URL}/student/courses/${courseId}/sessions/${sessionNumber}/quiz`,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-    if (!response.ok) throw new Error("Gagal mengambil kuis");
-    return response.json();
   },
+  async getFinalExams() {
 
-  async generateQuiz(courseId, sessionNumber) {
-    const res = await fetch(
-      `${CONFIG.BASE_URL}/student/courses/${courseId}/sessions/${sessionNumber}/quiz`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-
-    const errorBody = await res.json();
-
-    if (!res.ok) {
-      console.error("Generate quiz failed:", errorBody);
-      throw new Error(errorBody.message || "Gagal generate quiz");
-    }
-
-    return errorBody;
   },
-  //course teacher
+  async generateFinalExams() {
+
+  },
+  async submitFinalExams() {
+
+  },
+  //API TEACHERS
   async getTeacherUnverifiedCourses() {
     const res = await fetch(`${CONFIG.BASE_URL}/teacher/courses/unverified`, {
       headers: {
@@ -610,18 +563,26 @@ const Api = {
     return response.json();
   },
   async getEnums() {
-    const res = await fetch(`${CONFIG.BASE_URL}/enums`);
+    const res = await fetch(`${CONFIG.BASE_URL}/enums`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
     if (!res.ok) throw new Error("Gagal mengambil data enum");
     return res.json();
   },
 
   async checkClassCode(code) {
     const response = await fetch(
-      `${CONFIG.BASE_URL}/public/class-code-info?code=${encodeURIComponent(
-        code
-      )}`
+      `${CONFIG.BASE_URL}/public/class-code-info?code=${encodeURIComponent(code)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
     );
     if (!response.ok) throw new Error("Kode kelas tidak ditemukan");
+
     const data = await response.json();
 
     // Debug
@@ -704,18 +665,23 @@ const Api = {
     return response.json();
   },
   async getTeacherGrades(classId) {
-    const response = await fetch(
-      `${CONFIG.BASE_URL}/teacher/class/${classId}/grades`,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-    if (!response.ok) {
-      throw new Error(`Gagal mengambil data nilai untuk kelas ${classId}`);
+    const res = await fetch(`${CONFIG.BASE_URL}/teacher/class/${classId}/grades`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (!res.ok) throw new Error("Gagal mengambil data nilai siswa");
+
+    const text = await res.text();
+    if (!text) return []; // Tidak ada data
+
+    try {
+      return JSON.parse(text);
+    } catch (err) {
+      console.error("[API] Response bukan JSON valid:", text);
+      throw new Error("Response bukan JSON valid");
     }
-    return response.json();
   },
   async getAllCourses() {
     const res = await fetch(`${CONFIG.BASE_URL}/management/list-course`, {

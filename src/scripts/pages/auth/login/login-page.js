@@ -1,8 +1,8 @@
-import LoginPresenter from "../login/login-presenter.js";
 import {
-  showLoadingScreen,
   hideLoadingScreen,
+  showLoadingScreen,
 } from "../../../component/loading-screen.js";
+import LoginPresenter from "../login/login-presenter.js";
 
 const LoginPage = {
   async render() {
@@ -89,9 +89,10 @@ const LoginPage = {
         <input type="email" id="email-mobile" placeholder=" " required />
         <label for="email-mobile">Email</label>
       </div>
-      <div class="floating-input">
+      <div class="floating-input relative">
         <input type="password" id="password-mobile" placeholder=" " required />
         <label for="password-mobile">Password</label>
+        <i class="fas fa-eye absolute right-3 top-3 cursor-pointer text-gray-500" id="toggle-password-mobile"></i>
       </div>
       <div class="flex justify-end">
         <a href="#/forgot-password" class="text-sm hover:underline">Lupa Password?</a>
@@ -124,9 +125,10 @@ const LoginPage = {
         <input type="email" id="email-desktop" placeholder=" " required />
         <label for="email-desktop">Email</label>
       </div>
-      <div class="floating-input">
+      <div class="floating-input relative">
         <input type="password" id="password-desktop" placeholder=" " required />
         <label for="password-desktop">Password</label>
+        <i class="fas fa-eye absolute right-3 top-3 cursor-pointer text-gray-500" id="toggle-password-desktop"></i>
       </div>
       <div class="flex justify-end">
         <a href="#/forgot-password" class="text-xs text-[#2C2F8C] hover:underline">Lupa Password?</a>
@@ -151,6 +153,23 @@ const LoginPage = {
   `;
   },
   async afterRender() {
+    const setupTogglePassword = (inputId, toggleId) => {
+      const input = document.querySelector(inputId);
+      const toggle = document.querySelector(toggleId);
+
+      if (!input || !toggle) return;
+
+      toggle.addEventListener("click", () => {
+        const isPassword = input.type === "password";
+        input.type = isPassword ? "text" : "password";
+        toggle.classList.toggle("fa-eye");
+        toggle.classList.toggle("fa-eye-slash");
+      });
+    };
+
+    setupTogglePassword("#password-mobile", "#toggle-password-mobile");
+    setupTogglePassword("#password-desktop", "#toggle-password-desktop");
+
     const footer = document.querySelector("footer");
     if (footer) footer.style.display = "none";
 

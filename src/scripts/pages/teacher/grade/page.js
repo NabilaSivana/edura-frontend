@@ -46,12 +46,16 @@ const TeacherGradePage = {
                           </div>
                         </div>
                       </th>
-                      <th class="px-4 py-2 border">NIM</th>
-                      <th class="px-4 py-2 border">Program Studi</th>
-                      <th class="px-4 py-2 border">Jurusan</th>
-                      <th class="px-4 py-2 border">Perguruan Tinggi</th>
-                      <th class="px-4 py-2 border">Course</th>
-                      <th class="px-4 py-2 border">Nilai</th>
+                      <th class="px-4 py-2">NIM</th>
+                      <th class="px-4 py-2">Program Studi</th>
+                      <th class="px-4 py-2">Jurusan</th>
+                      <th class="px-4 py-2">Perguruan Tinggi</th>
+                      <th class="px-4 py-2">Course</th>
+                      <th class="px-4 py-2">Nilai</th>
+                      <th class="px-4 py-2">Progress</th> <!-- ✅ Baru -->
+                      <th class="px-4 py-2">Status</th>   <!-- ✅ Baru -->
+                      <th class="px-4 py-2">Aksi</th>
+
                     </tr>
                   </thead>
                   <tbody id="grade-detail-body">
