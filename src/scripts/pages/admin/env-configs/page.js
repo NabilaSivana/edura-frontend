@@ -9,17 +9,8 @@ const EnvConfigPage = {
         <div class="flex flex-1 overflow-hidden">
           <div id="sidebar-wrapper"></div>
           <main class="flex-1 overflow-y-auto p-6 md:p-10 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white">
-
-            <h1 class="text-xl font-bold mb-6">Konfigurasi Environment (.env)</h1>
-            <form id="env-config-form" class="space-y-6 max-w-3xl">
-              <div id="env-fields" class="space-y-4"></div>
-              <button
-                type="submit"
-                id="save-button"
-                class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
-                disabled
-              >Simpan Perubahan</button>
-            </form>
+            <h1 class="text-2xl font-bold mb-6">Konfigurasi Environment (.env)</h1>
+            <div id="env-config-container" class="space-y-6 max-w-4xl"></div>
           </main>
         </div>
       </div>

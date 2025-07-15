@@ -1,218 +1,195 @@
 import EnvConfigModel from "./model.js";
 
+const SENSITIVE_KEYS = [
+    "MAIL_PASS", "JWT_SECRET", "SUPABASE_SERVICE_ROLE_KEY",
+    "MIDTRANS_SERVER_KEY", "MIDTRANS_CLIENT_KEY"
+];
+
 const EnvConfigPresenter = {
-    originalEnv: {},
-    currentEnv: {},
-
     async init() {
-        await this.fetchEnv();
-        this.renderEnvFields();
-        this.handleSave();
+        try {
+            this.envList = await EnvConfigModel.fetchEnv();
+            this.render();
+        } catch (err) {
+            alert("Gagal memuat konfigurasi: " + err.message);
+        }
     },
 
-    async fetchEnv() {
-        const env = await EnvConfigModel.fetchEnv();
-        this.originalEnv = { ...env };
-        this.currentEnv = { ...env };
-    },
-
-    renderEnvFields() {
-        const container = document.getElementById("env-fields");
+    render() {
+        const container = document.getElementById("env-config-container");
         container.innerHTML = "";
 
-        Object.entries(this.currentEnv).forEach(([key, value]) => {
-            if (key === "GEMINI_API_KEYS" || key === "MAIL_SECURE") return;
+        this.envList.forEach((item) => {
+            const isArray = Array.isArray(item.value);
+            const isBoolean = typeof item.value === "boolean";
+            const isSensitive = SENSITIVE_KEYS.includes(item.key);
 
             const wrapper = document.createElement("div");
-            wrapper.dataset.key = key;
-            wrapper.className = "mb-4";
+            wrapper.className = "border border-gray-300 rounded p-4 bg-white dark:bg-gray-800";
+            wrapper.innerHTML = `
+        <div class="flex justify-between items-center mb-2">
+          <h2 class="font-semibold text-lg">${item.key}</h2>
+          <button class="text-red-500 hover:underline" data-delete="${item.key}">Hapus</button>
+        </div>
+        <div class="space-y-2" id="field-${item.key}"></div>
+        <button class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700" data-save="${item.key}">Simpan</button>
+      `;
 
-            const label = document.createElement("label");
-            label.textContent = key;
-            label.className = "block font-medium mb-1";
+            container.appendChild(wrapper);
+            const field = wrapper.querySelector(`#field-${item.key}`);
 
-            const inputWrapper = document.createElement("div");
-            inputWrapper.className = "relative";
+            // GEMINI_API_KEYS (Array Special Case)
+            if (isArray && item.key === "GEMINI_API_KEYS") {
+                const list = document.createElement("div");
+                list.className = "flex flex-col gap-2";
+                list.id = `sortable-${item.key}`;
+                field.appendChild(list);
 
-            const input = document.createElement("input");
-            input.className = "w-full border rounded px-3 py-2 pr-10";
-            input.dataset.envKey = key;
-            input.value = value ?? "";
-            input.type = typeof value === "string" && value.length > 0 && value.includes("*") ? "password" : "text";
+                item.value.forEach((val, idx) => {
+                    const row = document.createElement("div");
+                    row.className = "flex items-center gap-2 bg-gray-100 dark:bg-gray-700 p-2 rounded";
 
-            // Tombol mata untuk field sensitif
-            const sensitive = ["MAIL_PASS", "JWT_SECRET", "SUPABASE_SERVICE_ROLE_KEY", "MIDTRANS_SERVER_KEY"];
-            if (sensitive.includes(key)) {
-                const toggle = document.createElement("button");
-                toggle.type = "button";
-                toggle.className = "absolute right-2 top-2 text-gray-500";
-                toggle.innerHTML = '<i class="fa-solid fa-eye"></i>';
-
-                toggle.addEventListener("click", () => {
-                    input.type = input.type === "password" ? "text" : "password";
-                    toggle.innerHTML = input.type === "password"
-                        ? '<i class="fa-solid fa-eye"></i>'
-                        : '<i class="fa-solid fa-eye-slash"></i>';
+                    row.innerHTML = `
+            <i class="fa-solid fa-bars cursor-move text-gray-500"></i>
+            <input type="text" class="flex-1 border rounded px-2 py-1 bg-white text-black" value="${val.api_key || ''}" data-idx="${idx}" />
+            <label class="text-sm">
+              <input type="radio" name="active-gemini" value="${val.api_key}" ${val.set_active ? 'checked' : ''}/> Aktif
+            </label>
+            <button class="text-sm text-red-600" data-remove="${idx}"><i class="fa-solid fa-trash"></i></button>
+          `;
+                    list.appendChild(row);
                 });
 
-                inputWrapper.appendChild(toggle);
+                const addBtn = document.createElement("button");
+                addBtn.textContent = "+ Tambah API Key";
+                addBtn.className = "text-blue-600 text-sm hover:underline";
+                addBtn.onclick = () => {
+                    item.value.push({ api_key: "", set_active: false });
+                    this.render(); // rerender semua
+                };
+                field.appendChild(addBtn);
+
+                // Aktifkan drag-and-drop
+                new Sortable(list, {
+                    animation: 150,
+                    onEnd: (evt) => {
+                        const moved = item.value.splice(evt.oldIndex, 1)[0];
+                        item.value.splice(evt.newIndex, 0, moved);
+                        this.render(); // re-render to preserve order
+                    }
+                });
+
+                // Listener aktivasi API Key
+                field.querySelectorAll("input[type=radio]").forEach(radio => {
+                    radio.addEventListener("change", async () => {
+                        await EnvConfigModel.setActiveGeminiKey(radio.value);
+                        alert("Gemini API key diaktifkan");
+                        await this.init();
+                    });
+                });
+
+                // Listener hapus row
+                field.querySelectorAll("button[data-remove]").forEach(btn => {
+                    const idx = Number(btn.dataset.remove);
+                    btn.addEventListener("click", () => {
+                        if (confirm(`Hapus API Key "${item.value[idx].api_key}"?`)) {
+                            item.value.splice(idx, 1);
+                            this.render();
+                        }
+                    });
+                });
+
+            } else if (item.key === "MAIL_SECURE" || isBoolean) {
+                const select = document.createElement("select");
+                select.className = "border px-3 py-2 rounded bg-white text-black";
+                ["true", "false", "null"].forEach(opt => {
+                    const option = document.createElement("option");
+                    option.value = opt;
+                    option.textContent = opt;
+                    if (String(item.value) === opt) option.selected = true;
+                    select.appendChild(option);
+                });
+                field.appendChild(select);
+
+            } else {
+                const inputWrapper = document.createElement("div");
+                inputWrapper.className = "relative";
+
+                const input = document.createElement("input");
+                input.type = isSensitive ? "password" : "text";
+                input.value = item.value ?? "";
+                input.className = "w-full border px-3 py-2 rounded bg-white text-black pr-10";
+                inputWrapper.appendChild(input);
+
+                if (isSensitive) {
+                    const toggleBtn = document.createElement("button");
+                    toggleBtn.type = "button";
+                    toggleBtn.className = "absolute top-2 right-3 text-gray-500 text-sm";
+                    toggleBtn.innerHTML = '<i class="fa-solid fa-eye"></i>';
+
+                    toggleBtn.addEventListener("click", () => {
+                        const hidden = input.type === "password";
+                        input.type = hidden ? "text" : "password";
+                        toggleBtn.innerHTML = hidden
+                            ? '<i class="fa-solid fa-eye-slash"></i>'
+                            : '<i class="fa-solid fa-eye"></i>';
+                    });
+
+                    inputWrapper.appendChild(toggleBtn);
+                }
+
+                field.appendChild(inputWrapper);
             }
 
-            input.addEventListener("input", () => this.checkChanges());
-            inputWrapper.appendChild(input);
+            // Save Button
+            wrapper.querySelector(`[data-save="${item.key}"]`).addEventListener("click", async () => {
+                let newValue;
 
-            wrapper.appendChild(label);
-            wrapper.appendChild(inputWrapper);
-            container.appendChild(wrapper);
-        });
+                if (Array.isArray(item.value) && item.key === "GEMINI_API_KEYS") {
+                    const rows = wrapper.querySelectorAll("input[type=text]");
+                    const active = wrapper.querySelector("input[type=radio]:checked")?.value;
+                    newValue = Array.from(rows).map((inp) => ({
+                        api_key: inp.value.trim(),
+                        set_active: inp.value.trim() === active,
+                    }));
 
-        this.renderMailSecureDropdown();
-        this.renderGeminiKeyList();
-    },
+                    const keysOnly = newValue.map(k => k.api_key);
+                    const hasDuplicate = keysOnly.length !== new Set(keysOnly).size;
 
-    renderMailSecureDropdown() {
-        const key = "MAIL_SECURE";
+                    if (hasDuplicate) {
+                        alert("Terdapat duplicate API Key!");
+                        return;
+                    }
 
-        const wrapper = document.createElement("div");
-        wrapper.className = "mb-4";
-        wrapper.dataset.key = key;
+                } else if (item.key === "MAIL_SECURE") {
+                    const val = wrapper.querySelector("select").value;
+                    newValue = val === "null" ? null : val === "true";
+                } else {
+                    newValue = wrapper.querySelector("input")?.value ?? "";
+                }
 
-        const label = document.createElement("label");
-        label.textContent = key;
-        label.className = "block font-medium mb-1";
-
-        const select = document.createElement("select");
-        select.className = "w-full border rounded px-3 py-2";
-
-        ["null", "true", "false"].forEach(val => {
-            const opt = document.createElement("option");
-            opt.value = val;
-            opt.textContent = val;
-            if (String(this.currentEnv[key]) === val) opt.selected = true;
-            select.appendChild(opt);
-        });
-
-        select.addEventListener("change", () => {
-            this.currentEnv[key] = select.value === "null" ? null : select.value;
-            this.checkChanges();
-        });
-
-        wrapper.appendChild(label);
-        wrapper.appendChild(select);
-        document.getElementById("env-fields").appendChild(wrapper);
-    },
-
-    renderGeminiKeyList() {
-        const wrapper = document.createElement("div");
-        wrapper.className = "mb-4";
-
-        const label = document.createElement("label");
-        label.textContent = "GEMINI_API_KEYS";
-        label.className = "block font-medium mb-1";
-
-        const list = document.createElement("div");
-        list.id = "gemini-key-list";
-        list.className = "flex flex-col gap-2 mb-2";
-
-        const keys = Array.isArray(this.currentEnv.GEMINI_API_KEYS)
-            ? [...this.currentEnv.GEMINI_API_KEYS]
-            : [];
-
-        keys.forEach((key, idx) => {
-            const row = document.createElement("div");
-            row.className = "flex gap-2 items-center";
-
-            const input = document.createElement("input");
-            input.type = "text";
-            input.className = "w-full border rounded px-3 py-2";
-            input.value = key;
-
-            input.addEventListener("input", () => {
-                keys[idx] = input.value;
-                this.currentEnv.GEMINI_API_KEYS = keys;
-                this.checkChanges();
+                try {
+                    await EnvConfigModel.updateEnvByKey(item.key, newValue);
+                    alert("Berhasil disimpan");
+                    await this.init();
+                } catch (err) {
+                    alert("Gagal menyimpan: " + err.message);
+                }
             });
 
-            const removeBtn = document.createElement("button");
-            removeBtn.type = "button";
-            removeBtn.innerHTML = '<i class="fa-solid fa-trash text-red-500"></i>';
-            removeBtn.addEventListener("click", () => {
-                keys.splice(idx, 1);
-                this.currentEnv.GEMINI_API_KEYS = keys;
-                this.renderEnvFields();
-                this.checkChanges();
+            // Delete
+            wrapper.querySelector(`[data-delete="${item.key}"]`).addEventListener("click", async () => {
+                if (!confirm(`Hapus konfigurasi ${item.key}?`)) return;
+                try {
+                    await EnvConfigModel.deleteEnvByKey(item.key);
+                    alert("Berhasil dihapus");
+                    await this.init();
+                } catch (err) {
+                    alert("Gagal menghapus: " + err.message);
+                }
             });
-
-            row.appendChild(input);
-            row.appendChild(removeBtn);
-            list.appendChild(row);
         });
-
-        const addBtn = document.createElement("button");
-        addBtn.type = "button";
-        addBtn.className = "text-blue-600 text-sm mt-2";
-        addBtn.textContent = "+ Tambah API Key";
-        addBtn.addEventListener("click", () => {
-            keys.push("");
-            this.currentEnv.GEMINI_API_KEYS = keys;
-            this.renderEnvFields();
-            this.checkChanges();
-        });
-
-        wrapper.appendChild(label);
-        wrapper.appendChild(list);
-        wrapper.appendChild(addBtn);
-
-        document.getElementById("env-fields").appendChild(wrapper);
-    },
-
-    handleSave() {
-        const form = document.getElementById("env-config-form");
-        const btn = document.getElementById("save-button");
-        btn.disabled = true;
-
-        form.addEventListener("submit", async (e) => {
-            e.preventDefault();
-
-            const payload = {};
-
-            document.querySelectorAll("[data-env-key]").forEach((input) => {
-                const key = input.dataset.envKey;
-                payload[key] = input.value ?? "";
-            });
-
-            payload.MAIL_SECURE = this.currentEnv.MAIL_SECURE;
-            payload.GEMINI_API_KEYS = this.currentEnv.GEMINI_API_KEYS;
-
-            try {
-                await EnvConfigModel.updateEnv(payload);
-                alert("Konfigurasi berhasil diperbarui.");
-                location.reload();
-            } catch (err) {
-                alert("Gagal menyimpan perubahan: " + err.message);
-            }
-        });
-    },
-
-    checkChanges() {
-        const btn = document.getElementById("save-button");
-        let changed = false;
-
-        document.querySelectorAll("[data-env-key]").forEach((input) => {
-            const key = input.dataset.envKey;
-            if (input.value !== String(this.originalEnv[key])) changed = true;
-        });
-
-        if (JSON.stringify(this.currentEnv.GEMINI_API_KEYS) !== JSON.stringify(this.originalEnv.GEMINI_API_KEYS)) {
-            changed = true;
-        }
-
-        if (this.currentEnv.MAIL_SECURE !== this.originalEnv.MAIL_SECURE) {
-            changed = true;
-        }
-
-        btn.disabled = !changed;
-    },
+    }
 };
 
 export default EnvConfigPresenter;
