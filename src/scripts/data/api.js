@@ -700,9 +700,15 @@ const Api = {
       throw new Error("Response bukan JSON valid");
     }
   },
-
-
-
+  async getAllCourses() {
+    const res = await fetch(`${CONFIG.BASE_URL}/management/list-course`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    if (!res.ok) throw new Error("Gagal mengambil data kursus");
+    return res.json(); // Pastikan ini mengembalikan array
+  },
 };
 
 export default Api;

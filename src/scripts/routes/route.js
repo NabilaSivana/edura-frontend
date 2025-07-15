@@ -21,6 +21,7 @@ import CourseDetailPage from "../pages/teacher/detail-course/page.js";
 import TeacherGradePage from "../pages/teacher/grade/page.js";
 import EnvConfigPage from "../pages/admin/env-configs/page.js";
 import MonitorPage from "../pages/admin/monitor-backend/page.js";
+import ManageUserPage from "../pages/admin/manage-user/manage-user-page.js";
 
 const routes = {
   "/": LandingPage,
@@ -36,6 +37,7 @@ const routes = {
   "/course/notes": CourseNotesView,
   "/profile": ProfilePage,
   "/upgrade": UpgradePage,
+  "/manage-users": ManageUserPage,
   "/course": {
     async render() {
       const container = document.querySelector("#main-content");
@@ -75,6 +77,7 @@ const routes = {
   "/grade": TeacherGradePage,
   "/manage-courses": AdminCoursePage,
   "/manage-payments": ManagePaymentsPage,
+
   "/env-config": EnvConfigPage,
   "/monitor-backend": MonitorPage,
 };
