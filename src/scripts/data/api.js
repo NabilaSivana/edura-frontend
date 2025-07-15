@@ -1,7 +1,16 @@
 // File: src/scripts/data/api.js
 import CONFIG from "../config.js";
+import Cache from "./cache.js";
 
 const Api = {
+  // Tambahkan fungsi ini jika ingin membersihkan cache
+  clearCache(keys = []) {
+    if (Array.isArray(keys) && keys.length > 0) {
+      keys.forEach(Cache.clear);
+    } else {
+      Cache.clear();
+    }
+  },
   async login({ email, password }) {
     const response = await fetch(`${CONFIG.BASE_URL}/login`, {
       method: "POST",
@@ -132,8 +141,10 @@ const Api = {
 
     return response.json();
   },
-
   async getProfile() {
+    const cached = Cache.get("profile");
+    if (cached) return cached;
+
     const response = await fetch(`${CONFIG.BASE_URL}/profile`, {
       method: "GET",
       headers: {
@@ -152,11 +163,15 @@ const Api = {
     }
 
     const result = await response.json();
-    return result.profile; // ambil hanya object profile saja
+    Cache.set("profile", result.profile);
+    return result.profile;
   },
-
   //API STUDENTS
+
   async getStudentCourses() {
+    const cached = Cache.get("student_courses");
+    if (cached) return cached;
+
     const response = await fetch(`${CONFIG.BASE_URL}/student/courses`, {
       method: "GET",
       headers: {
@@ -166,18 +181,12 @@ const Api = {
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        return []; // Jika belum punya kursus
-      }
+      if (response.status === 404) return [];
       throw new Error("Gagal mengambil data kursus");
     }
 
     const data = await response.json();
-
-    // Pastikan data dalam bentuk array
     const courses = Array.isArray(data) ? data : [];
-
-    // Tambahkan field is_verified dan verified_by jika perlu
     const enrichedCourses = courses.map((course) => {
       const isVerified = course.is_verified === true;
       return {
@@ -187,6 +196,7 @@ const Api = {
       };
     });
 
+    Cache.set("student_courses", enrichedCourses);
     return enrichedCourses;
   },
   async getStudentProfile() {
@@ -557,10 +567,17 @@ const Api = {
   },
 
   async getCurrentUser() {
+    const cached = Cache.get("me");
+    if (cached) return cached;
+
     const response = await fetch(`${CONFIG.BASE_URL}/me`, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
-    return response.json();
+
+    if (!response.ok) throw new Error("Gagal mengambil data user");
+    const result = await response.json();
+    Cache.set("me", result);
+    return result;
   },
   async getEnums() {
     const res = await fetch(`${CONFIG.BASE_URL}/enums`, {
@@ -683,6 +700,8 @@ const Api = {
       throw new Error("Response bukan JSON valid");
     }
   },
+
+
 
 };
 

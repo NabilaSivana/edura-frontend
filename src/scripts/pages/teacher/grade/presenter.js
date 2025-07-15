@@ -154,18 +154,19 @@ const TeacherGradePresenter = {
             }
 
             // Tampilkan tombol notifikasi jika course belum selesai
-            if (!c.is_completed) {
+            if ((c.score_final_exam === null || c.score_final_exam === undefined) && s.email) {
               actions.push(`
-              <button 
-                class="notify-student-btn text-green-600 hover:text-green-800"
-                title="Kirim Notifikasi"
-                data-email="${s.email}"
-                data-name="${s.full_name}"
-                data-course="${c.course_id}">
-                <i class="fa fa-envelope"></i>
-              </button>
-            `);
+    <button 
+      class="notify-student-btn text-green-600 hover:text-green-800"
+      title="Kirim Notifikasi"
+      data-email="${s.email}"
+      data-name="${s.full_name}"
+      data-course="${c.course_id}">
+      <i class="fa fa-envelope"></i>
+    </button>
+  `);
             }
+
 
             return `<div class="flex gap-2">${actions.join("")}</div>`;
           })
