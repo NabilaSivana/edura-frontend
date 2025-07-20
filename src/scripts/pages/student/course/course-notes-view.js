@@ -1,5 +1,3 @@
-import Api from "../../../data/api.js";
-
 const CourseNotesView = {
   render() {
     const courseId = sessionStorage.getItem("current_course_id");
@@ -16,9 +14,9 @@ const CourseNotesView = {
           <img src="/knowledge.png" alt="Course Icon" class="w-28 h-28 object-contain" />
           <div class="flex-1">
             <h1 class="text-2xl font-bold mb-2">${course.title}</h1>
-            <p class="text-gray-600 dark:text-gray-300 mb-3 whitespace-pre-line">${
-              course.description
-            }</p>
+            <p class="text-gray-600 dark:text-gray-300 mb-3 whitespace-pre-line">
+              ${course.description}
+            </p>
             <div>
               <div class="w-full bg-purple-100 dark:bg-purple-900 h-2 rounded-full mb-1">
                 <div class="h-2 bg-purple-600 rounded-full" style="width: ${
@@ -35,7 +33,6 @@ const CourseNotesView = {
         <h2 class="text-lg font-semibold mt-8 mb-4">Notes/Chapter</h2>
         <div id="chapter-list" class="space-y-4"></div>
       </section>
-
     `;
 
     const list = document.getElementById("chapter-list");
@@ -86,28 +83,17 @@ const CourseNotesView = {
         });
       }
 
+      // Tombol "Generate Quiz" (hanya navigasi, tidak pakai API)
       if (done) {
         const quizBtn = document.createElement("button");
         quizBtn.innerText = "Generate Quiz";
         quizBtn.className =
           "mt-3 text-sm px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600";
-        quizBtn.disabled = false;
 
-        quizBtn.addEventListener("click", async (e) => {
+        quizBtn.addEventListener("click", (e) => {
           e.stopPropagation();
-          quizBtn.disabled = true;
-          quizBtn.innerText = "Generating...";
-
-          try {
-            await Api.generateQuiz(courseId, s.session_number);
-            alert("Quiz berhasil digenerate.");
-          } catch (err) {
-            alert("Gagal generate quiz.");
-            console.error(err);
-          } finally {
-            quizBtn.disabled = false;
-            quizBtn.innerText = "Generate Quiz";
-          }
+          sessionStorage.setItem("current_quiz_session", s.session_number);
+          window.location.hash = `#/course/quiz?course_id=${course.id}&session_number=${s.session_number}`;
         });
 
         item.appendChild(quizBtn);

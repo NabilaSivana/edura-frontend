@@ -98,21 +98,51 @@ async function handleMaterialAction({
     } else if (type === "qa") {
       if (action === "generate") {
         button.textContent = "Generating...";
-        const response = await Api.generateFinalExam(courseId);
 
-        if (
-          response.status === "success" ||
-          response.status === "generating" ||
-          response.message?.includes("berhasil")
-        ) {
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-          await refreshData();
-          showToastNotification("Final exam berhasil digenerate!", "success");
-        } else {
-          throw new Error(response.message || "Gagal generate final exam");
+        try {
+          const response = await Api.generateFinalExam(courseId);
+
+          console.log("Generate Final Exam Response:", response);
+
+          // Perbaiki kondisi pengecekan response
+          // Sesuaikan dengan response: {"message":"Proses generate final exam dimulai.","status":"generating"}
+          if (
+            response.status === "generating" ||
+            response.status === "success" ||
+            response.message?.includes("dimulai") ||
+            response.message?.includes("berhasil") ||
+            response.message?.includes("final exam")
+          ) {
+            showToastNotification(
+              "Final exam generation started successfully!",
+              "success"
+            );
+
+            // Tunggu beberapa detik untuk proses generate selesai
+            console.log("Waiting for generation to complete...");
+            await new Promise((resolve) => setTimeout(resolve, 3000));
+
+            // Refresh data berkali-kali untuk memastikan status terupdate
+            console.log("Refreshing data...");
+            await refreshData();
+
+            // Tunggu lagi dan refresh sekali lagi jika perlu
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await refreshData();
+          } else {
+            throw new Error(
+              response.message || "Failed to generate final exam"
+            );
+          }
+        } catch (error) {
+          console.error("Final exam generation error:", error);
+          showToastNotification(
+            error.message || "Failed to generate final exam",
+            "error"
+          );
+          button.textContent = originalText;
         }
       } else if (action === "start") {
-        // Perbaikan: gunakan URL yang konsisten dengan routing
         window.location.hash = `#/course/final-exam?course_id=${courseId}`;
       }
     }

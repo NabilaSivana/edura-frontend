@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 html,
-body, #app {
+body,
+#app {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -34,4 +35,21 @@ body {
       font-size: 14px !important;
     }
   }
+}
+.perspective {
+  perspective: 1000px;
+}
+
+.card {
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+.card-inner,
+.card-back {
+  backface-visibility: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 1rem;
 }

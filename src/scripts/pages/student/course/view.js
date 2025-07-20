@@ -39,15 +39,7 @@ const CourseView = {
 
         <div id="study-material-section" class="mt-6"></div>
 
-        ${
-          isEligibleForFinalExam
-            ? `<div class="text-center mt-8">
-                <a href="#/course/exam" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
-                  Kerjakan Final Exam
-                </a>
-              </div>`
-            : ""
-        }
+  
       </section>
     `;
 

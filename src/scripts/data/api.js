@@ -1,16 +1,7 @@
 // File: src/scripts/data/api.js
 import CONFIG from "../config.js";
-import Cache from "./cache.js";
 
 const Api = {
-  // Tambahkan fungsi ini jika ingin membersihkan cache
-  clearCache(keys = []) {
-    if (Array.isArray(keys) && keys.length > 0) {
-      keys.forEach(Cache.clear);
-    } else {
-      Cache.clear();
-    }
-  },
   async login({ email, password }) {
     const response = await fetch(`${CONFIG.BASE_URL}/login`, {
       method: "POST",
@@ -141,10 +132,8 @@ const Api = {
 
     return response.json();
   },
-  async getProfile() {
-    const cached = Cache.get("profile");
-    if (cached) return cached;
 
+  async getProfile() {
     const response = await fetch(`${CONFIG.BASE_URL}/profile`, {
       method: "GET",
       headers: {
@@ -163,15 +152,11 @@ const Api = {
     }
 
     const result = await response.json();
-    Cache.set("profile", result.profile);
-    return result.profile;
+    return result.profile; // ambil hanya object profile saja
   },
+
   //API STUDENTS
-
   async getStudentCourses() {
-    const cached = Cache.get("student_courses");
-    if (cached) return cached;
-
     const response = await fetch(`${CONFIG.BASE_URL}/student/courses`, {
       method: "GET",
       headers: {
@@ -181,12 +166,18 @@ const Api = {
     });
 
     if (!response.ok) {
-      if (response.status === 404) return [];
+      if (response.status === 404) {
+        return []; // Jika belum punya kursus
+      }
       throw new Error("Gagal mengambil data kursus");
     }
 
     const data = await response.json();
+
+    // Pastikan data dalam bentuk array
     const courses = Array.isArray(data) ? data : [];
+
+    // Tambahkan field is_verified dan verified_by jika perlu
     const enrichedCourses = courses.map((course) => {
       const isVerified = course.is_verified === true;
       return {
@@ -196,7 +187,6 @@ const Api = {
       };
     });
 
-    Cache.set("student_courses", enrichedCourses);
     return enrichedCourses;
   },
   async getStudentProfile() {
@@ -368,67 +358,39 @@ const Api = {
     if (!response.ok) throw new Error("Gagal mengambil konten kursus");
     return response.json();
   },
+  // Perbaikan untuk api.js - sesuaikan dengan backend API
   async getFlashcards(course_id) {
-    const res = await fetch(`${CONFIG.BASE_URL}/student/flashcard?course_id=${course_id}`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+    const res = await fetch(
+      `${CONFIG.BASE_URL}/student/flashcards?course_id=${course_id}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
     return res.json();
   },
 
   async generateFlashcards(courseId) {
     const res = await fetch(`${CONFIG.BASE_URL}/student/flashcards/generate`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
       body: JSON.stringify({
         course_id: courseId,
       }),
     });
-
-    return res.json();
-  }
-  ,
-  async getQuiz() {
-
-  },
-  async generateQuiz() {
-
-  },
-  async getFinalExams() {
-
-  },
-  async generateFinalExams() {
-
-  },
-  async submitFinalExams() {
-
-  },
-  //API TEACHERS
-  async getTeacherUnverifiedCourses() {
-    const res = await fetch(`${CONFIG.BASE_URL}/teacher/courses/unverified`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
     return res.json();
   },
-  async getTeacherVerifiedCourses() {
-    const res = await fetch(`${CONFIG.BASE_URL}/teacher/courses/verified`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-    return res.json();
-  },
-  async getTeacherCourseDetail(courseId) {
+
+  async getFlashcardStatus(course_id) {
     const res = await fetch(
-      `${CONFIG.BASE_URL}/teacher/courses/${courseId}/detail`,
+      `${CONFIG.BASE_URL}/student/flashcards/status?course_id=${course_id}`,
       {
+        method: "GET",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -437,47 +399,237 @@ const Api = {
     return res.json();
   },
 
-  async editTeacherCourse(courseId, payload) {
-    const res = await fetch(
-      `${CONFIG.BASE_URL}/teacher/courses/${courseId}/edit`,
-      {
-        method: "PUT",
+  async getQuiz(courseId, sessionNumber) {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `${CONFIG.BASE_URL}/student/quiz?course_id=${courseId}&session_number=${sessionNumber}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Gagal mengambil quiz: " + response.statusText);
+      }
+
+      const result = await response.json();
+      return result.data?.questions || [];
+    } catch (error) {
+      console.error("Error getQuiz:", error);
+      throw new Error("Gagal mengambil quiz: " + error.message);
+    }
+  },
+
+  async generateQuiz(courseId, sessionNumber) {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${CONFIG.BASE_URL}/student/quiz/generate`, {
+        method: "POST",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify(payload),
-      }
-    );
-    return res.json();
-  },
+        body: JSON.stringify({
+          course_id: courseId,
+          session_number: sessionNumber,
+        }),
+      });
 
-  async revertTeacherCourse(courseId) {
-    const res = await fetch(
-      `${CONFIG.BASE_URL}/teacher/courses/${courseId}/revert`,
-      {
+      if (!response.ok) {
+        throw new Error("Gagal generate quiz: " + response.statusText);
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error("Error generateQuiz:", error);
+      throw new Error("Gagal generate quiz: " + error.message);
+    }
+  },
+  async submitQuiz(courseId, sessionNumber, answers, retry = true) {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${CONFIG.BASE_URL}/student/quiz/submit`, {
         method: "PUT",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-    return res.json();
-  },
-
-  async editTeacherSession(courseId, sessionNumber, payload) {
-    const res = await fetch(
-      `${CONFIG.BASE_URL}/teacher/courses/${courseId}/sessions/${sessionNumber}`,
-      {
-        method: "PUT",
-        headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          course_id: courseId,
+          session_number: sessionNumber,
+          answers,
+          retry,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error("Gagal submit quiz: " + response.statusText);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Error submitQuiz:", error);
+      throw new Error("Gagal submit quiz: " + error.message);
+    }
+  },
+
+  async getQuizResult(courseId, sessionNumber) {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `${CONFIG.BASE_URL}/student/quiz/result?course_id=${courseId}&session_number=${sessionNumber}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Gagal mengambil hasil quiz: " + response.statusText);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Error getQuizResult:", error);
+      throw new Error("Gagal mengambil hasil quiz: " + error.message);
+    }
+  },
+  // Final Exam APIs
+
+  async checkFinalExam(courseId) {
+    const token = localStorage.getItem("token");
+    const response = await fetch(
+      `${CONFIG.BASE_URL}/student/final-exam?course_id=${courseId}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       }
     );
-    return res.json();
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Gagal mengecek final exam");
+    }
+
+    return response.json();
+  },
+  // Ambil soal final exam (jika sudah tersedia)
+  async getFinalExam(courseId) {
+    const token = localStorage.getItem("token");
+    const response = await fetch(
+      `${CONFIG.BASE_URL}/student/final-exam/?course_id=${courseId}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Gagal mengambil soal final exam");
+    }
+
+    return response.json(); // berisi array soal atau format tertentu
+  },
+
+  async generateFinalExam(courseId) {
+    const token = localStorage.getItem("token");
+    const response = await fetch(
+      `${CONFIG.BASE_URL}/student/final-exam/generate`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ course_id: courseId }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Gagal generate final exam");
+    }
+
+    return response.json();
+  },
+
+  async checkFinalExamStatus(courseId) {
+    const token = localStorage.getItem("token");
+    const response = await fetch(
+      `${CONFIG.BASE_URL}/student/final-exam/status?course_id=${courseId}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Gagal mengecek status final exam");
+    }
+
+    return response.json();
+  },
+
+  async submitFinalExam(courseId, answers) {
+    const token = localStorage.getItem("token");
+    const response = await fetch(
+      `${CONFIG.BASE_URL}/student/final-exam/submit`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          course_id: courseId,
+          answers: answers,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Gagal submit final exam");
+    }
+
+    return response.json();
+  },
+
+  async getFinalExamResult(courseId) {
+    const token = localStorage.getItem("token");
+    const response = await fetch(
+      `${CONFIG.BASE_URL}/student/final-exam/result?course_id=${courseId}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Gagal mengambil hasil final exam");
+    }
+
+    return response.json();
   },
 
   async deleteTeacherSession(courseId, sessionNumber) {
@@ -567,17 +719,10 @@ const Api = {
   },
 
   async getCurrentUser() {
-    const cached = Cache.get("me");
-    if (cached) return cached;
-
     const response = await fetch(`${CONFIG.BASE_URL}/me`, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
-
-    if (!response.ok) throw new Error("Gagal mengambil data user");
-    const result = await response.json();
-    Cache.set("me", result);
-    return result;
+    return response.json();
   },
   async getEnums() {
     const res = await fetch(`${CONFIG.BASE_URL}/enums`, {
@@ -591,7 +736,9 @@ const Api = {
 
   async checkClassCode(code) {
     const response = await fetch(
-      `${CONFIG.BASE_URL}/public/class-code-info?code=${encodeURIComponent(code)}`,
+      `${CONFIG.BASE_URL}/public/class-code-info?code=${encodeURIComponent(
+        code
+      )}`,
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -682,11 +829,14 @@ const Api = {
     return response.json();
   },
   async getTeacherGrades(classId) {
-    const res = await fetch(`${CONFIG.BASE_URL}/teacher/class/${classId}/grades`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+    const res = await fetch(
+      `${CONFIG.BASE_URL}/teacher/class/${classId}/grades`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
 
     if (!res.ok) throw new Error("Gagal mengambil data nilai siswa");
 

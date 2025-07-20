@@ -57,9 +57,8 @@ async function createSidebar(totalCourse = 0) {
   const menus = {
     student: [
       { name: "Dashboard", icon: "📊", path: "#/dashboard" },
-      ...(plan === "free"
-        ? [{ name: "Upgrade", icon: "🛡️", path: "#/upgrade" }]
-        : []),
+      { name: "Upgrade", icon: "🛡️", path: "#/upgrade" },
+
       { name: "Profile", icon: "👤", path: "#/profile" },
     ],
     teacher: [
@@ -106,34 +105,50 @@ async function createSidebar(totalCourse = 0) {
   sidebar.appendChild(menuWrapper);
 
   // === Kredit untuk Free Plan (Student only)
-  if (role === "student" && plan === "free") {
+  if (role === "student") {
     const creditBox = document.createElement("div");
     creditBox.className =
       "border p-4 bg-slate-100 dark:bg-gray-800 rounded-lg mt-auto w-full text-sm";
 
-    const availableText = document.createElement("h2");
-    availableText.className = "text-base font-semibold mb-2";
-    availableText.textContent = `Available Credits: ${5 - totalCourse}`;
-    creditBox.appendChild(availableText);
+    const title = document.createElement("h2");
+    title.className = "text-base font-semibold mb-2";
+    title.textContent = "Available Credits";
+    creditBox.appendChild(title);
 
-    const progressBar = document.createElement("div");
-    progressBar.className = "w-full h-2 bg-gray-300 rounded mb-2";
-    const progress = document.createElement("div");
-    progress.className = "h-full bg-blue-500 rounded";
-    progress.style.width = `${(totalCourse / 5) * 100}%`;
-    progressBar.appendChild(progress);
-    creditBox.appendChild(progressBar);
+    if (plan === "free") {
+      const availableText = document.createElement("p");
+      availableText.textContent = `${5 - totalCourse} credits left`;
+      creditBox.appendChild(availableText);
 
-    const usedText = document.createElement("h2");
-    usedText.className = "text-sm";
-    usedText.textContent = `${totalCourse} Out of 5 Credits Used`;
-    creditBox.appendChild(usedText);
+      const progressBar = document.createElement("div");
+      progressBar.className = "w-full h-2 bg-gray-300 rounded mb-2";
+      const progress = document.createElement("div");
+      progress.className = "h-full bg-blue-500 rounded";
+      progress.style.width = `${(totalCourse / 5) * 100}%`;
+      progressBar.appendChild(progress);
+      creditBox.appendChild(progressBar);
 
-    const upgradeLink = document.createElement("a");
-    upgradeLink.href = "#/upgrade";
-    upgradeLink.className = "text-blue-600 text-xs mt-2 inline-block";
-    upgradeLink.textContent = "Upgrade to create more";
-    creditBox.appendChild(upgradeLink);
+      const usedText = document.createElement("p");
+      usedText.className = "text-sm";
+      usedText.textContent = `${totalCourse} of 5 used`;
+      creditBox.appendChild(usedText);
+
+      const upgradeLink = document.createElement("a");
+      upgradeLink.href = "#/upgrade";
+      upgradeLink.className = "text-blue-600 text-xs mt-2 inline-block";
+      upgradeLink.textContent = "Upgrade to unlock unlimited courses";
+      creditBox.appendChild(upgradeLink);
+    } else {
+      const unlimitedText = document.createElement("p");
+      unlimitedText.className = "text-green-600 font-semibold";
+      unlimitedText.textContent = "Unlimited 🚀";
+      creditBox.appendChild(unlimitedText);
+
+      const note = document.createElement("p");
+      note.className = "text-xs text-gray-500 mt-1";
+      note.textContent = "You can create as many courses as you like!";
+      creditBox.appendChild(note);
+    }
 
     sidebar.appendChild(creditBox);
   }
