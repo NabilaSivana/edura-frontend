@@ -12,6 +12,7 @@ body,
   overflow-y:hidden */
   @apply bg-white text-gray-800 dark:bg-gray-900 dark:text-white;
 }
+
 * {
   box-sizing: border-box;
 }
@@ -22,14 +23,17 @@ body {
 
 .noteClass {
   line-height: 2;
+
   h1 {
     font-size: 30px !important;
     font-weight: 700 !important;
   }
+
   h2 {
     font-size: 20px;
     font-weight: 700;
   }
+
   code {
     h1 {
       font-size: 14px !important;
@@ -52,4 +56,28 @@ body {
   top: 0;
   left: 0;
   border-radius: 1rem;
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  border-radius: 8px;
+  color: white;
+  z-index: 1000;
+  font-weight: 500;
+}
+
+.toast-info {
+  background-color: #3b82f6;
+}
+
+.toast-success {
+  background-color: #16a34a;
+}
+
+.toast-error {
+  background-color: #dc2626;
 }

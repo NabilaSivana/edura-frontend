@@ -15,7 +15,7 @@ import CreateCoursePage from "../pages/student/create-course/page.js";
 import CourseNotesView from "../pages/student/course/course-notes-view.js";
 import SessionView from "../pages/student/course/sessions/view.js";
 import UpgradePage from "../pages/student/upgrade/upgrade-page.js";
-import PaymentSuccessPage from "../pages/student/upgrade/upgrade-success.js";
+import PaymentStatusPage from "../pages/student/upgrade/upgrade-success.js";
 import TeacherClassPage from "../pages/teacher/class/page.js";
 import CourseDetailPage from "../pages/teacher/detail-course/page.js";
 import TeacherGradePage from "../pages/teacher/grade/page.js";
@@ -255,7 +255,7 @@ const routes = {
   },
 
   "/teacher/course-detail": CourseDetailPage,
-  "/payment-success": PaymentSuccessPage,
+  "/status": PaymentStatusPage,
   "/class": TeacherClassPage,
   "/grade": TeacherGradePage,
   "/manage-courses": AdminCoursePage,
