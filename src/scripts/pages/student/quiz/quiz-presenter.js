@@ -35,10 +35,12 @@ const QuizPresenter = {
 
   async handleSubmit({ courseId, sessionNumber, answers, model, view }) {
     try {
-      await model.submitQuiz(courseId, sessionNumber, answers);
+      // Submit dengan retry=false untuk submit normal
+      await model.submitQuiz(courseId, sessionNumber, answers, false);
       const result = await model.getResult(courseId, sessionNumber);
       view.showResult(result);
     } catch (error) {
+      console.error("Error submitting quiz:", error);
       view.showError("Gagal submit atau ambil hasil quiz.");
     }
   },

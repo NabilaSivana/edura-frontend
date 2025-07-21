@@ -629,6 +629,7 @@ const Api = {
       throw new Error(errorData.message || "Gagal mengambil hasil final exam");
     }
 
+    console.log("Response dari API:", response);
     return response.json();
   },
 
