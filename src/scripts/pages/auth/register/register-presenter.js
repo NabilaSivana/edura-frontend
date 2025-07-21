@@ -1,12 +1,20 @@
+// src/scripts/pages/auth/register/register-presenter.js
+
 import RegisterModel from "./register-model.js";
 
 const RegisterPresenter = {
-  async handleRegister(name, email, password, onSuccess, onError) {
+  async handleRegister(fullName, email, password, onSuccess, onError) {
     try {
-      const result = await RegisterModel.register(name, email, password);
-      if (onSuccess) onSuccess(result.message); // kirim pesan ke UI
+      const result = await RegisterModel.register(fullName, email, password);
+      if (onSuccess) {
+        // Mengirim pesan sukses dari backend ke view
+        onSuccess(result.message);
+      }
     } catch (error) {
-      if (onError) onError(error.message);
+      if (onError) {
+        // Mengirim pesan error dari backend ke view
+        onError(error.message);
+      }
     }
   },
 };

@@ -1,5 +1,5 @@
-import PaymentModel from "./upgrade-model.js";
 import { loadMidtransSnap } from "../../../utils/load-midtrans.js";
+import PaymentModel from "./upgrade-model.js";
 
 const PaymentPresenter = {
     async init() {
@@ -18,13 +18,13 @@ const PaymentPresenter = {
 
                 window.snap.pay(token, {
                     onSuccess: () => {
-                        window.location.href = "#/payment-success?status=success";
+                        window.location.href = "#/status?status=success";
                     },
                     onPending: () => {
-                        window.location.href = "#/payment-success?status=pending";
+                        window.location.href = "#/status?status=pending";
                     },
                     onError: () => {
-                        window.location.href = "#/payment-success?status=failed";
+                        window.location.href = "#/status?status=failed";
                     },
                     onClose: () => {
                         alert("Transaksi dibatalkan.");
