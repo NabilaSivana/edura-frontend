@@ -6,39 +6,57 @@ class FinalExamPage {
     this.presenter = new FinalExamPresenter();
     this.courseId = null;
     this.isExamStarted = false;
+    this.currentQuestionIndex = 0;
     this.beforeUnloadHandler = null;
   }
 
   async render(courseId) {
     this.courseId = courseId;
     this.presenter.setView(this);
-
     const container = document.querySelector("#main-content");
 
     try {
       // Show loading state
       container.innerHTML = `
-        <div class="container mx-auto px-4 py-8">
-          <div class="max-w-4xl mx-auto text-center">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p class="text-gray-600 dark:text-gray-300">Memuat final exam...</p>
-          </div>
+      <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto text-center">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p class="text-gray-600 dark:text-gray-300">Memuat final exam...</p>
         </div>
-      `;
+      </div>
+    `;
 
       const result = await this.presenter.init(courseId);
-
       if (!result.success) {
         this.renderError(result.error);
         return;
       }
 
-      // Check if there's saved progress
+      // PRIORITAS 1: Cek apakah sudah ada exam result
+      console.log("Checking for existing exam result...");
+      const examResultResponse = await this.presenter.getExamResult();
+
+      if (examResultResponse.success && examResultResponse.result) {
+        console.log(
+          "Found existing exam result, showing results:",
+          examResultResponse.result
+        );
+        this.showResult(examResultResponse.result);
+        return;
+      }
+
+      // PRIORITAS 2: Jika tidak ada result, cek saved progress
+      console.log("No existing result found, checking saved progress...");
       const savedProgress = this.presenter.loadProgress(courseId);
 
       if (savedProgress && savedProgress.timeRemaining > 0) {
+        console.log(
+          "Found saved progress, showing resume exam:",
+          savedProgress
+        );
         this.renderResumeExam(savedProgress);
       } else {
+        console.log("No saved progress, showing exam start");
         this.renderExamStart();
       }
     } catch (error) {
@@ -853,89 +871,489 @@ class FinalExamPage {
     this.removeBeforeUnloadWarning();
 
     const container = document.querySelector("#main-content");
-    const percentage =
-      result.percentage ||
-      Math.round((result.correct_answers / result.total_questions) * 100);
+
+    // Validate and normalize result data
+    const normalizedResult = this.normalizeResultForDisplay(result);
+    console.log("ini adalaha result dari normalizedresult", normalizedResult); // Debug
+    const percentage = normalizedResult.percentage;
+    console.log("Percentage:", percentage); // Debug
     const isPassed = percentage >= 70;
 
+    // Generate review jawaban
+    const reviewHTML = this.generateAnswerReview(normalizedResult);
+
     container.innerHTML = `
-      <div class="container mx-auto px-4 py-8">
-        <div class="max-w-4xl mx-auto">
-          <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-20 h-20 ${
+    <div class="container mx-auto px-4 py-8">
+      <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-8">
+          <div class="inline-flex items-center justify-center w-20 h-20 ${
+            isPassed
+              ? "bg-green-100 dark:bg-green-900/30"
+              : "bg-red-100 dark:bg-red-900/30"
+          } rounded-full mb-6">
+            ${
               isPassed
-                ? "bg-green-100 dark:bg-green-900/30"
-                : "bg-red-100 dark:bg-red-900/30"
-            } rounded-full mb-6">
-              ${
-                isPassed
-                  ? '<svg class="w-10 h-10 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
-                  : '<svg class="w-10 h-10 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
-              }
-            </div>
-            <h1 class="text-3xl font-bold ${
-              isPassed
-                ? "text-green-600 dark:text-green-400"
-                : "text-red-600 dark:text-red-400"
-            } mb-4">
-              ${isPassed ? "Selamat!" : "Belum Lulus"}
-            </h1>
-            <p class="text-xl text-gray-600 dark:text-gray-300 mb-2">Final Exam Selesai</p>
-            <p class="text-lg ${
-              isPassed
-                ? "text-green-600 dark:text-green-400"
-                : "text-red-600 dark:text-red-400"
-            } font-semibold">
-              ${
-                isPassed
-                  ? "Anda telah lulus final exam!"
-                  : "Anda belum mencapai nilai minimum (70%)."
-              }
-            </p>
+                ? '<svg class="w-10 h-10 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
+                : '<svg class="w-10 h-10 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
+            }
+          </div>
+          <h1 class="text-3xl font-bold ${
+            isPassed
+              ? "text-green-600 dark:text-green-400"
+              : "text-red-600 dark:text-red-400"
+          } mb-4">
+            Final Exam Completed!
+          </h1>
+          <p class="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-4">
+            Score: ${percentage}% ${isPassed ? "✅ PASSED" : "❌ NOT PASSED"}
+          </p>
+        </div>
+        
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div class="bg-white dark:bg-gray-800 rounded-lg p-6 text-center shadow-lg">
+            <div class="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">${percentage}%</div>
+            <div class="text-gray-600 dark:text-gray-300">Skor Akhir</div>
           </div>
           
-          <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white dark:bg-gray-800 rounded-lg p-6 text-center">
-              <div class="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">${percentage}%</div>
-              <div class="text-gray-600 dark:text-gray-300">Skor Akhir</div>
-            </div>
-            
-            <div class="bg-white dark:bg-gray-800 rounded-lg p-6 text-center">
-              <div class="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">${
-                result.correct_answers
-              }</div>
-              <div class="text-gray-600 dark:text-gray-300">Jawaban Benar</div>
-            </div>
-            
-            <div class="bg-white dark:bg-gray-800 rounded-lg p-6 text-center">
-              <div class="text-3xl font-bold text-red-600 dark:text-red-400 mb-2">${
-                result.wrong_answers
-              }</div>
-              <div class="text-gray-600 dark:text-gray-300">Jawaban Salah</div>
-            </div>
-            
-            <div class="bg-white dark:bg-gray-800 rounded-lg p-6 text-center">
-              <div class="text-3xl font-bold text-gray-600 dark:text-gray-300 mb-2">${
-                result.total_questions
-              }</div>
-              <div class="text-gray-600 dark:text-gray-300">Total Soal</div>
-            </div>
+          <div class="bg-white dark:bg-gray-800 rounded-lg p-6 text-center shadow-lg">
+            <div class="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">${
+              normalizedResult.correct_answers
+            }</div>
+            <div class="text-gray-600 dark:text-gray-300">Jawaban Benar</div>
           </div>
           
-          <div class="text-center">
-            <a 
-              href="#/course" 
-              class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold inline-flex items-center space-x-2"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-              </svg>
-              <span>Kembali ke Course</span>
-            </a>
+          <div class="bg-white dark:bg-gray-800 rounded-lg p-6 text-center shadow-lg">
+            <div class="text-3xl font-bold text-red-600 dark:text-red-400 mb-2">${
+              normalizedResult.wrong_answers
+            }</div>
+            <div class="text-gray-600 dark:text-gray-300">Jawaban Salah</div>
+          </div>
+          
+          <div class="bg-white dark:bg-gray-800 rounded-lg p-6 text-center shadow-lg">
+            <div class="text-3xl font-bold text-gray-600 dark:text-gray-300 mb-2">${
+              normalizedResult.total_questions
+            }</div>
+            <div class="text-gray-600 dark:text-gray-300">Total Soal</div>
+          </div>
+        </div>
+
+        <!-- Answer Review Section -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 mb-8 shadow-lg">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold text-gray-800 dark:text-white">Review Jawaban</h2>
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+              ${normalizedResult.correct_answers}/${
+      normalizedResult.total_questions
+    } benar
+            </div>
+          </div>
+          <div class="space-y-6 max-h-96 overflow-y-auto">
+            ${reviewHTML}
+          </div>
+        </div>
+        
+        <div class="text-center">
+          <a 
+            href="#/course" 
+            class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold inline-flex items-center space-x-2 shadow-lg"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            <span>Kembali ke Course</span>
+          </a>
+        </div>
+      </div>
+    </div>
+    `;
+  }
+  normalizeResultForDisplay(result) {
+    if (!result || typeof result !== "object") {
+      console.warn("Invalid result data:", result);
+      return {
+        score: 0,
+        total_questions: 0,
+        correct_answers: 0,
+        wrong_answers: 0,
+        percentage: 0,
+      };
+    }
+
+    // Ensure all numeric values are valid
+    const score = Number(result.score || result.correct_answers || 0);
+    const totalQuestions = Number(
+      result.total_questions || result.total_score || 0
+    );
+    const correctAnswers = Number(result.correct_answers || result.score || 0);
+    const wrongAnswers = Number(
+      result.wrong_answers || totalQuestions - correctAnswers || 0
+    );
+    const percentage = Number(
+      result.percentage ||
+        (totalQuestions > 0
+          ? Math.round((correctAnswers / totalQuestions) * 100)
+          : 0)
+    );
+
+    return {
+      score: score,
+      total_questions: totalQuestions,
+      correct_answers: correctAnswers,
+      wrong_answers: wrongAnswers,
+      percentage: percentage,
+      passed: result.passed,
+    };
+  }
+  generateAnswerReview(result) {
+    const examData = this.presenter.model.examData;
+    const userAnswers = this.presenter.model.answers;
+    let reviewHTML = "";
+    console.log("=== DEBUG generateAnswerReview ===");
+    console.log("examData:", examData);
+    console.log("userAnswers:", userAnswers);
+    console.log("userAnswers type:", typeof userAnswers);
+    console.log("userAnswers keys:", Object.keys(userAnswers || {}));
+    console.log("userAnswers values:", Object.values(userAnswers || {}));
+    examData.forEach((questionData, index) => {
+      // Handle nested question structure
+      let actualQuestionData = questionData;
+      if (questionData.question && typeof questionData.question === "object") {
+        actualQuestionData = questionData.question;
+      }
+
+      // Get question text
+      let questionText =
+        actualQuestionData.question ||
+        actualQuestionData.question_text ||
+        actualQuestionData.text ||
+        `Question ${index + 1}`;
+
+      // Get options
+      let options =
+        actualQuestionData.options ||
+        actualQuestionData.choices ||
+        actualQuestionData.answers ||
+        questionData.options ||
+        questionData.choices ||
+        questionData.answers ||
+        [];
+
+      // Get correct answer
+      let correctAnswer =
+        actualQuestionData.correct_answer ||
+        actualQuestionData.answer ||
+        questionData.correct_answer ||
+        questionData.answer;
+
+      // Get user answer
+      const userAnswer = userAnswers[index];
+
+      // Determine if answer is correct
+      const isCorrect = this.compareAnswers(userAnswer, correctAnswer, options);
+
+      // PERBAIKAN: Pastikan poin dihitung dengan benar
+      const pointsPerQuestion = 5; // atau sesuai sistem poin Anda
+      const points = isCorrect ? pointsPerQuestion : 0;
+      console.log(`Question ${index + 1}:`, {
+        userAnswer,
+        correctAnswer,
+        isCorrect,
+        points,
+      });
+      // Generate options HTML
+      let optionsHTML = "";
+      if (options && options.length > 0) {
+        options.forEach((option, optIndex) => {
+          let optionText =
+            typeof option === "object"
+              ? option.text ||
+                option.label ||
+                option.option ||
+                JSON.stringify(option)
+              : option;
+
+          let optionValue =
+            typeof option === "object"
+              ? option.value ||
+                option.text ||
+                option.label ||
+                option.option ||
+                optIndex
+              : optIndex;
+
+          const optionLetter = String.fromCharCode(65 + optIndex);
+
+          // Check if this is correct answer
+          const isCorrectOption =
+            this.compareAnswers(optionValue, correctAnswer, options) ||
+            this.compareAnswers(option, correctAnswer, options) ||
+            this.compareAnswers(optIndex, correctAnswer, options);
+
+          // Check if this is user's answer
+          const isUserAnswer =
+            this.compareAnswers(userAnswer, optionValue, options) ||
+            this.compareAnswers(userAnswer, option, options) ||
+            this.compareAnswers(userAnswer, optIndex, options);
+
+          let optionClass = "border border-gray-200 dark:border-gray-600";
+          let textClass = "";
+
+          if (isCorrectOption) {
+            optionClass =
+              "border-2 border-green-500 bg-green-50 dark:bg-green-900/20";
+            textClass = "text-green-700 dark:text-green-300";
+          } else if (isUserAnswer && !isCorrect) {
+            // Only show red for wrong user answers, not for correct answers
+            optionClass =
+              "border-2 border-red-500 bg-red-50 dark:bg-red-900/20";
+            textClass = "text-red-700 dark:text-red-300";
+          }
+
+          optionsHTML += `
+        <div class="p-3 rounded-lg ${optionClass}">
+          <div class="flex items-start space-x-3">
+            <span class="font-semibold ${textClass}">${optionLetter}.</span>
+            <span class="${
+              textClass || "text-gray-700 dark:text-gray-300"
+            }">${optionText}</span>
+            ${
+              isCorrectOption
+                ? '<span class="ml-auto text-green-600 font-semibold">✓ Jawaban Benar</span>'
+                : ""
+            }
+            ${
+              isUserAnswer && !isCorrect
+                ? '<span class="ml-auto text-red-600 font-semibold">✗ Jawaban Anda</span>'
+                : ""
+            }
+          </div>
+        </div>
+      `;
+        });
+      }
+
+      reviewHTML += `
+    <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6 last:border-b-0 last:pb-0 last:mb-0">
+      <div class="flex items-start justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-white">
+          ${index + 1}. ${questionText}
+        </h3>
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+            ${points} Poin
+          </span>
+          <span class="flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+            isCorrect
+              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+              : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+          }">
+            ${isCorrect ? "✓ Benar" : "✗ Salah"}
+          </span>
+        </div>
+      </div>
+      
+      <!-- DEBUG INFO - Hapus setelah fix -->
+      <div class="mb-2 p-2 bg-gray-100 text-xs">
+        Debug: User: ${JSON.stringify(userAnswer)} | Correct: ${JSON.stringify(
+        correctAnswer
+      )} | Match: ${isCorrect}
+      </div>
+      
+      <div class="space-y-2">
+        ${optionsHTML}
+      </div>
+      
+      <div class="mt-4 text-sm">
+        <div class="flex flex-wrap gap-4">
+          <div>
+            <span class="text-gray-600 dark:text-gray-400">Jawaban Benar:</span>
+            <span class="font-semibold text-green-600 dark:text-green-400 ml-1">
+              ${this.getAnswerLabel(correctAnswer, options)}
+            </span>
+          </div>
+          <div>
+            <span class="text-gray-600 dark:text-gray-400">Jawaban Anda:</span>
+            <span class="font-semibold ${
+              isCorrect
+                ? "text-green-600 dark:text-green-400"
+                : "text-red-600 dark:text-red-400"
+            } ml-1">
+              ${
+                userAnswer !== null && userAnswer !== undefined
+                  ? this.getAnswerLabel(userAnswer, options)
+                  : "Tidak dijawab"
+              }
+            </span>
           </div>
         </div>
       </div>
+    </div>
     `;
+    });
+
+    return reviewHTML;
+  }
+
+  // Perbaikan method compareAnswers
+  compareAnswers(userAnswer, correctAnswer, options) {
+    // Handle null/undefined cases
+    if (
+      userAnswer === null ||
+      userAnswer === undefined ||
+      correctAnswer === null ||
+      correctAnswer === undefined
+    ) {
+      return false;
+    }
+
+    // Direct comparison first
+    if (userAnswer === correctAnswer) return true;
+    if (userAnswer == correctAnswer) return true;
+
+    // Convert to string and compare (case insensitive)
+    if (
+      String(userAnswer).toLowerCase() === String(correctAnswer).toLowerCase()
+    ) {
+      return true;
+    }
+
+    // PERBAIKAN UTAMA: Handle case dimana user answer adalah index tapi correct answer adalah text
+    if (options && Array.isArray(options)) {
+      const userAnswerNum = Number(userAnswer);
+      const correctAnswerNum = Number(correctAnswer);
+
+      // Case 1: User answer adalah index (0,1,2,3), correct answer adalah text
+      if (
+        !isNaN(userAnswerNum) &&
+        userAnswerNum >= 0 &&
+        userAnswerNum < options.length
+      ) {
+        const userSelectedOption = options[userAnswerNum];
+        const userSelectedText =
+          typeof userSelectedOption === "object"
+            ? userSelectedOption.text ||
+              userSelectedOption.label ||
+              userSelectedOption.option ||
+              userSelectedOption.value
+            : userSelectedOption;
+
+        // Compare dengan correct answer text
+        if (
+          String(userSelectedText).toLowerCase().trim() ===
+          String(correctAnswer).toLowerCase().trim()
+        ) {
+          return true;
+        }
+      }
+
+      // Case 2: Correct answer adalah index (0,1,2,3), user answer adalah text atau index
+      if (
+        !isNaN(correctAnswerNum) &&
+        correctAnswerNum >= 0 &&
+        correctAnswerNum < options.length
+      ) {
+        const correctSelectedOption = options[correctAnswerNum];
+        const correctSelectedText =
+          typeof correctSelectedOption === "object"
+            ? correctSelectedOption.text ||
+              correctSelectedOption.label ||
+              correctSelectedOption.option ||
+              correctSelectedOption.value
+            : correctSelectedOption;
+
+        // Compare user answer dengan correct option text
+        if (
+          String(userAnswer).toLowerCase().trim() ===
+          String(correctSelectedText).toLowerCase().trim()
+        ) {
+          return true;
+        }
+
+        // Compare indices jika user answer juga berupa index
+        if (!isNaN(userAnswerNum) && userAnswerNum === correctAnswerNum) {
+          return true;
+        }
+      }
+
+      // Case 3: Find correct answer by matching text in options
+      let correctAnswerIndex = -1;
+      for (let i = 0; i < options.length; i++) {
+        const option = options[i];
+        const optionText =
+          typeof option === "object"
+            ? option.text || option.label || option.option || option.value
+            : option;
+
+        if (
+          String(optionText).toLowerCase().trim() ===
+          String(correctAnswer).toLowerCase().trim()
+        ) {
+          correctAnswerIndex = i;
+          break;
+        }
+      }
+
+      // If found correct answer index, compare with user answer
+      if (correctAnswerIndex !== -1) {
+        // User answer as index
+        if (!isNaN(userAnswerNum) && userAnswerNum === correctAnswerIndex) {
+          return true;
+        }
+
+        // User answer as text, compare with option at correct index
+        const correctOption = options[correctAnswerIndex];
+        const correctOptionText =
+          typeof correctOption === "object"
+            ? correctOption.text ||
+              correctOption.label ||
+              correctOption.option ||
+              correctOption.value
+            : correctOption;
+
+        if (
+          String(userAnswer).toLowerCase().trim() ===
+          String(correctOptionText).toLowerCase().trim()
+        ) {
+          return true;
+        }
+      }
+    }
+
+    // Final fallback - numeric comparison
+    const userNum = Number(userAnswer);
+    const correctNum = Number(correctAnswer);
+    if (!isNaN(userNum) && !isNaN(correctNum)) {
+      return userNum === correctNum;
+    }
+
+    return false;
+  }
+
+  // Helper method untuk mendapatkan label jawaban
+  getAnswerLabel(answer, options) {
+    if (answer === null || answer === undefined) return "Tidak dijawab";
+
+    // If answer is a number (index), get the corresponding letter
+    if (typeof answer === "number" && options && options[answer]) {
+      return String.fromCharCode(65 + answer);
+    }
+
+    // Try to find the answer in options and return the letter
+    if (options) {
+      for (let i = 0; i < options.length; i++) {
+        const option = options[i];
+        if (
+          option === answer ||
+          (typeof option === "object" &&
+            (option.value === answer || option.text === answer)) ||
+          i == answer
+        ) {
+          return String.fromCharCode(65 + i);
+        }
+      }
+    }
+
+    return String(answer);
   }
 
   destroy() {

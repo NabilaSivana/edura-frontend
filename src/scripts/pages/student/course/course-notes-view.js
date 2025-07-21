@@ -86,7 +86,7 @@ const CourseNotesView = {
       // Tombol "Generate Quiz" (hanya navigasi, tidak pakai API)
       if (done) {
         const quizBtn = document.createElement("button");
-        quizBtn.innerText = "Generate Quiz";
+        quizBtn.innerText = "Attempt Quiz";
         quizBtn.className =
           "mt-3 text-sm px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600";
 
