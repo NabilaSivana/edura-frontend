@@ -58,7 +58,7 @@ const DashboardTeacherPresenter = {
         });
       });
     } catch (error) {
-      console.error("Gagal memuat kursus guru:", error);
+      // console.error("Gagal memuat kursus guru:", error);
       container.innerHTML = `<p class="text-center text-red-500">Gagal memuat data kursus.</p>`;
     }
   },
@@ -108,7 +108,7 @@ const DashboardTeacherPresenter = {
         </div>
       `;
     } catch (error) {
-      console.error("Gagal memuat kursus terverifikasi:", error);
+      // console.error("Gagal memuat kursus terverifikasi:", error);
       container.innerHTML = `<p class="text-center text-red-500">Gagal memuat data kursus.</p>`;
     }
   },

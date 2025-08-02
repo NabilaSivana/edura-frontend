@@ -1,12 +1,113 @@
-import {
-  hideLoadingScreen as hideGlobalLoading,
-  showLoadingScreen as showGlobalLoading,
-} from "../../../../component/loading-screen.js";
+//file : src/scripts/pages/student/course/sessions/view.js
 import CONFIG from "../../../../config.js";
 import { showToastNotification } from "../../../../utils/index.js";
+import { hideLoadingOverlay, showLoadingOverlay } from "../../../../utils/loading.js";
 
 const SessionView = {
-  sidebarState: false, // Track sidebar state
+  sidebarState: false,
+
+  smoothScrollToTop(delay = 0) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const container = document.getElementById("main-content");
+        if (!container) {
+          resolve();
+          return;
+        }
+
+        if (container.scrollTop <= 10) {
+          resolve();
+          return;
+        }
+
+        const startY = container.scrollTop;
+        const duration = Math.min(800, Math.max(300, startY * 0.5));
+        const startTime = performance.now();
+
+        const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
+        const animateScroll = (currentTime) => {
+          const elapsed = currentTime - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const easedProgress = easeOutCubic(progress);
+
+          const currentY = startY * (1 - easedProgress);
+          container.scrollTop = currentY;
+
+          if (progress < 1) {
+            requestAnimationFrame(animateScroll);
+          } else {
+            resolve();
+          }
+        };
+
+        requestAnimationFrame(animateScroll);
+      }, delay);
+    });
+  },
+
+  // Navigation helper with proper scroll handling
+  async navigateToSession(sessionNumber, scrollFirst = true) {
+    try {
+      if (scrollFirst) {
+        await this.smoothScrollToTop();
+      }
+
+      sessionStorage.setItem("current_session_number", sessionNumber);
+      location.hash = `#/course/session?number=${sessionNumber}`;
+    } catch (error) {
+      console.error("Navigation error:", error);
+      sessionStorage.setItem("current_session_number", sessionNumber);
+      location.hash = `#/course/session?number=${sessionNumber}`;
+    }
+  },
+
+  // Helper function to ensure marked is loaded
+  async ensureMarkedLoaded() {
+    if (window.marked) {
+      return true;
+    }
+
+    return new Promise((resolve) => {
+      const checkMarked = setInterval(() => {
+        if (window.marked) {
+          clearInterval(checkMarked);
+          resolve(true);
+        }
+      }, 100);
+
+      const markedScript = document.createElement('script');
+      markedScript.src = 'https://cdn.jsdelivr.net/npm/marked/marked.min.js';
+      markedScript.onload = () => {
+        if (!window.hljs) {
+          const hlScript = document.createElement('script');
+          hlScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+          hlScript.onload = () => {
+            if (window.marked && window.hljs) {
+              marked.setOptions({
+                highlight: function (code, lang) {
+                  const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                  return hljs.highlight(code, { language }).value;
+                },
+                breaks: true,
+                gfm: true
+              });
+            }
+          };
+          document.body.appendChild(hlScript);
+        }
+      };
+
+      if (!document.querySelector('script[src*="marked"]')) {
+        document.body.appendChild(markedScript);
+      }
+
+      setTimeout(() => {
+        clearInterval(checkMarked);
+        resolve(false);
+      }, 5000);
+    });
+  },
 
   async render(sessionNumberRaw) {
     const main = document.getElementById("main-content");
@@ -27,6 +128,7 @@ const SessionView = {
           </div>
         </div>
       `;
+      await this.smoothScrollToTop(100);
       return;
     }
 
@@ -47,12 +149,22 @@ const SessionView = {
           </div>
         </div>
       `;
+      await this.smoothScrollToTop(100);
       return;
     }
 
     const courseData = JSON.parse(courseDataRaw);
     const sessions = courseData.sessions || [];
-    const session = sessions.find((s) => s.session_number === sessionNumber);
+    const maxSessionNumber = sessions.length;
+    const validSessionNumber = Math.min(sessionNumber, maxSessionNumber);
+
+    if (sessionNumber > maxSessionNumber) {
+      sessionStorage.setItem("current_session_number", maxSessionNumber);
+      location.hash = `#/course/session?number=${maxSessionNumber}`;
+      return;
+    }
+
+    const session = sessions.find((s) => s.session_number === validSessionNumber);
 
     if (!session) {
       main.innerHTML = `
@@ -68,12 +180,13 @@ const SessionView = {
           </div>
         </div>
       `;
+      await this.smoothScrollToTop(100);
       return;
     }
 
     const checkpoint = Number(courseData?.progress?.checkpoint || 0);
-    const isLocked = sessionNumber > checkpoint + 1;
-    const isAlreadyCompleted = sessionNumber <= checkpoint;
+    const isLocked = validSessionNumber > checkpoint + 1;
+    const isAlreadyCompleted = validSessionNumber <= checkpoint;
 
     if (isLocked) {
       main.innerHTML = `
@@ -84,7 +197,7 @@ const SessionView = {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
               </svg>
             </div>
-            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4">Chapter ${sessionNumber} Terkunci</h2>
+            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4">Chapter ${validSessionNumber} Terkunci</h2>
             <p class="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">Selesaikan chapter sebelumnya terlebih dahulu untuk membuka akses ke chapter ini.</p>
             <div>
               <a href="#/course/notes" class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 font-medium text-sm">
@@ -97,8 +210,11 @@ const SessionView = {
           </div>
         </div>
       `;
+      await this.smoothScrollToTop(100);
       return;
     }
+
+    await this.ensureMarkedLoaded();
 
     let rawText = "";
     try {
@@ -108,13 +224,33 @@ const SessionView = {
       rawText = typeof session.content === "string" ? session.content : "";
     }
 
-    const formattedContent = rawText
-      ? `
-        <article class="prose prose-sm sm:prose-base lg:prose-lg prose-blue dark:prose-invert max-w-none prose-headings:font-bold prose-headings:text-gray-900 dark:prose-headings:text-gray-100 prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-code:text-pink-600 dark:prose-code:text-pink-400 prose-pre:bg-gray-900 dark:prose-pre:bg-gray-800 prose-img:rounded-lg prose-img:shadow-sm">
-          ${marked.parse(rawText)}
+    let formattedContent = "";
+
+    if (rawText && window.marked) {
+      try {
+        formattedContent = `
+          <article class="prose prose-sm sm:prose-base lg:prose-lg prose-blue dark:prose-invert max-w-none prose-headings:font-bold prose-headings:text-gray-900 dark:prose-headings:text-gray-100 prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-code:text-pink-600 dark:prose-code:text-pink-400 prose-pre:bg-gray-900 dark:prose-pre:bg-gray-800 prose-img:rounded-lg prose-img:shadow-sm">
+            ${marked.parse(rawText)}
+          </article>
+        `;
+      } catch (error) {
+        formattedContent = `
+          <article class="prose prose-sm sm:prose-base lg:prose-lg prose-blue dark:prose-invert max-w-none">
+            <pre class="whitespace-pre-wrap">${rawText}</pre>
+          </article>
+        `;
+      }
+    } else if (rawText) {
+      formattedContent = `
+        <article class="prose prose-sm sm:prose-base lg:prose-lg prose-blue dark:prose-invert max-w-none">
+          <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
+            <p class="text-sm text-yellow-800 dark:text-yellow-200">Markdown parser sedang dimuat. Menampilkan teks biasa.</p>
+          </div>
+          <pre class="whitespace-pre-wrap font-sans">${rawText}</pre>
         </article>
-      `
-      : `
+      `;
+    } else {
+      formattedContent = `
         <div class="text-center py-12">
           <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
             <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,12 +260,12 @@ const SessionView = {
           <p class="text-gray-500 dark:text-gray-400 text-base">Harap bersabar ya, masih proses generate, kamu bisa belajar yang lain dulu 👋🏻</p>
         </div>
       `;
+    }
 
-    const hasNext = sessionNumber < sessions.length;
-    const hasPrev = sessionNumber > 1;
+    const hasNext = validSessionNumber < maxSessionNumber;
+    const hasPrev = validSessionNumber > 1;
     const progressPercentage = Math.round((checkpoint / sessions.length) * 100);
 
-    // Reset sidebar state
     this.sidebarState = false;
 
     main.innerHTML = `
@@ -148,11 +284,9 @@ const SessionView = {
                 <div class="h-4 sm:h-6 w-px bg-gray-200 dark:bg-gray-700 flex-shrink-0"></div>
                 <div class="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
                   <span class="text-xs font-medium px-1.5 sm:px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 flex-shrink-0">
-                    Ch ${sessionNumber}
+                    Ch ${validSessionNumber}
                   </span>
-                  <h1 class="text-sm sm:text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">${
-                    session.title
-                  }</h1>
+                  <h1 class="text-sm sm:text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">${session.title}</h1>
                 </div>
               </div>
               
@@ -179,13 +313,9 @@ const SessionView = {
               <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div class="min-w-0 flex-1">
-                    <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-2 break-words">${
-                      session.title
-                    }</h1>
+                    <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-2 break-words">${session.title}</h1>
                     <div class="flex flex-wrap items-center gap-2 sm:gap-4 text-blue-100 text-sm">
-                      <span>Chapter ${sessionNumber} dari ${
-      sessions.length
-    }</span>
+                      <span>Chapter ${validSessionNumber} dari ${sessions.length}</span>
                       <div class="hidden sm:block h-4 w-px bg-blue-300"></div>
                       <span>${progressPercentage}% Selesai</span>
                     </div>
@@ -209,9 +339,7 @@ const SessionView = {
               <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700">
                 <!-- Navigation -->
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
-                  ${
-                    hasPrev
-                      ? `
+                  ${hasPrev ? `
                       <button id="prev-btn" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200 font-medium text-sm w-full sm:w-auto">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
@@ -219,12 +347,8 @@ const SessionView = {
                         <span class="hidden sm:inline">Chapter Sebelumnya</span>
                         <span class="sm:hidden">Sebelumnya</span>
                       </button>
-                      `
-                      : `<div class="hidden sm:block"></div>`
-                  }
-                  ${
-                    hasNext
-                      ? `
+                      ` : `<div class="hidden sm:block"></div>`}
+                  ${hasNext ? `
                       <button id="next-btn" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200 font-medium text-sm w-full sm:w-auto order-first sm:order-last">
                         <span class="hidden sm:inline">Chapter Selanjutnya</span>
                         <span class="sm:hidden">Selanjutnya</span>
@@ -232,37 +356,30 @@ const SessionView = {
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                       </button>
-                      `
-                      : `<div class="hidden sm:block"></div>`
-                  }
+                      ` : `<div class="hidden sm:block"></div>`}
                 </div>
 
                 <!-- Complete Button -->
                 <div class="text-center">
                   <button 
                     id="complete-btn"
-                    class="inline-flex items-center justify-center gap-2 px-6 py-3 ${
-                      isAlreadyCompleted
-                        ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 cursor-not-allowed"
-                        : "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl"
-                    } rounded-lg transition-all duration-200 font-medium text-sm sm:text-base w-full sm:w-auto"
+                    class="inline-flex items-center justify-center gap-2 px-6 py-3 ${isAlreadyCompleted
+        ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 cursor-not-allowed"
+        : "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl"
+      } rounded-lg transition-all duration-200 font-medium text-sm sm:text-base w-full sm:w-auto"
                     ${isAlreadyCompleted ? "disabled" : ""}
                   >
-                    ${
-                      isAlreadyCompleted
-                        ? `
+                    ${isAlreadyCompleted ? `
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                         </svg>
                         Sudah Diselesaikan
-                        `
-                        : `
+                        ` : `
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                         Tandai Selesai
-                        `
-                    }
+                        `}
                   </button>
                 </div>
               </div>
@@ -312,142 +429,125 @@ const SessionView = {
               </div>
             </div>
             <div class="flex justify-between text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-              <span class="font-medium">${checkpoint} dari ${
-      sessions.length
-    } chapter</span>
-              <span class="text-orange-600 dark:text-orange-400">${
-                sessions.length - checkpoint
-              } tersisa</span>
+              <span class="font-medium">${checkpoint} dari ${sessions.length} chapter</span>
+              <span class="text-orange-600 dark:text-orange-400">${sessions.length - checkpoint} tersisa</span>
             </div>
           </div>
 
           <!-- Module List -->
           <div class="flex-1 overflow-y-auto p-3 sm:p-4" style="max-height: calc(100vh - 200px);">
             <div class="space-y-2 sm:space-y-3">
-              ${sessions
-                .map((s) => {
-                  const isDone = s.session_number <= checkpoint;
-                  const isCurrent = s.session_number === sessionNumber;
-                  const isNext = s.session_number === checkpoint + 1;
-                  const isLocked = s.session_number > checkpoint + 1;
+              ${sessions.map((s) => {
+        const isDone = s.session_number <= checkpoint;
+        const isCurrent = s.session_number === validSessionNumber;
+        const isNext = s.session_number === checkpoint + 1;
+        const isLocked = s.session_number > checkpoint + 1;
 
-                  let statusIcon = "";
-                  let cardClasses = "";
-                  let statusBadge = "";
+        let statusIcon = "";
+        let cardClasses = "";
+        let statusBadge = "";
 
-                  if (isDone) {
-                    statusIcon = `
-                      <div class="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-                        <svg class="w-3 h-3 sm:w-5 sm:h-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                        </svg>
-                      </div>`;
-                    cardClasses =
-                      "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-700 hover:bg-green-100 dark:hover:bg-green-900/20";
-                    statusBadge = `<span class="text-xs font-medium px-1.5 py-0.5 bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 rounded-full">✓ Selesai</span>`;
-                  } else if (isCurrent) {
-                    statusIcon = `
-                      <div class="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center animate-pulse">
-                        <svg class="w-3 h-3 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd"></path>
-                        </svg>
-                      </div>`;
-                    cardClasses =
-                      "bg-blue-50 dark:bg-blue-900/10 border-blue-300 dark:border-blue-600 ring-2 ring-blue-200 dark:ring-blue-600/50";
-                    statusBadge = `<span class="text-xs font-medium px-2 py-1 bg-blue-500 text-white rounded-full animate-pulse">● Sedang Aktif</span>`;
-                  } else if (isNext) {
-                    statusIcon = `
-                      <div class="flex-shrink-0 w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center">
-                        <svg class="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                        </svg>
-                      </div>`;
-                    cardClasses =
-                      "bg-orange-50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-700 hover:bg-orange-100 dark:hover:bg-orange-900/20";
-                    statusBadge = `<span class="text-xs font-medium px-2 py-1 bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-orange-200 rounded-full">→ Selanjutnya</span>`;
-                  } else {
-                    statusIcon = `
-                      <div class="flex-shrink-0 w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                        </svg>
-                      </div>`;
-                    cardClasses =
-                      "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-600 opacity-60";
-                    statusBadge = `<span class="text-xs font-medium px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full">🔒 Terkunci</span>`;
-                  }
+        if (isDone) {
+          statusIcon = `
+                    <div class="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                      <svg class="w-3 h-3 sm:w-5 sm:h-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                      </svg>
+                    </div>`;
+          cardClasses = "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-700 hover:bg-green-100 dark:hover:bg-green-900/20";
+          statusBadge = `<span class="text-xs font-medium px-1.5 py-0.5 bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 rounded-full">✓ Selesai</span>`;
+        } else if (isCurrent) {
+          statusIcon = `
+                    <div class="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center animate-pulse">
+                      <svg class="w-3 h-3 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd"></path>
+                      </svg>
+                    </div>`;
+          cardClasses = "bg-blue-50 dark:bg-blue-900/10 border-blue-300 dark:border-blue-600 ring-2 ring-blue-200 dark:ring-blue-600/50";
+          statusBadge = `<span class="text-xs font-medium px-2 py-1 bg-blue-500 text-white rounded-full animate-pulse">● Sedang Aktif</span>`;
+        } else if (isNext) {
+          statusIcon = `
+                    <div class="flex-shrink-0 w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center">
+                      <svg class="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                      </svg>
+                    </div>`;
+          cardClasses = "bg-orange-50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-700 hover:bg-orange-100 dark:hover:bg-orange-900/20";
+          statusBadge = `<span class="text-xs font-medium px-2 py-1 bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-orange-200 rounded-full">→ Selanjutnya</span>`;
+        } else {
+          statusIcon = `
+                    <div class="flex-shrink-0 w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                      <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                      </svg>
+                    </div>`;
+          cardClasses = "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-600 opacity-60";
+          statusBadge = `<span class="text-xs font-medium px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full">🔒 Terkunci</span>`;
+        }
 
-                  return `
-                    <div class="relative group">
-                      <a href="#/course/session?number=${s.session_number}"
-                        class="block p-4 rounded-xl border-2 ${cardClasses} transition-all duration-200 ${
-                    isLocked
-                      ? "cursor-not-allowed"
-                      : "hover:scale-[1.02] hover:shadow-md"
-                  }"
-                        ${isLocked ? 'onclick="return false;"' : ""}
-                      >
-                        <div class="flex items-start gap-4">
-                          ${statusIcon}
-                          <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2 mb-2">
-                              <span class="text-xs font-bold px-2 py-1 rounded-md ${
-                                isDone
-                                  ? "bg-green-200 dark:bg-green-800 text-green-900 dark:text-green-100"
-                                  : isCurrent
-                                  ? "bg-blue-200 dark:bg-blue-800 text-blue-900 dark:text-blue-100"
-                                  : isNext
-                                  ? "bg-orange-200 dark:bg-orange-800 text-orange-900 dark:text-orange-100"
-                                  : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300"
-                              }">
-                                Chapter ${s.session_number}
-                              </span>
-                              ${statusBadge}
-                            </div>
-                            <h3 class="text-sm font-semibold ${
-                              isCurrent
-                                ? "text-blue-900 dark:text-blue-100"
-                                : isLocked
-                                ? "text-gray-500 dark:text-gray-400"
-                                : "text-gray-800 dark:text-gray-200"
-                            } line-clamp-2 leading-tight mb-1">
-                              ${s.title}
-                            </h3>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">
-                              ${
-                                isDone
-                                  ? "Completed"
-                                  : isCurrent
-                                  ? "Currently studying"
-                                  : isNext
-                                  ? "Ready to start"
-                                  : "Locked"
-                              }
-                            </div>
+        return `
+                  <div class="relative group">
+                    <a href="#/course/session?number=${s.session_number}"
+                      class="block p-4 rounded-xl border-2 ${cardClasses} transition-all duration-200 ${isLocked ? "cursor-not-allowed" : "hover:scale-[1.02] hover:shadow-md"}"
+                      ${isLocked ? 'onclick="return false;"' : ""}
+                    >
+                      <div class="flex items-start gap-4">
+                        ${statusIcon}
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center gap-2 mb-2">
+                            <span class="text-xs font-bold px-2 py-1 rounded-md ${isDone ? "bg-green-200 dark:bg-green-800 text-green-900 dark:text-green-100" : isCurrent ? "bg-blue-200 dark:bg-blue-800 text-blue-900 dark:text-blue-100" : isNext ? "bg-orange-200 dark:bg-orange-800 text-orange-900 dark:text-orange-100" : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300"}">
+                              Chapter ${s.session_number}
+                            </span>
+                            ${statusBadge}
+                          </div>
+                          <h3 class="text-sm font-semibold ${isCurrent ? "text-blue-900 dark:text-blue-100" : isLocked ? "text-gray-500 dark:text-gray-400" : "text-gray-800 dark:text-gray-200"} line-clamp-2 leading-tight mb-1">
+                            ${s.title}
+                          </h3>
+                          <div class="text-xs text-gray-500 dark:text-gray-400">
+                            ${isDone ? "Completed" : isCurrent ? "Currently studying" : isNext ? "Ready to start" : "Locked"}
                           </div>
                         </div>
-                      </a>
-                    </div>
-                  `;
-                })
-                .join("")}
+                      </div>
+                    </a>
+                  </div>
+                `;
+      }).join("")}
             </div>
           </div>
         </aside>
       </div>
     `;
 
-    // ✅ Panggil highlight setelah render
-    document.querySelectorAll("pre code").forEach((el) => {
-      hljs.highlightElement(el);
+    // Wait for DOM to be fully rendered before scrolling
+    await new Promise(resolve => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(resolve);
+      });
     });
+
+    // Smooth scroll to top after content is rendered
+    await this.smoothScrollToTop(50);
+
+    // Highlight code blocks if hljs is available
+    if (window.hljs) {
+      setTimeout(() => {
+        document.querySelectorAll("pre code").forEach((el) => {
+          try {
+            hljs.highlightElement(el);
+          } catch (error) {
+            console.error("Error highlighting code:", error);
+          }
+        });
+      }, 100);
+    }
 
     // Event Listeners
     const btn = document.getElementById("complete-btn");
     if (!isAlreadyCompleted) {
       btn?.addEventListener("click", async () => {
         try {
-          showGlobalLoading("Menandai selesai...");
+          showLoadingOverlay("Menandai selesai...");
+
           const res = await fetch(
             `${CONFIG.BASE_URL}/student/courses/${courseId}/checkpoint`,
             {
@@ -456,14 +556,14 @@ const SessionView = {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
               },
-              body: JSON.stringify({ checkpoint: sessionNumber }),
+              body: JSON.stringify({ checkpoint: validSessionNumber }),
             }
           );
 
           const result = await res.json();
-          hideGlobalLoading();
 
           if (!res.ok) {
+            hideLoadingOverlay();
             showToastNotification(
               result.message || "Gagal update checkpoint.",
               "error"
@@ -471,24 +571,43 @@ const SessionView = {
             return;
           }
 
-          courseData.progress.checkpoint = sessionNumber;
+          courseData.progress.checkpoint = validSessionNumber;
           sessionStorage.setItem(
             `course-${courseId}`,
             JSON.stringify(courseData)
           );
-          sessionStorage.setItem("current_session_number", sessionNumber + 1);
+
+          const nextSessionNumber = Math.min(validSessionNumber + 1, maxSessionNumber);
+          sessionStorage.setItem("current_session_number", nextSessionNumber);
+
+          hideLoadingOverlay();
 
           showToastNotification(
             "Chapter berhasil ditandai selesai! 🎉",
             "success"
           );
 
-          // Add a small delay before redirecting for better UX
-          setTimeout(() => {
-            location.hash = `#/course/session?number=${sessionNumber + 1}`;
-          }, 1000);
+          setTimeout(async () => {
+            try {
+              await this.smoothScrollToTop();
+
+              setTimeout(() => {
+                if (validSessionNumber < maxSessionNumber) {
+                  location.hash = `#/course/session?number=${nextSessionNumber}`;
+                } else {
+                  location.reload();
+                }
+              }, 300);
+            } catch (error) {
+              if (validSessionNumber < maxSessionNumber) {
+                location.hash = `#/course/session?number=${nextSessionNumber}`;
+              } else {
+                location.reload();
+              }
+            }
+          }, 1500);
         } catch (e) {
-          hideGlobalLoading();
+          hideLoadingOverlay();
           console.error(e);
           showToastNotification(
             "Terjadi kesalahan saat memproses permintaan.",
@@ -498,102 +617,84 @@ const SessionView = {
       });
     }
 
-    document.getElementById("prev-btn")?.addEventListener("click", () => {
-      const prev = sessionNumber - 1;
-      sessionStorage.setItem("current_session_number", prev);
-      location.hash = `#/course/session?number=${prev}`;
+    // Enhanced navigation buttons with smooth scroll
+    document.getElementById("prev-btn")?.addEventListener("click", async () => {
+      try {
+        const prev = validSessionNumber - 1;
+        await this.navigateToSession(prev, true);
+      } catch (error) {
+        const prev = validSessionNumber - 1;
+        sessionStorage.setItem("current_session_number", prev);
+        location.hash = `#/course/session?number=${prev}`;
+      }
     });
 
-    document.getElementById("next-btn")?.addEventListener("click", () => {
-      if (sessionNumber > checkpoint) {
+    document.getElementById("next-btn")?.addEventListener("click", async () => {
+      if (validSessionNumber > checkpoint) {
         showToastNotification(
           "Tandai chapter ini selesai terlebih dahulu.",
           "warning"
         );
         return;
       }
-      const next = sessionNumber + 1;
-      sessionStorage.setItem("current_session_number", next);
-      location.hash = `#/course/session?number=${next}`;
+
+      try {
+        const next = Math.min(validSessionNumber + 1, maxSessionNumber);
+        await this.navigateToSession(next, true);
+      } catch (error) {
+        const next = Math.min(validSessionNumber + 1, maxSessionNumber);
+        sessionStorage.setItem("current_session_number", next);
+        location.hash = `#/course/session?number=${next}`;
+      }
     });
 
     // Enhanced sidebar functionality
     const sidebar = document.getElementById("module-sidebar");
     const toggleBtn = document.getElementById("toggle-sidebar");
     const closeBtn = document.getElementById("close-sidebar");
+    const backdrop = document.getElementById("sidebar-backdrop");
 
     const toggleSidebar = () => {
-      if (sidebar && toggleBtn) {
+      if (sidebar && toggleBtn && backdrop) {
         const isOpen = !sidebar.classList.contains("translate-x-full");
 
         if (isOpen) {
           sidebar.classList.add("translate-x-full");
-          toggleBtn.innerHTML = `
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-            </svg>
-            <span class="hidden sm:inline">Daftar Modul</span>
-          `;
+          backdrop.classList.add("invisible", "opacity-0");
+          backdrop.classList.remove("visible", "opacity-100");
         } else {
           sidebar.classList.remove("translate-x-full");
-          toggleBtn.innerHTML = `
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-            <span class="hidden sm:inline">Tutup</span>
-          `;
+          backdrop.classList.remove("invisible", "opacity-0");
+          backdrop.classList.add("visible", "opacity-100");
         }
       }
     };
 
     const closeSidebar = () => {
-      if (sidebar && toggleBtn) {
+      if (sidebar && toggleBtn && backdrop) {
         sidebar.classList.add("translate-x-full");
-        toggleBtn.innerHTML = `
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-          </svg>
-          <span class="hidden sm:inline">Daftar Modul</span>
-        `;
+        backdrop.classList.add("invisible", "opacity-0");
+        backdrop.classList.remove("visible", "opacity-100");
       }
     };
 
     toggleBtn?.addEventListener("click", toggleSidebar);
     closeBtn?.addEventListener("click", closeSidebar);
+    backdrop?.addEventListener("click", closeSidebar);
 
-    // Close sidebar on escape key and outside click
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
         closeSidebar();
       }
     };
 
-    const handleOutsideClick = (e) => {
-      if (
-        sidebar &&
-        !sidebar.contains(e.target) &&
-        !toggleBtn.contains(e.target)
-      ) {
-        if (!sidebar.classList.contains("translate-x-full")) {
-          closeSidebar();
-        }
-      }
-    };
-
     document.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("click", handleOutsideClick);
 
-    // Cleanup function to remove event listeners when component is destroyed
     const cleanup = () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("click", handleOutsideClick);
     };
 
-    // Store cleanup function for potential use
     SessionView.cleanup = cleanup;
-
-    // Auto-scroll to top when component loads
-    window.scrollTo({ top: 0, behavior: "smooth" });
   },
 };
 

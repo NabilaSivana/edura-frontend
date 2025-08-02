@@ -4,22 +4,22 @@ import OtpPresenter from "./otp-presenter.js";
 const OtpPage = {
   async render() {
     return `
-      <section class="w-screen h-screen flex flex-col justify-center items-center bg-white font-sans">
-        <div class="bg-white shadow-md rounded-lg p-8 w-[90%] max-w-md animate-fade-in-left">
-          <h2 class="text-2xl md:text-3xl font-bold text-center text-[#2C2F8C] mb-4">Verifikasi OTP</h2>
-          <p class="text-center text-sm text-gray-600 mb-6">Masukkan 6 digit kode OTP yang dikirim ke email Anda.</p>
+      <section class="w-screen h-screen flex flex-col justify-center items-center bg-white dark:bg-gray-900 font-sans">
+        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-8 w-[90%] max-w-md animate-fade-in-left">
+          <h2 class="text-2xl md:text-3xl font-bold text-center text-[#2C2F8C] dark:text-[#86A6DF] mb-4">Verifikasi OTP</h2>
+          <p class="text-center text-sm text-gray-600 dark:text-gray-300 mb-6">Masukkan 6 digit kode OTP yang dikirim ke email Anda.</p>
 
           <form id="otp-form" class="flex flex-col items-center space-y-6">
             <div id="otp-inputs" class="flex justify-center gap-3">
               ${[...Array(6)].map(() => `<input type="text" maxlength="1" class="otp-box" />`).join("")}
             </div>
-            <button type="submit" class="w-full bg-[#2C2F8C] hover:bg-[#1e1f6c] text-white font-semibold py-3 rounded-md transition">
+            <button type="submit" class="w-full bg-[#2C2F8C] hover:bg-[#1e1f6c] dark:bg-[#86A6DF] dark:hover:bg-[#6b8bc4] text-white font-semibold py-3 rounded-md transition">
               Verifikasi
             </button>
           </form>
 
-          <p id="resend-container" class="text-sm text-gray-600 mt-4 text-center">
-            Belum menerima kode? <button id="resend-btn" class="text-blue-600 font-semibold hover:underline" disabled>Kirim Ulang (60s)</button>
+          <p id="resend-container" class="text-sm text-gray-600 dark:text-gray-300 mt-4 text-center">
+            Belum menerima kode? <button id="resend-btn" class="text-blue-600 dark:text-blue-400 font-semibold hover:underline" disabled>Kirim Ulang (60s)</button>
           </p>
           <p id="otp-message" class="text-sm text-center mt-4"></p>
         </div>
@@ -34,10 +34,24 @@ const OtpPage = {
             border-radius: 0.5rem;
             outline: none;
             transition: all 0.2s ease-in-out;
+            background-color: white;
+            color: #1f2937;
           }
+          
+          .dark .otp-box {
+            border-color: #86A6DF;
+            background-color: #374151;
+            color: #f9fafb;
+          }
+          
           .otp-box:focus {
             box-shadow: 0 0 0 2px rgba(44, 47, 140, 0.5);
             border-color: #2C2F8C;
+          }
+          
+          .dark .otp-box:focus {
+            box-shadow: 0 0 0 2px rgba(134, 166, 223, 0.5);
+            border-color: #86A6DF;
           }
         </style>
       </section>
@@ -57,44 +71,87 @@ const OtpPage = {
       return;
     }
 
-    let countdown = 60;
-    resendBtn.textContent = `Kirim Ulang (${countdown}s)`;
+    // Real-time countdown management
+    const COUNTDOWN_KEY = `otp_countdown_${email}`;
+    const COUNTDOWN_DURATION = 60; // seconds
 
-    const interval = setInterval(() => {
-      countdown--;
-      resendBtn.textContent = `Kirim Ulang (${countdown}s)`;
-      if (countdown <= 0) {
-        clearInterval(interval);
-        resendBtn.disabled = false;
-        resendBtn.textContent = "Kirim Ulang";
+    function initializeCountdown() {
+      const now = Date.now();
+      const stored = localStorage.getItem(COUNTDOWN_KEY);
+
+      if (stored) {
+        const { endTime } = JSON.parse(stored);
+        const remaining = Math.max(0, Math.ceil((endTime - now) / 1000));
+
+        if (remaining > 0) {
+          startCountdown(remaining);
+          return;
+        }
       }
-    }, 1000);
 
+      // Enable resend button immediately if no active countdown
+      resendBtn.disabled = false;
+      resendBtn.textContent = "Kirim Ulang";
+    }
+
+    function startCountdown(duration = COUNTDOWN_DURATION) {
+      const now = Date.now();
+      const endTime = now + (duration * 1000);
+
+      // Store countdown end time
+      localStorage.setItem(COUNTDOWN_KEY, JSON.stringify({ endTime }));
+
+      resendBtn.disabled = true;
+
+      const updateCountdown = () => {
+        const now = Date.now();
+        const remaining = Math.max(0, Math.ceil((endTime - now) / 1000));
+
+        if (remaining > 0) {
+          resendBtn.textContent = `Kirim Ulang (${remaining}s)`;
+          setTimeout(updateCountdown, 1000);
+        } else {
+          // Countdown finished
+          localStorage.removeItem(COUNTDOWN_KEY);
+          resendBtn.disabled = false;
+          resendBtn.textContent = "Kirim Ulang";
+        }
+      };
+
+      updateCountdown();
+    }
+
+    // Initialize countdown on page load
+    initializeCountdown();
+
+    // Resend OTP handler
     resendBtn.addEventListener("click", async () => {
+      const originalText = resendBtn.textContent;
       resendBtn.disabled = true;
       resendBtn.textContent = "Mengirim...";
+
       try {
-        await OtpPresenter.resendOtp(email);
-        messageEl.textContent = "Kode OTP telah dikirim ulang.";
-        messageEl.className = "text-green-600";
-        countdown = 60;
-        resendBtn.disabled = true;
-        resendBtn.textContent = `Kirim Ulang (${countdown}s)`;
-        const newInterval = setInterval(() => {
-          countdown--;
-          resendBtn.textContent = `Kirim Ulang (${countdown}s)`;
-          if (countdown <= 0) {
-            clearInterval(newInterval);
-            resendBtn.disabled = false;
-            resendBtn.textContent = "Kirim Ulang";
-          }
-        }, 1000);
+        const result = await OtpPresenter.resendOtp(email);
+
+        // Clear any previous messages
+        messageEl.textContent = result.message || "Kode OTP telah dikirim ulang.";
+        messageEl.className = "text-green-600 dark:text-green-400 text-sm text-center mt-4";
+
+        // Start new countdown
+        startCountdown();
+
       } catch (err) {
+        // Show backend error message
         messageEl.textContent = err.message || "Gagal mengirim ulang OTP.";
-        messageEl.className = "text-red-500";
+        messageEl.className = "text-red-500 dark:text-red-400 text-sm text-center mt-4";
+
+        // Re-enable button on error
+        resendBtn.disabled = false;
+        resendBtn.textContent = originalText;
       }
     });
 
+    // OTP input handlers
     inputs.forEach((input, index) => {
       input.addEventListener("input", () => {
         input.value = input.value.replace(/[^0-9]/g, "");
@@ -113,7 +170,9 @@ const OtpPage = {
         e.preventDefault();
         const paste = e.clipboardData.getData("text").slice(0, 6);
         paste.split("").forEach((char, i) => {
-          if (inputs[i]) inputs[i].value = char;
+          if (inputs[i] && /^[0-9]$/.test(char)) {
+            inputs[i].value = char;
+          }
         });
         if (paste.length === 6) {
           inputs[5].focus();
@@ -121,6 +180,7 @@ const OtpPage = {
       });
     });
 
+    // Form submission handler
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
@@ -128,27 +188,45 @@ const OtpPage = {
 
       if (otp.length !== 6) {
         messageEl.textContent = "Kode OTP harus 6 digit.";
-        messageEl.className = "text-red-500";
+        messageEl.className = "text-red-500 dark:text-red-400 text-sm text-center mt-4";
         return;
       }
+
+      // Clear any previous messages
+      messageEl.textContent = "Memverifikasi...";
+      messageEl.className = "text-blue-600 dark:text-blue-400 text-sm text-center mt-4";
 
       OtpPresenter.handleOtp(
         email,
         otp,
         (successMessage) => {
+          // Success callback - only called for 200 OK responses
           messageEl.textContent = successMessage;
-          messageEl.className = "text-green-600";
+          messageEl.className = "text-green-600 dark:text-green-400 text-sm text-center mt-4";
+
+          // Clean up
           sessionStorage.removeItem("pendingOtpEmail");
+          localStorage.removeItem(COUNTDOWN_KEY);
+
+          // Redirect to dashboard after delay
           setTimeout(() => {
             window.location.href = "/#/dashboard";
           }, 1500);
         },
         (errorMessage) => {
+          // Error callback - for non-200 responses or other errors
           messageEl.textContent = errorMessage;
-          messageEl.className = "text-red-500";
+          messageEl.className = "text-red-500 dark:text-red-400 text-sm text-center mt-4";
+
+          // Clear OTP inputs on error
+          inputs.forEach(input => input.value = "");
+          inputs[0].focus();
         }
       );
     });
+
+    // Focus first input on load
+    inputs[0].focus();
   }
 };
 

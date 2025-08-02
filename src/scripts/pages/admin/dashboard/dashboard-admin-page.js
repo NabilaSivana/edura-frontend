@@ -1,4 +1,6 @@
-// File: routes/admin/dashboard-admin-page.js
+// File: src/scripts/pages/admin/dashboard-admin-page.js
+import createSidebar from "../../../component/sidebar.js";
+
 const DashboardAdminPage = {
   async render() {
     return `
@@ -8,10 +10,7 @@ const DashboardAdminPage = {
           <div id="sidebar-wrapper"></div>
 
           <main class="flex-1 overflow-y-auto p-6 md:p-10 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white">
-            <h1 class="text-2xl font-bold mb-4">Dashboard Admin</h1>
-
-            <!-- Tambahkan ini -->
-            <div id="admin-dashboard-overview" class="space-y-6"></div>
+            <div id="admin-dashboard-container" class="space-y-6"></div>
           </main>
         </div>
       </div>
@@ -19,18 +18,21 @@ const DashboardAdminPage = {
   },
 
   async afterRender() {
+    // Sidebar
     const sidebarWrapper = document.getElementById("sidebar-wrapper");
     sidebarWrapper.innerHTML = "";
     const sidebar = await createSidebar();
     sidebarWrapper.appendChild(sidebar);
 
+    // Navbar
     const navbarModule = (await import("../../../component/navbar.js")).default;
     const navbarContainer = document.getElementById("navbar-container");
     navbarContainer.innerHTML = navbarModule().render();
     navbarModule().afterRender();
 
+    // Load presenter
     const presenter = (await import("./dashboard-admin-presenter.js")).default;
-    presenter.init(); // <-- Pastikan ini dipanggil
+    presenter.init();
   },
 };
 

@@ -1,83 +1,123 @@
-import CONFIG from "../../../config";
+// === File: pages/admin/env-config/model.js ===
+import CONFIG from "../../../config.js";
 
 const EnvConfigModel = {
     // GET: Ambil semua config environment
     async fetchEnv() {
-        const res = await fetch(`${CONFIG.BASE_URL}/admin/env`, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-        });
+        try {
+            const response = await fetch(`${CONFIG.BASE_URL}/admin/env`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
 
-        if (!res.ok) throw new Error("Gagal mengambil konfigurasi environment");
-        return await res.json();
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `HTTP ${response.status}: Gagal mengambil konfigurasi environment`);
+            }
+
+            const data = await response.json();
+            return data || [];
+        } catch (error) {
+            console.error('Error fetching env configs:', error);
+            throw error;
+        }
     },
 
     // GET: Ambil config berdasarkan key
     async getEnvByKey(key) {
-        const res = await fetch(`${CONFIG.BASE_URL}/admin/env/${key}`, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-        });
+        try {
+            const response = await fetch(`${CONFIG.BASE_URL}/admin/env/${encodeURIComponent(key)}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
 
-        if (!res.ok) throw new Error("Gagal mengambil konfigurasi berdasarkan key");
-        return await res.json();
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `HTTP ${response.status}: Gagal mengambil konfigurasi berdasarkan key`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error(`Error fetching env config for key ${key}:`, error);
+            throw error;
+        }
     },
 
     // PUT: Update/insert config berdasarkan key
     async updateEnvByKey(key, value) {
-        const res = await fetch(`${CONFIG.BASE_URL}/admin/env/${key}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-            body: JSON.stringify({ value }),
-        });
+        try {
+            const response = await fetch(`${CONFIG.BASE_URL}/admin/env/${encodeURIComponent(key)}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify({ value }),
+            });
 
-        if (!res.ok) {
-            const err = await res.json();
-            throw new Error(err.message || "Gagal memperbarui konfigurasi");
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `HTTP ${response.status}: Gagal memperbarui konfigurasi`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error(`Error updating env config ${key}:`, error);
+            throw error;
         }
-
-        return await res.json();
     },
 
     // DELETE: Hapus config berdasarkan key
     async deleteEnvByKey(key) {
-        const res = await fetch(`${CONFIG.BASE_URL}/admin/env/${key}`, {
-            method: "DELETE",
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-        });
+        try {
+            const response = await fetch(`${CONFIG.BASE_URL}/admin/env/${encodeURIComponent(key)}`, {
+                method: "DELETE",
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
 
-        if (!res.ok) {
-            const err = await res.json();
-            throw new Error(err.message || "Gagal menghapus konfigurasi");
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `HTTP ${response.status}: Gagal menghapus konfigurasi`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error(`Error deleting env config ${key}:`, error);
+            throw error;
         }
-
-        return await res.json();
     },
 
     // PUT: Set API key Gemini yang aktif
     async setActiveGeminiKey(api_key) {
-        const res = await fetch(`${CONFIG.BASE_URL}/admin/env/gemini/activate`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-            body: JSON.stringify({ api_key }),
-        });
+        try {
+            const response = await fetch(`${CONFIG.BASE_URL}/admin/env/gemini/activate`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify({ api_key }),
+            });
 
-        if (!res.ok) {
-            const err = await res.json();
-            throw new Error(err.message || "Gagal mengaktifkan Gemini API key");
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `HTTP ${response.status}: Gagal mengaktifkan Gemini API key`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error activating Gemini API key:', error);
+            throw error;
         }
-
-        return await res.json();
     },
 };
 

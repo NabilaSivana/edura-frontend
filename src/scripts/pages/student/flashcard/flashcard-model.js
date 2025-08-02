@@ -76,6 +76,7 @@ class FlashcardModel {
 
     try {
       const response = await API.getFlashcards(this.courseId);
+      //console.log("Data", response);
 
       if (response.flashcards && Array.isArray(response.flashcards)) {
         this.flashcards = response.flashcards.flatMap((session) =>
@@ -128,7 +129,7 @@ class FlashcardModel {
       const response = await API.getFlashcardStatus(this.courseId);
       return response;
     } catch (error) {
-      console.error("Failed to check flashcard status:", error);
+      // console.error("Failed to check flashcard status:", error);
       throw error;
     }
   }

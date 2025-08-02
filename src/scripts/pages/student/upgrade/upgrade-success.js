@@ -1,3 +1,4 @@
+import createSidebar from "../../../component/sidebar";
 const PaymentStatusPage = {
   async render() {
     // Ambil status dari URL hash query

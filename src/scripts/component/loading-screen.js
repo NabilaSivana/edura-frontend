@@ -1,3 +1,4 @@
+// file: src/scripts/component/loading-screen.js
 export function showLoadingScreen(message = "Loading...") {
   // Hindari duplikat
   if (document.getElementById("global-loading-screen")) return;
@@ -10,11 +11,6 @@ export function showLoadingScreen(message = "Loading...") {
   overlay.style.width = "100%";
   overlay.style.height = "100%";
   overlay.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
-  if (document.documentElement.classList.contains("dark")) {
-    overlay.style.backgroundColor = "rgba(31, 41, 55, 0.8)"; // dark:bg-gray-800/80
-    text.style.color = "#fff";
-  }
-
   overlay.style.display = "flex";
   overlay.style.flexDirection = "column";
   overlay.style.alignItems = "center";
@@ -36,6 +32,12 @@ export function showLoadingScreen(message = "Loading...") {
   text.style.fontSize = "18px";
   text.style.fontWeight = "bold";
   text.style.color = "#333";
+
+  // ✅ PERBAIKAN: Pindahkan pengecekan dark mode setelah text dibuat
+  if (document.documentElement.classList.contains("dark")) {
+    overlay.style.backgroundColor = "rgba(31, 41, 55, 0.8)"; // dark:bg-gray-800/80
+    text.style.color = "#fff";
+  }
 
   overlay.appendChild(spinner);
   overlay.appendChild(text);
@@ -61,6 +63,7 @@ export function hideLoadingScreen() {
     overlay.remove();
   }
 }
+
 // file: src/scripts/component/loading-element.js
 export function showElementLoading(containerId, message = "Loading...") {
   const container = document.getElementById(containerId);
@@ -68,7 +71,7 @@ export function showElementLoading(containerId, message = "Loading...") {
 
   container.innerHTML = `
     <div class="flex justify-center items-center py-10">
-      <div class="text-center text-gray-600 animate-pulse">
+      <div class="text-center text-gray-600 dark:text-gray-300 animate-pulse">
         <div class="loader mb-2 w-6 h-6 border-4 border-blue-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
         <p class="text-sm">${message}</p>
       </div>

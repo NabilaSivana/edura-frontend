@@ -5,9 +5,10 @@ const DashboardTeacherModel = {
     async fetchUnverifiedCourses() {
         try {
             const result = await Api.getTeacherUnverifiedCourses();
+            //console.log(result);
             return result;
         } catch (error) {
-            console.error("Gagal mengambil daftar course:", error);
+            // console.error("Gagal mengambil daftar course:", error);
             throw error;
         }
     },
@@ -16,16 +17,17 @@ const DashboardTeacherModel = {
             const result = await Api.getTeacherVerifiedCourses();
             return result;
         } catch (error) {
-            console.error("Gagal mengambil daftar course yang sudah diverifikasi:", error);
+            // console.error("Gagal mengambil daftar course yang sudah diverifikasi:", error);
             throw error;
         }
     },
     async fetchCourseDetail(courseId) {
         try {
-            const result = await Api.getTeacherCourseDetail(courseId);
-            return result;
+            const data = await Api.getTeacherCourseDetail(courseId);
+            //console.log("Data",data);
+            return data;
         } catch (error) {
-            console.error("Gagal mengambil detail course:", error);
+            // console.error("Gagal mengambil detail course:", error);
             throw error;
         }
     },
@@ -34,7 +36,7 @@ const DashboardTeacherModel = {
         try {
             return await Api.editTeacherCourse(courseId, { title, description });
         } catch (error) {
-            console.error("Gagal memperbarui course:", error);
+            // console.error("Gagal memperbarui course:", error);
             throw error;
         }
     },
@@ -43,7 +45,7 @@ const DashboardTeacherModel = {
         try {
             return await Api.revertTeacherCourse(courseId);
         } catch (error) {
-            console.error("Gagal mengatur ulang course:", error);
+            // console.error("Gagal mengatur ulang course:", error);
             throw error;
         }
     },
@@ -52,7 +54,7 @@ const DashboardTeacherModel = {
         try {
             return await Api.editTeacherSession(courseId, sessionNumber, { title, content });
         } catch (error) {
-            console.error("Gagal memperbarui sesi:", error);
+            // console.error("Gagal memperbarui sesi:", error);
             throw error;
         }
     },
@@ -61,7 +63,7 @@ const DashboardTeacherModel = {
         try {
             return await Api.deleteTeacherSession(courseId, sessionNumber);
         } catch (error) {
-            console.error("Gagal menghapus sesi:", error);
+            // console.error("Gagal menghapus sesi:", error);
             throw error;
         }
     },
@@ -70,7 +72,7 @@ const DashboardTeacherModel = {
         try {
             return await Api.verifyTeacherCourse(courseId);
         } catch (error) {
-            console.error("Gagal verifikasi course:", error);
+            // console.error("Gagal verifikasi course:", error);
             throw error;
         }
     }

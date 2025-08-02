@@ -34,7 +34,7 @@ class FlashcardPresenter {
 
       this.showCurrentCard(false);
     } catch (error) {
-      console.error("Gagal memuat flashcards:", error);
+      // console.error("Gagal memuat flashcards:", error);
       if (typeof this.view.showErrorMessage === "function") {
         this.view.showErrorMessage("Terjadi kesalahan saat memuat flashcards.");
       }

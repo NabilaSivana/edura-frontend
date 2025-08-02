@@ -1,3 +1,4 @@
+//component/courseCardItem.js
 export function createCourseCard(course) {
   const card = document.createElement("div");
   card.className =

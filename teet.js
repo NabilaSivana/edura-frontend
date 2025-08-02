@@ -102,7 +102,7 @@ async function handleMaterialAction({
         try {
           const response = await Api.generateFinalExam(courseId);
 
-          console.log("Generate Final Exam Response:", response);
+          //console.log("Generate Final Exam Response:", response);
 
           // Perbaiki kondisi pengecekan response
           // Sesuaikan dengan response: {"message":"Proses generate final exam dimulai.","status":"generating"}
@@ -119,11 +119,11 @@ async function handleMaterialAction({
             );
 
             // Tunggu beberapa detik untuk proses generate selesai
-            console.log("Waiting for generation to complete...");
+            //console.log("Waiting for generation to complete...");
             await new Promise((resolve) => setTimeout(resolve, 3000));
 
             // Refresh data berkali-kali untuk memastikan status terupdate
-            console.log("Refreshing data...");
+            //console.log("Refreshing data...");
             await refreshData();
 
             // Tunggu lagi dan refresh sekali lagi jika perlu
@@ -156,3 +156,4 @@ async function handleMaterialAction({
 }
 
 export { createMaterialCardItem };
+

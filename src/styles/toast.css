@@ -1,0 +1,204 @@
+/* Tambahkan CSS ini ke file global styles Anda untuk efek yang lebih halus */
+
+/* Toast Container Enhancements */
+#toast-container {
+  z-index: 9999;
+  max-height: 100vh;
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+}
+
+#toast-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+
+/* Enhanced Toast Animations */
+@keyframes toast-bounce-in {
+  0% {
+    transform: translateX(100%) scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: translateX(-10px) scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes toast-fade-out {
+  0% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%) scale(0.9);
+    opacity: 0;
+  }
+}
+
+@keyframes toast-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Toast Item Enhancements */
+.toast-item {
+  backdrop-filter: blur(8px);
+  box-shadow: 
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.toast-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 25px 30px -5px rgba(0, 0, 0, 0.15),
+    0 15px 15px -5px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Enhanced animations for different types */
+.toast-bounce-in {
+  animation: toast-bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.toast-fade-out {
+  animation: toast-fade-out 0.3s ease-in-out;
+}
+
+.toast-error {
+  animation: toast-shake 0.5s ease-in-out;
+}
+
+/* Progress bar enhancements */
+.toast-progress-bar {
+  background: linear-gradient(90deg, 
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0.4) 100%
+  );
+  border-radius: 0 0 4px 4px;
+}
+
+/* Loading spinner enhancement */
+.toast-loading-spinner {
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+}
+
+/* Action buttons enhancement */
+.toast-item button:not(.close-btn) {
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.toast-item button:not(.close-btn):before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.toast-item button:not(.close-btn):hover:before {
+  left: 100%;
+}
+
+/* Mobile responsiveness enhancements */
+@media (max-width: 640px) {
+  #toast-container {
+    left: 0.5rem !important;
+    right: 0.5rem !important;
+    top: 0.5rem !important;
+  }
+  
+  .toast-item {
+    min-width: auto !important;
+    max-width: none !important;
+    margin: 0;
+  }
+  
+  .toast-item .flex {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .toast-item .flex > div:first-child {
+    width: 100%;
+  }
+  
+  .toast-item button {
+    align-self: flex-end;
+    margin-top: -1.5rem;
+  }
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+  .toast-item {
+    box-shadow: 
+      0 20px 25px -5px rgba(0, 0, 0, 0.3),
+      0 10px 10px -5px rgba(0, 0, 0, 0.2),
+      0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+  
+  .toast-progress-bar {
+    background: linear-gradient(90deg, 
+      rgba(255, 255, 255, 0.3) 0%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0.1) 100%
+    );
+  }
+}
+
+/* Enhanced focus states for accessibility */
+.toast-item button:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .toast-slide-in,
+  .toast-slide-out,
+  .toast-bounce-in,
+  .toast-fade-out {
+    animation: none;
+  }
+  
+  .toast-item {
+    transition: none;
+  }
+  
+  .toast-loading-spinner {
+    animation: none;
+  }
+  
+  .toast-progress-bar {
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .toast-item {
+    border: 2px solid;
+    box-shadow: none;
+  }
+}
+
+/* Print styles - hide toasts when printing */
+@media print {
+  #toast-container {
+    display: none !important;
+  }
+}

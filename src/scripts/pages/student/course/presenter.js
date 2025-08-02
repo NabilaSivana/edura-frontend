@@ -4,7 +4,7 @@ import CourseView from "./view.js";
 const CoursePresenter = {
   async init() {
     try {
-      console.log("[CoursePresenter] Initializing course from session...");
+      //console.log("[CoursePresenter] Initializing course from session...");
       const data = await CourseModel.fetchCourseContent();
 
       sessionStorage.setItem(`course-${data.course.id}`, JSON.stringify(data));

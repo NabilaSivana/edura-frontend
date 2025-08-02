@@ -1,3 +1,4 @@
+//component/courseList.js
 import CONFIG from "../config.js";
 import { createCourseCard } from "./courseCardItem.js";
 

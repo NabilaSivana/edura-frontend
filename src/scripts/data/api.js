@@ -1,865 +1,660 @@
-// File: src/scripts/data/api.js
-import CONFIG from "../config.js";
+// src/scripts/data/api.js - Main API entry point (modular version)
+import coreAPI from './core.js';
+import studentAPI from './student.js';
+import teacherAPI from './teacher.js';
+import adminAPI from './admin.js';
+import utilsAPI from './utils.js';
+import CONFIG from './config.js';
 
-const Api = {
-  async login({ email, password }) {
-    const response = await fetch(`${CONFIG.BASE_URL}/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
+/**
+ * Main API class that combines all API modules
+ * This provides a unified interface while maintaining modular structure
+ */
+class MainAPI {
+    constructor() {
+        // Initialize all API modules
+        this.core = coreAPI;
+        this.student = studentAPI;
+        this.teacher = teacherAPI;
+        this.admin = adminAPI;
+        this.utils = utilsAPI;
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Email atau password salah");
+        // Expose CONFIG for backward compatibility
+        this.CONFIG = CONFIG;
+
+        console.log('🚀 Modular API initialized successfully');
     }
 
-    return response.json();
-  },
+    // ============================================
+    // BACKWARD COMPATIBILITY METHODS
+    // These methods provide compatibility with the old API structure
+    // ============================================
 
-  async register({ full_name, email, password, role }) {
-    const response = await fetch(`${CONFIG.BASE_URL}/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ full_name, email, password, role }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message);
+    // Authentication methods (delegated to core)
+    async login(credentials) {
+        return this.core.login(credentials);
     }
 
-    return response.json();
-  },
-
-  async forgotPassword(email) {
-    const response = await fetch(`${CONFIG.BASE_URL}/forgot-password`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Gagal mengirim email reset");
+    async register(userData) {
+        return this.core.register(userData);
     }
 
-    return response.json();
-  },
-
-  async postVerifyEmail({ token }) {
-    const response = await fetch(
-      `${CONFIG.BASE_URL}/verify-email?token=${token}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error("Verification failed.");
+    async forgotPassword(email) {
+        return this.core.forgotPassword(email);
     }
 
-    return response.json();
-  },
-
-  async postResetPassword({ token, new_password }) {
-    const response = await fetch(`${CONFIG.BASE_URL}/reset-password`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ token, new_password }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Reset password failed.");
+    async postVerifyEmail(data) {
+        return this.core.postVerifyEmail(data);
     }
 
-    return response.json();
-  },
-
-  async sendMagicLink(email) {
-    const response = await fetch(`${CONFIG.BASE_URL}/send-magic-link`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Gagal mengirim magic link");
+    async getVerifyEmail(params) {
+        return this.core.getVerifyEmail(params);
     }
 
-    return response.json();
-  },
-
-  async verifyOtp({ email, otp }) {
-    const response = await fetch(`${CONFIG.BASE_URL}/verify-otp`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, otp }),
-    });
-
-    if (!response.ok) {
-      throw new Error("OTP tidak valid");
+    async postSendMagicLink(data) {
+        return this.core.postSendMagicLink(data);
     }
 
-    return response.json();
-  },
-  async resendOtp({ email }) {
-    const response = await fetch(`${CONFIG.BASE_URL}/resend-otp`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Gagal mengirim ulang OTP");
+    async postResetPassword(data) {
+        return this.core.postResetPassword(data);
     }
 
-    return response.json();
-  },
-
-  async getProfile() {
-    const response = await fetch(`${CONFIG.BASE_URL}/profile`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error("Profil tidak ditemukan");
-      }
-      localStorage.removeItem("token");
-      window.location.hash = "#/login";
-      throw new Error("Gagal mengambil profil");
+    async sendMagicLink(email) {
+        return this.core.sendMagicLink(email);
     }
 
-    const result = await response.json();
-    return result.profile; // ambil hanya object profile saja
-  },
-
-  //API STUDENTS
-  async getStudentCourses() {
-    const response = await fetch(`${CONFIG.BASE_URL}/student/courses`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        return []; // Jika belum punya kursus
-      }
-      throw new Error("Gagal mengambil data kursus");
+    async verifyOtp(data) {
+        return this.core.verifyOtp(data);
     }
 
-    const data = await response.json();
-
-    // Pastikan data dalam bentuk array
-    const courses = Array.isArray(data) ? data : [];
-
-    // Tambahkan field is_verified dan verified_by jika perlu
-    const enrichedCourses = courses.map((course) => {
-      const isVerified = course.is_verified === true;
-      return {
-        ...course,
-        is_verified: isVerified,
-        verified_by: isVerified ? course.verified_by : null,
-      };
-    });
-
-    return enrichedCourses;
-  },
-  async getStudentProfile() {
-    const response = await fetch(`${CONFIG.BASE_URL}/student/profile`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+    async resendOtp(data) {
+        return this.core.resendOtp(data);
     }
 
-    return await response.json();
-  },
-  async getTeacherProfile() {
-    const response = await fetch(`${CONFIG.BASE_URL}/teacher/profile`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+    async postSetupTeacherPassword(data) {
+        return this.core.postSetupTeacherPassword(data);
     }
 
-    return await response.json();
-  },
-  async createStudentProfile(data) {
-    const response = await fetch(`${CONFIG.BASE_URL}/student/profile`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) throw new Error("Gagal menyimpan profil siswa");
-    return response.json();
-  },
-
-  async createTeacherProfile(data) {
-    const response = await fetch(`${CONFIG.BASE_URL}/teacher/profile`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) throw new Error("Gagal menyimpan profil guru");
-    return response.json();
-  },
-  async createCourse({ subject, level }) {
-    const response = await fetch(`${CONFIG.BASE_URL}/student/course/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify({ subject, level }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Gagal membuat kursus");
+    async postResendTeacherSetupLink(data) {
+        return this.core.postResendTeacherSetupLink(data);
     }
 
-    return await response.json();
-  },
-  async getCourseRecommendations() {
-    const response = await fetch(
-      `${CONFIG.BASE_URL}/student/course/recommendations`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(
-        errorData.message || "Gagal mengambil rekomendasi kursus"
-      );
-    }
-    return await response.json();
-  },
-  async updateProfile(data) {
-    const response = await fetch(`${CONFIG.BASE_URL}/profile`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Gagal memperbarui profil");
+    // Profile methods (delegated to core)
+    async getProfile(forceRefresh = false) {
+        return this.core.getProfile(forceRefresh);
     }
 
-    return await response.json();
-  },
-
-  async updateStudentProfile(data) {
-    const response = await fetch(`${CONFIG.BASE_URL}/student/profile`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(
-        errorData.message || "Gagal memperbarui profil mahasiswa"
-      );
+    async updateProfile(data) {
+        return this.core.updateProfile(data);
     }
 
-    return await response.json();
-  },
+    // Student methods (delegated to student)
+    async getStudentProfile(forceRefresh = false) {
+        return this.student.getStudentProfile(forceRefresh);
+    }
 
-  async updateStudentCheckpoint(courseId) {
-    const response = await fetch(
-      `${CONFIG.BASE_URL}/student/courses/${courseId}/checkpoint`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-    if (!response.ok) throw new Error("Gagal mengupdate checkpoint");
-    return response.json();
-  },
+    async createStudentProfile(data) {
+        return this.student.createStudentProfile(data);
+    }
 
-  async getStudentCourseStatus(courseId) {
-    const res = await fetch(
-      `${CONFIG.BASE_URL}/student/courses/${courseId}/status`,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-    if (!res.ok) throw new Error("Gagal mengambil status kursus");
-    return res.json();
-  },
+    async updateStudentProfile(data) {
+        return this.student.updateStudentProfile(data);
+    }
 
-  async getStudentCourseContent(courseId) {
-    const response = await fetch(
-      `${CONFIG.BASE_URL}/student/courses/${courseId}/content`,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-    if (!response.ok) throw new Error("Gagal mengambil konten kursus");
-    return response.json();
-  },
-  // Perbaikan untuk api.js - sesuaikan dengan backend API
-  async getFlashcards(course_id) {
-    const res = await fetch(
-      `${CONFIG.BASE_URL}/student/flashcards?course_id=${course_id}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-    return res.json();
-  },
+    async getStudentCourses() {
+        return this.student.getStudentCourses();
+    }
 
-  async generateFlashcards(courseId) {
-    const res = await fetch(`${CONFIG.BASE_URL}/student/flashcards/generate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify({
-        course_id: courseId,
-      }),
-    });
-    return res.json();
-  },
+    async createCourse(data) {
+        return this.student.createCourse(data);
+    }
 
-  async getFlashcardStatus(course_id) {
-    const res = await fetch(
-      `${CONFIG.BASE_URL}/student/flashcards/status?course_id=${course_id}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-    return res.json();
-  },
+    async updateStudentCheckpoint(courseId) {
+        return this.student.updateStudentCheckpoint(courseId);
+    }
 
-  async getQuiz(courseId, sessionNumber) {
-    try {
-      const token = localStorage.getItem("token");
+    async getCourseRecommendations() {
+        return this.student.getCourseRecommendations();
+    }
 
-      const response = await fetch(
-        `${CONFIG.BASE_URL}/student/quiz?course_id=${courseId}&session_number=${sessionNumber}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+    async getStudentCourseStatus(courseId) {
+        return this.student.getStudentCourseStatus(courseId);
+    }
+
+    async getStudentCourseContent(courseId) {
+        return this.student.getStudentCourseContent(courseId);
+    }
+
+    async joinStudentClass(classCode) {
+        return this.student.joinStudentClass(classCode);
+    }
+
+    async leaveStudentClass(className) {
+        return this.student.leaveStudentClass(className);
+    }
+
+    // Flashcards methods (delegated to student)
+    async getFlashcards(courseId) {
+        return this.student.getFlashcards(courseId);
+    }
+
+    async generateFlashcards(courseId) {
+        return this.student.generateFlashcards(courseId);
+    }
+
+    async getFlashcardStatus(courseId) {
+        return this.student.getFlashcardStatus(courseId);
+    }
+
+    // Quiz methods (delegated to student)
+    async generateQuiz(courseId, sessionNumber) {
+        return this.student.generateQuiz(courseId, sessionNumber);
+    }
+
+    async getQuiz(courseId, sessionNumber, forceRefresh = false) {
+        return this.student.getQuiz(courseId, sessionNumber, forceRefresh);
+    }
+
+    async getQuizResult(courseId, sessionNumber, forceRefresh = false) {
+        return this.student.getQuizResult(courseId, sessionNumber, forceRefresh);
+    }
+
+    async submitQuiz(courseId, sessionNumber, answers, retry = false) {
+        return this.student.submitQuiz(courseId, sessionNumber, answers, retry);
+    }
+
+    async submitQuizAndGetFreshResult(courseId, sessionNumber, answers, retry = false) {
+        return this.student.submitQuizAndGetFreshResult(courseId, sessionNumber, answers, retry);
+    }
+
+    async clearAllQuizRelatedCache(courseId, sessionNumber) {
+        return this.student.clearAllQuizRelatedCache(courseId, sessionNumber);
+    }
+
+    // Final exam methods (delegated to student)
+    async checkFinalExam(courseId) {
+        return this.student.checkFinalExam(courseId);
+    }
+
+    async getFinalExam(courseId) {
+        return this.student.getFinalExam(courseId);
+    }
+
+    async generateFinalExam(courseId) {
+        return this.student.generateFinalExam(courseId);
+    }
+
+    async checkFinalExamStatus(courseId) {
+        return this.student.checkFinalExamStatus(courseId);
+    }
+
+    async submitFinalExam(courseId, answers) {
+        return this.student.submitFinalExam(courseId, answers);
+    }
+
+    async getFinalExamResult(courseId) {
+        return this.student.getFinalExamResult(courseId);
+    }
+
+    async getFinalExamLeaderboard(courseId, classId) {
+        return this.student.getFinalExamLeaderboard(courseId, classId);
+    }
+
+    async checkFinalExamWithRetry(courseId) {
+        return this.student.checkFinalExamWithRetry(courseId);
+    }
+
+    async submitFinalExamSafe(courseId, answers) {
+        return this.student.submitFinalExamSafe(courseId, answers);
+    }
+
+    // Course generation helpers (delegated to student)
+    async getPendingGenerations() {
+        return this.student.getPendingGenerations();
+    }
+
+    async checkCourseGenerationStatus(courseId) {
+        return this.student.checkCourseGenerationStatus(courseId);
+    }
+
+    // Teacher methods (delegated to teacher)
+    async getTeacherProfile(forceRefresh = false) {
+        return this.teacher.getTeacherProfile(forceRefresh);
+    }
+
+    async createTeacherProfile(data) {
+        return this.teacher.createTeacherProfile(data);
+    }
+
+    async updateTeacherProfile(data) {
+        return this.teacher.updateTeacherProfile(data);
+    }
+
+    async getTeacherUnverifiedCourses() {
+        return this.teacher.getTeacherUnverifiedCourses();
+    }
+
+    async getTeacherVerifiedCourses() {
+        return this.teacher.getTeacherVerifiedCourses();
+    }
+
+    async getTeacherCourseDetail(courseId) {
+        return this.teacher.getTeacherCourseDetail(courseId);
+    }
+
+    async verifyTeacherCourse(courseId) {
+        return this.teacher.verifyTeacherCourse(courseId);
+    }
+
+    async editTeacherCourse(courseId, data) {
+        return this.teacher.editTeacherCourse(courseId, data);
+    }
+
+    async revertTeacherCourse(courseId, data) {
+        return this.teacher.revertTeacherCourse(courseId, data);
+    }
+
+    async deleteTeacherCourseSession(courseId, sessionNumber) {
+        return this.teacher.deleteTeacherCourseSession(courseId, sessionNumber);
+    }
+
+    async editTeacherCourseSession(courseId, sessionNumber, data) {
+        return this.teacher.editTeacherCourseSession(courseId, sessionNumber, data);
+    }
+
+    async deleteTeacherSession(courseId, sessionNumber) {
+        return this.teacher.deleteTeacherSession(courseId, sessionNumber);
+    }
+
+    // Teacher class management (delegated to teacher)
+    async getTeacherClasses() {
+        return this.teacher.getTeacherClasses();
+    }
+
+    async createTeacherClass(data) {
+        return this.teacher.createTeacherClass(data);
+    }
+
+    async updateTeacherClass(classId, data) {
+        return this.teacher.updateTeacherClass(classId, data);
+    }
+
+    async deleteTeacherClass(classId) {
+        return this.teacher.deleteTeacherClass(classId);
+    }
+
+    async getClassStudents(classId) {
+        return this.teacher.getClassStudents(classId);
+    }
+
+    async removeStudentFromClass(classId, studentId) {
+        return this.teacher.removeStudentFromClass(classId, studentId);
+    }
+
+    async getTeacherGrades(classId) {
+        return this.teacher.getTeacherGrades(classId);
+    }
+
+    // Teacher request methods (delegated to teacher)
+    async submitTeacherRequest(data) {
+        return this.teacher.submitTeacherRequest(data);
+    }
+
+    async checkTeacherRequestStatusByNIDN(nidn) {
+        return this.teacher.checkTeacherRequestStatusByNIDN(nidn);
+    }
+
+    async checkTeacherRequestStatusByNIP(nip) {
+        return this.teacher.checkTeacherRequestStatusByNIP(nip);
+    }
+
+    async checkTeacherRequestStatusByEmail(email) {
+        return this.teacher.checkTeacherRequestStatusByEmail(email);
+    }
+
+    async getMyTeacherRequestStatus() {
+        return this.teacher.getMyTeacherRequestStatus();
+    }
+
+    // Admin methods (delegated to admin)
+    async getUserById(userId) {
+        return this.admin.getUserById(userId);
+    }
+
+    async createUser(userData) {
+        return this.admin.createUser(userData);
+    }
+
+    async updateUser(userId, updateData) {
+        return this.admin.updateUser(userId, updateData);
+    }
+
+    async deleteUser(userId) {
+        return this.admin.deleteUser(userId);
+    }
+
+    async resetUserPassword(userId, options = {}) {
+        return this.admin.resetUserPassword(userId, options);
+    }
+
+    async exportUsers(role = 'all') {
+        return this.admin.exportUsers(role);
+    }
+
+    async getAllstudent(page = 1, limit = 10, search = "") {
+        return this.admin.getAllstudent(page, limit, search);
+    }
+
+    async getAllteacher(page = 1, limit = 10, search = "") {
+        return this.admin.getAllteacher(page, limit, search);
+    }
+
+    async getAlladmin(page = 1, limit = 10, search = "") {
+        return this.admin.getAlladmin(page, limit, search);
+    }
+
+    async importUsers(file) {
+        return this.admin.importUsers(file);
+    }
+
+    // Admin teacher request management (delegated to admin)
+    async getTeacherRequests() {
+        return this.admin.getTeacherRequests();
+    }
+
+    async updateTeacherRequestStatus(id, status, rejectReason = null) {
+        return this.admin.updateTeacherRequestStatus(id, status, rejectReason);
+    }
+
+    // Admin class management (delegated to admin)
+    async getAllClasses(options = {}) {
+        return this.admin.getAllClasses(options);
+    }
+
+    async getAllTeachers(options = {}) {
+        return this.admin.getAllTeachers(options);
+    }
+
+    async createAdminClass(classData) {
+        return this.admin.createAdminClass(classData);
+    }
+
+    async updateAdminClass(classId, classData) {
+        return this.admin.updateAdminClass(classId, classData);
+    }
+
+    async deleteAdminClass(classId) {
+        return this.admin.deleteAdminClass(classId);
+    }
+
+    async transferClassOwnership(classId, newTeacherId) {
+        return this.admin.transferClassOwnership(classId, newTeacherId);
+    }
+
+    async getAdminClassStudents(classId) {
+        return this.admin.getAdminClassStudents(classId);
+    }
+
+    async removeStudentFromClassAdmin(classId, studentId) {
+        return this.admin.removeStudentFromClassAdmin(classId, studentId);
+    }
+
+    async getAdminClassStatistics() {
+        return this.admin.getAdminClassStatistics();
+    }
+
+    // Admin course management (delegated to admin)
+    async getAdminCourses(options = {}) {
+        return this.admin.getAdminCourses(options);
+    }
+
+    async getAdminCourseDetail(courseId) {
+        return this.admin.getAdminCourseDetail(courseId);
+    }
+
+    async updateAdminCourse(courseId, updateData) {
+        return this.admin.updateAdminCourse(courseId, updateData);
+    }
+
+    async deleteAdminCourse(courseId) {
+        return this.admin.deleteAdminCourse(courseId);
+    }
+
+    async exportAdminCourses() {
+        return this.admin.exportAdminCourses();
+    }
+
+    async getAdminCourseStatistics() {
+        return this.admin.getAdminCourseStatistics();
+    }
+
+    async getAllCourses() {
+        return this.admin.getAllCourses();
+    }
+
+    // Utility methods (delegated to utils)
+    async getSnapToken() {
+        return this.utils.getSnapToken();
+    }
+
+    async getCurrentUser() {
+        return this.utils.getCurrentUser();
+    }
+
+    async getEnums() {
+        return this.utils.getEnums();
+    }
+
+    async getClassCodeInfo(code) {
+        return this.utils.getClassCodeInfo(code);
+    }
+
+    async checkClassCode(code) {
+        return this.utils.checkClassCode(code);
+    }
+
+    // Offline-first methods (delegated to utils)
+    async getProfileOfflineFirst() {
+        return this.utils.getProfileOfflineFirst();
+    }
+
+    async getCoursesOfflineFirst() {
+        return this.utils.getCoursesOfflineFirst();
+    }
+
+    async safeWriteOperation(action, data, priority = 1) {
+        return this.utils.safeWriteOperation(action, data, priority);
+    }
+
+    // Cache utilities (delegated to utils)
+    async clearAllCache() {
+        return this.utils.clearAllCache();
+    }
+
+    async clearCachePattern(pattern) {
+        return this.utils.clearCachePattern(pattern);
+    }
+
+    async getCacheStats() {
+        return this.utils.getCacheStats();
+    }
+
+    // Validation helpers (delegated to utils)
+    validateEmail(email) {
+        return this.utils.validateEmail(email);
+    }
+
+    validateNIDN(nidn) {
+        return this.utils.validateNIDN(nidn);
+    }
+
+    validateNIP(nip) {
+        return this.utils.validateNIP(nip);
+    }
+
+    validatePhone(phone) {
+        return this.utils.validatePhone(phone);
+    }
+
+    // Format helpers (delegated to utils)
+    formatPhone(phone) {
+        return this.utils.formatPhone(phone);
+    }
+
+    formatDate(date, options = {}) {
+        return this.utils.formatDate(date, options);
+    }
+
+    formatCurrency(amount, currency = 'IDR') {
+        return this.utils.formatCurrency(amount, currency);
+    }
+
+    // Network utilities (delegated to utils)
+    getNetworkStatus() {
+        return this.utils.getNetworkStatus();
+    }
+
+    async waitForNetwork(timeout = 30000) {
+        return this.utils.waitForNetwork(timeout);
+    }
+
+    // Error handling (delegated to utils)
+    handleAPIError(error, context = '') {
+        return this.utils.handleAPIError(error, context);
+    }
+
+    // Retry utilities (delegated to utils)
+    async retryWithBackoff(fn, maxRetries = 3, baseDelay = 1000, context = '') {
+        return this.utils.retryWithBackoff(fn, maxRetries, baseDelay, context);
+    }
+
+    // Performance utilities (delegated to utils)
+    debounce(func, wait, immediate = false) {
+        return this.utils.debounce(func, wait, immediate);
+    }
+
+    throttle(func, limit) {
+        return this.utils.throttle(func, limit);
+    }
+
+    // Logging (delegated to utils)
+    log(level, message, data = null) {
+        return this.utils.log(level, message, data);
+    }
+
+    // ============================================
+    // LEGACY COMPATIBILITY METHODS
+    // These methods are kept for backward compatibility
+    // ============================================
+
+    // Clear cache methods (backward compatibility)
+    clearUserCache(userType) {
+        return this.core.clearUserCache(userType);
+    }
+
+    // Validation methods (backward compatibility with teacher API)
+    validateTeacherRequestData(data) {
+        return this.teacher.validateTeacherRequestData(data);
+    }
+
+    validateAdminClassData(data) {
+        return this.admin.validateAdminClassData(data);
+    }
+
+    // ============================================
+    // MODULE ACCESS METHODS
+    // For advanced users who want direct access to specific modules
+    // ============================================
+
+    // Get specific module
+    getModule(moduleName) {
+        const modules = {
+            core: this.core,
+            student: this.student,
+            teacher: this.teacher,
+            admin: this.admin,
+            utils: this.utils
+        };
+
+        if (!modules[moduleName]) {
+            console.warn(`Module '${moduleName}' not found. Available modules:`, Object.keys(modules));
+            return null;
         }
-      );
 
-      if (!response.ok) {
-        throw new Error("Gagal mengambil quiz: " + response.statusText);
-      }
-
-      const result = await response.json();
-      return result.data?.questions || [];
-    } catch (error) {
-      console.error("Error getQuiz:", error);
-      throw new Error("Gagal mengambil quiz: " + error.message);
+        return modules[moduleName];
     }
-  },
 
-  async generateQuiz(courseId, sessionNumber) {
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`${CONFIG.BASE_URL}/student/quiz/generate`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          course_id: courseId,
-          session_number: sessionNumber,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Gagal generate quiz: " + response.statusText);
-      }
-
-      const result = await response.json();
-      return result;
-    } catch (error) {
-      console.error("Error generateQuiz:", error);
-      throw new Error("Gagal generate quiz: " + error.message);
+    // Get all modules
+    getAllModules() {
+        return {
+            core: this.core,
+            student: this.student,
+            teacher: this.teacher,
+            admin: this.admin,
+            utils: this.utils
+        };
     }
-  },
-  async submitQuiz(courseId, sessionNumber, answers, retry = true) {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${CONFIG.BASE_URL}/student/quiz/submit`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          course_id: courseId,
-          session_number: sessionNumber,
-          answers,
-          retry,
-        }),
-      });
-      if (!response.ok) {
-        throw new Error("Gagal submit quiz: " + response.statusText);
-      }
-      return await response.json();
-    } catch (error) {
-      console.error("Error submitQuiz:", error);
-      throw new Error("Gagal submit quiz: " + error.message);
-    }
-  },
 
-  async getQuizResult(courseId, sessionNumber) {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${CONFIG.BASE_URL}/student/quiz/result?course_id=${courseId}&session_number=${sessionNumber}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+    // ============================================
+    // SYSTEM INFORMATION METHODS
+    // ============================================
+
+    // Get API version info
+    getVersion() {
+        return {
+            version: '2.0.0',
+            type: 'modular',
+            modules: ['core', 'student', 'teacher', 'admin', 'utils'],
+            features: [
+                'offline-first',
+                'caching',
+                'retry-logic',
+                'modular-architecture',
+                'backward-compatibility'
+            ],
+            timestamp: Date.now()
+        };
+    }
+
+    // Get system status
+    async getSystemStatus() {
+        const networkStatus = this.getNetworkStatus();
+        let cacheStats = null;
+
+        try {
+            cacheStats = await this.getCacheStats();
+        } catch (error) {
+            console.warn('Failed to get cache stats:', error);
         }
-      );
-      if (!response.ok) {
-        throw new Error("Gagal mengambil hasil quiz: " + response.statusText);
-      }
-      return await response.json();
-    } catch (error) {
-      console.error("Error getQuizResult:", error);
-      throw new Error("Gagal mengambil hasil quiz: " + error.message);
+
+        return {
+            network: networkStatus,
+            cache: cacheStats,
+            modules: {
+                core: !!this.core,
+                student: !!this.student,
+                teacher: !!this.teacher,
+                admin: !!this.admin,
+                utils: !!this.utils
+            },
+            version: this.getVersion(),
+            timestamp: Date.now()
+        };
     }
-  },
-  // Final Exam APIs
+}
 
-  async checkFinalExam(courseId) {
-    const token = localStorage.getItem("token");
-    const response = await fetch(
-      `${CONFIG.BASE_URL}/student/final-exam?course_id=${courseId}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+// Create and export singleton instance
+const Api = new MainAPI();
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Gagal mengecek final exam");
-    }
-
-    return response.json();
-  },
-  // Ambil soal final exam (jika sudah tersedia)
-  async getFinalExam(courseId) {
-    const token = localStorage.getItem("token");
-    const response = await fetch(
-      `${CONFIG.BASE_URL}/student/final-exam/?course_id=${courseId}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Gagal mengambil soal final exam");
-    }
-
-    return response.json(); // berisi array soal atau format tertentu
-  },
-
-  async generateFinalExam(courseId) {
-    const token = localStorage.getItem("token");
-    const response = await fetch(
-      `${CONFIG.BASE_URL}/student/final-exam/generate`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ course_id: courseId }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Gagal generate final exam");
-    }
-
-    return response.json();
-  },
-
-  async checkFinalExamStatus(courseId) {
-    const token = localStorage.getItem("token");
-    const response = await fetch(
-      `${CONFIG.BASE_URL}/student/final-exam/status?course_id=${courseId}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Gagal mengecek status final exam");
-    }
-
-    return response.json();
-  },
-
-  async submitFinalExam(courseId, answers) {
-    const token = localStorage.getItem("token");
-    const response = await fetch(
-      `${CONFIG.BASE_URL}/student/final-exam/submit`,
-      {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          course_id: courseId,
-          answers: answers,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Gagal submit final exam");
-    }
-
-    return response.json();
-  },
-
-  async getFinalExamResult(courseId) {
-    const token = localStorage.getItem("token");
-    const response = await fetch(
-      `${CONFIG.BASE_URL}/student/final-exam/result?course_id=${courseId}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Gagal mengambil hasil final exam");
-    }
-
-    console.log("Response dari API:", response);
-    return response.json();
-  },
-
-  async deleteTeacherSession(courseId, sessionNumber) {
-    const res = await fetch(
-      `${CONFIG.BASE_URL}/teacher/courses/${courseId}/sessions/${sessionNumber}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-    return res.json();
-  },
-
-  async verifyTeacherCourse(courseId) {
-    const res = await fetch(
-      `${CONFIG.BASE_URL}/teacher/courses/${courseId}/verify`,
-      {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-    return res.json();
-  },
-
-  async getAllstudent(page = 1, limit = 10, search = "") {
-    const url = new URL(`${CONFIG.BASE_URL}/management/list-student`);
-    url.searchParams.append("page", page);
-    url.searchParams.append("limit", limit);
-    if (search) url.searchParams.append("search", search);
-    return fetch(url, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    }).then((res) =>
-      res.ok ? res.json() : Promise.reject("Gagal ambil data siswa")
-    );
-  },
-  async getAllteacher(page = 1, limit = 10, search = "") {
-    const url = new URL(`${CONFIG.BASE_URL}/management/list-teacher`);
-    url.searchParams.append("page", page);
-    url.searchParams.append("limit", limit);
-    if (search) url.searchParams.append("search", search);
-    return fetch(url, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    }).then((res) =>
-      res.ok ? res.json() : Promise.reject("Gagal ambil data guru")
-    );
-  },
-  async getAlladmin(page = 1, limit = 10, search = "") {
-    const url = new URL(`${CONFIG.BASE_URL}/management/list-admin`);
-    url.searchParams.append("page", page);
-    url.searchParams.append("limit", limit);
-    if (search) url.searchParams.append("search", search);
-    return fetch(url, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    }).then((res) =>
-      res.ok ? res.json() : Promise.reject("Gagal ambil data admin")
-    );
-  },
-  async importUsers(file) {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const response = await fetch(`${CONFIG.BASE_URL}/management/import-users`, {
-      method: "POST",
-      body: formData,
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Gagal mengimpor data pengguna");
-    }
-
-    return response.json();
-  },
-
-  async getSnapToken() {
-    const response = await fetch(`${CONFIG.BASE_URL}/payment/snap-token`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    });
-    return response.json();
-  },
-
-  async getCurrentUser() {
-    const response = await fetch(`${CONFIG.BASE_URL}/me`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    });
-    return response.json();
-  },
-  async getEnums() {
-    const res = await fetch(`${CONFIG.BASE_URL}/enums`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-    if (!res.ok) throw new Error("Gagal mengambil data enum");
-    return res.json();
-  },
-
-  async checkClassCode(code) {
-    const response = await fetch(
-      `${CONFIG.BASE_URL}/public/class-code-info?code=${encodeURIComponent(
-        code
-      )}`,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-    if (!response.ok) throw new Error("Kode kelas tidak ditemukan");
-
-    const data = await response.json();
-
-    // Debug
-    console.log("Kode kelas ditemukan:", data);
-
-    return data;
-  },
-  // === CLASS MANAGEMENT ===
-  async getTeacherClasses() {
-    const response = await fetch(`${CONFIG.BASE_URL}/teacher/classes`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-    return response.json();
-  },
-
-  async createTeacherClass(data) {
-    const response = await fetch(`${CONFIG.BASE_URL}/teacher/class`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
-  },
-
-  async updateTeacherClass(classId, data) {
-    const response = await fetch(
-      `${CONFIG.BASE_URL}/teacher/class/${classId}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(data),
-      }
-    );
-    return response.json();
-  },
-
-  async deleteTeacherClass(classId) {
-    const response = await fetch(
-      `${CONFIG.BASE_URL}/teacher/class/${classId}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-    return response.json();
-  },
-
-  async getClassStudents(classId) {
-    const response = await fetch(
-      `${CONFIG.BASE_URL}/teacher/class/${classId}/students`,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-    return response.json();
-  },
-
-  async removeStudentFromClass(classId, studentId) {
-    const response = await fetch(
-      `${CONFIG.BASE_URL}/teacher/class/${classId}/students/${studentId}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-    return response.json();
-  },
-  async getTeacherGrades(classId) {
-    const res = await fetch(
-      `${CONFIG.BASE_URL}/teacher/class/${classId}/grades`,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-
-    if (!res.ok) throw new Error("Gagal mengambil data nilai siswa");
-
-    const text = await res.text();
-    if (!text) return []; // Tidak ada data
-
-    try {
-      return JSON.parse(text);
-    } catch (err) {
-      console.error("[API] Response bukan JSON valid:", text);
-      throw new Error("Response bukan JSON valid");
-    }
-  },
-  async getAllCourses() {
-    const res = await fetch(`${CONFIG.BASE_URL}/management/list-course`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-    if (!res.ok) throw new Error("Gagal mengambil data kursus");
-    return res.json(); // Pastikan ini mengembalikan array
-  },
+// Also export individual modules for direct access if needed
+export {
+    coreAPI as CoreAPI,
+    studentAPI as StudentAPI,
+    teacherAPI as TeacherAPI,
+    adminAPI as AdminAPI,
+    utilsAPI as UtilsAPI,
+    CONFIG
 };
 
+// Export main API as default
 export default Api;

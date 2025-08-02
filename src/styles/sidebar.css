@@ -1,0 +1,371 @@
+/* ===== SIDEBAR BASE STYLES ===== */
+#sidebar {
+  transition: width 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), 
+              padding 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+  will-change: width, padding;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ===== SIDEBAR COLLAPSED STATE STYLES ===== */
+#sidebar.sidebar-collapsed {
+  width: 80px !important;
+  padding: 20px 8px;
+}
+
+/* ===== SIDEBAR TEXT TRANSITIONS ===== */
+.sidebar-text {
+  transition: opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
+              transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
+              width 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transform-origin: left center;
+  will-change: opacity, transform, width;
+}
+
+/* Hide text elements when collapsed */
+#sidebar.sidebar-collapsed .sidebar-text {
+  opacity: 0;
+  transform: translateX(-10px) scale(0.9);
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Show text elements when expanded */
+#sidebar:not(.sidebar-collapsed) .sidebar-text {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  width: auto;
+  pointer-events: auto;
+}
+
+/* ===== LOGO ADJUSTMENTS ===== */
+#sidebar .logo-container {
+  transition: justify-content 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+#sidebar.sidebar-collapsed .logo-container {
+  justify-content: center;
+}
+
+#sidebar:not(.sidebar-collapsed) .logo-container {
+  justify-content: flex-start;
+}
+
+/* ===== MENU ITEMS ADJUSTMENTS ===== */
+.menu-item {
+  transition: padding 0.4s cubic-bezier(0.4, 0.0, 0.2, 1),
+              justify-content 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+  position: relative;
+}
+
+#sidebar.sidebar-collapsed .menu-item {
+  padding: 12px 8px;
+  justify-content: center;
+}
+
+#sidebar:not(.sidebar-collapsed) .menu-item {
+  padding: 12px 16px;
+  justify-content: flex-start;
+}
+
+/* Menu item icons - Menggunakan format asli FontAwesome */
+.menu-item .menu-icon {
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+  transition: margin 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+  font-size: 16px; /* Ukuran ikon yang konsisten */
+}
+
+#sidebar.sidebar-collapsed .menu-item .menu-icon {
+  margin-right: 0;
+}
+
+#sidebar:not(.sidebar-collapsed) .menu-item .menu-icon {
+  margin-right: 16px;
+}
+
+/* ===== CREATE BUTTON ADJUSTMENTS ===== */
+.create-button {
+  transition: padding 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+#sidebar.sidebar-collapsed .create-button {
+  padding: 10px 8px;
+  min-width: 48px;
+  justify-content: center;
+}
+
+#sidebar:not(.sidebar-collapsed) .create-button {
+  padding: 10px 16px;
+  justify-content: center;
+}
+
+.create-button .create-icon {
+  flex-shrink: 0;
+  transition: margin 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+  font-size: 16px; /* Ukuran ikon yang konsisten */
+}
+
+#sidebar.sidebar-collapsed .create-button .create-icon {
+  margin-right: 0;
+}
+
+#sidebar:not(.sidebar-collapsed) .create-button .create-icon {
+  margin-right: 8px;
+}
+
+/* ===== CREDIT BOX ADJUSTMENTS ===== */
+.sidebar-credit {
+  transition: padding 0.4s cubic-bezier(0.4, 0.0, 0.2, 1),
+              text-align 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+  position: relative;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#sidebar.sidebar-collapsed .sidebar-credit {
+  padding: 16px 8px;
+  text-align: center;
+  align-items: center;
+}
+
+#sidebar:not(.sidebar-collapsed) .sidebar-credit {
+  padding: 16px;
+  text-align: left;
+  align-items: stretch;
+}
+
+/* Credit content wrapper for smooth transitions */
+.credit-content {
+  transition: opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
+              transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+#sidebar.sidebar-collapsed .credit-content {
+  opacity: 0;
+  transform: scale(0.8);
+  position: absolute;
+  pointer-events: none;
+}
+
+#sidebar:not(.sidebar-collapsed) .credit-content {
+  opacity: 1;
+  transform: scale(1);
+  position: relative;
+  pointer-events: auto;
+}
+
+/* Mini indicator styles - Ukuran ikon credit yang proporsional */
+.credit-mini-indicator {
+  transition: opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
+              transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  font-size: 20px; /* Ukuran yang lebih proporsional */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+}
+
+#sidebar.sidebar-collapsed .credit-mini-indicator {
+  opacity: 1;
+  transform: scale(1);
+  display: flex !important;
+}
+
+#sidebar:not(.sidebar-collapsed) .credit-mini-indicator {
+  opacity: 0;
+  transform: scale(0.8);
+  display: none !important;
+}
+
+/* ===== THEME TOGGLE ADJUSTMENTS ===== */
+.theme-toggle {
+  transition: padding 0.4s cubic-bezier(0.4, 0.0, 0.2, 1),
+              justify-content 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  min-height: 40px;
+}
+
+#sidebar.sidebar-collapsed .theme-toggle {
+  padding: 10px 8px;
+  justify-content: center;
+}
+
+#sidebar:not(.sidebar-collapsed) .theme-toggle {
+  padding: 10px 12px;
+  justify-content: center;
+}
+
+.theme-toggle .theme-icon {
+  flex-shrink: 0;
+  transition: margin 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+  font-size: 16px; /* Ukuran ikon yang konsisten */
+}
+
+#sidebar.sidebar-collapsed .theme-toggle .theme-icon {
+  margin-right: 0;
+}
+
+#sidebar:not(.sidebar-collapsed) .theme-toggle .theme-icon {
+  margin-right: 8px;
+}
+
+/* ===== TOOLTIP STYLES FOR COLLAPSED STATE ===== */
+.tooltip-trigger {
+  position: relative;
+}
+
+.tooltip-trigger::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s cubic-bezier(0.4, 0.0, 0.2, 1),
+              transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transform: translateY(-50%) translateX(-4px);
+}
+
+.tooltip-trigger::before {
+  content: '';
+  position: absolute;
+  left: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 4px 6px 4px 0;
+  border-color: transparent rgba(0, 0, 0, 0.9) transparent transparent;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s cubic-bezier(0.4, 0.0, 0.2, 1),
+              transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transform: translateY(-50%) translateX(-4px);
+  z-index: 1000;
+}
+
+#sidebar.sidebar-collapsed .tooltip-trigger:hover::after,
+#sidebar.sidebar-collapsed .tooltip-trigger:hover::before {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* Dark mode tooltips */
+.dark .tooltip-trigger::after {
+  background: rgba(255, 255, 255, 0.9);
+  color: #1f2937;
+}
+
+.dark .tooltip-trigger::before {
+  border-color: transparent rgba(255, 255, 255, 0.9) transparent transparent;
+}
+
+/* ===== RESPONSIVE BEHAVIOR ===== */
+@media (max-width: 768px) {
+  #sidebar.sidebar-collapsed {
+    width: 256px !important;
+    padding: 20px;
+  }
+  
+  #sidebar.sidebar-collapsed .sidebar-text {
+    opacity: 1 !important;
+    transform: translateX(0) scale(1) !important;
+    width: auto !important;
+    pointer-events: auto !important;
+  }
+  
+  #sidebar.sidebar-collapsed .credit-content {
+    opacity: 1 !important;
+    transform: scale(1) !important;
+    position: relative !important;
+    pointer-events: auto !important;
+  }
+  
+  #sidebar.sidebar-collapsed .credit-mini-indicator {
+    display: none !important;
+  }
+  
+  #sidebar.sidebar-collapsed .menu-item,
+  #sidebar.sidebar-collapsed .create-button,
+  #sidebar.sidebar-collapsed .theme-toggle,
+  #sidebar.sidebar-collapsed .sidebar-credit {
+    padding: 12px 16px;
+    justify-content: flex-start;
+    text-align: left;
+    align-items: stretch;
+  }
+  
+  #sidebar.sidebar-collapsed .logo-container {
+    justify-content: flex-start;
+  }
+  
+  #sidebar.sidebar-collapsed .menu-item .menu-icon,
+  #sidebar.sidebar-collapsed .create-button .create-icon,
+  #sidebar.sidebar-collapsed .theme-toggle .theme-icon {
+    margin-right: 0; /* Tidak ada margin saat collapsed */
+  }
+  
+  /* Disable tooltips on mobile */
+  .tooltip-trigger::after,
+  .tooltip-trigger::before {
+    display: none;
+  }
+}
+
+/* ===== SMOOTH PERFORMANCE OPTIMIZATIONS ===== */
+#sidebar,
+#sidebar * {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  -moz-backface-visibility: hidden;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  #sidebar,
+  .sidebar-text,
+  .menu-item,
+  .create-button,
+  .sidebar-credit,
+  .theme-toggle,
+  .credit-content,
+  .credit-mini-indicator,
+  .tooltip-trigger::after,
+  .tooltip-trigger::before {
+    transition: none !important;
+  }
+}
+
+/* ===== ADDITIONAL UTILITY CLASSES ===== */
+.sidebar-fixed-height {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-smooth-transform {
+  transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* Ensure proper stacking context */
+#sidebar {
+  isolation: isolate;
+}

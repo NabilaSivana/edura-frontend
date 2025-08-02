@@ -32,7 +32,7 @@ const PaymentPresenter = {
                     },
                 });
             } catch (err) {
-                console.error(err);
+                // console.error(err);
                 alert("❌ Gagal memproses pembayaran. Coba lagi nanti.");
             } finally {
                 button.disabled = false;
