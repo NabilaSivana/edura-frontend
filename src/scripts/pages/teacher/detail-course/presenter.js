@@ -1,5 +1,6 @@
 import CourseDetailModel from "./model.js";
-
+import {promptText} from "../../../utils/prompt.js";
+ 
 function escapeHtml(text) {
   return String(text)
     .replace(/&/g, "&amp;")
@@ -962,36 +963,49 @@ const CourseDetailPresenter = {
   },
 
   // Insert link
-  insertLink(contentEl) {
+  async insertLink(contentEl) {
     const selection = window.getSelection();
     const selectedText = selection.toString();
 
-    const url = prompt('Masukkan URL link:', 'https://');
-    if (url && url.trim() !== '' && url !== 'https://') {
-      const linkText = selectedText || prompt('Masukkan teks link:', url);
-      if (linkText) {
-        const link = document.createElement('a');
-        link.href = url;
-        link.textContent = linkText;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        link.className = 'text-blue-600 dark:text-blue-400 underline hover:text-blue-800 dark:hover:text-blue-300';
+    try {
+      const url = await promptText(
+        'Masukkan URL link:',
+        'https://'
+      );
 
-        const range = selection.getRangeAt(0);
-        range.deleteContents();
-        range.insertNode(link);
+      if (!url || url.trim() === '' || url === 'https://') return;
 
-        // Move cursor after the link
-        const newRange = document.createRange();
-        newRange.setStartAfter(link);
-        newRange.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-      }
+      const linkText = selectedText || await promptText(
+        'Masukkan teks yang akan ditampilkan:',
+        url
+      );
+
+      if (!linkText) return;
+
+      // Create and insert link element
+      const link = document.createElement('a');
+      link.href = url;
+      link.textContent = linkText;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.className = 'text-blue-600 dark:text-blue-400 underline hover:text-blue-800 dark:hover:text-blue-300';
+
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(link);
+
+      // Move cursor after the link
+      const newRange = document.createRange();
+      newRange.setStartAfter(link);
+      newRange.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(newRange);
+    } catch (error) {
+      console.error('Error inserting link:', error);
     }
+
     contentEl.focus();
   },
-
   // Insert quote block
   insertQuote(contentEl) {
     const selection = window.getSelection();

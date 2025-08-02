@@ -1,4 +1,3 @@
-//file : src/scripts/pages/student/course/sessions/view.js
 import CONFIG from "../../../../config.js";
 import { showToastNotification } from "../../../../utils/index.js";
 import { hideLoadingOverlay, showLoadingOverlay } from "../../../../utils/loading.js";
@@ -46,17 +45,27 @@ const SessionView = {
     });
   },
 
-  // Navigation helper with proper scroll handling
+  // Enhanced navigation helper with cache clearing
   async navigateToSession(sessionNumber, scrollFirst = true) {
     try {
       if (scrollFirst) {
         await this.smoothScrollToTop();
       }
 
+      // Clear router cache before navigation
+      window.dispatchEvent(new CustomEvent('force-rerender'));
+      
       sessionStorage.setItem("current_session_number", sessionNumber);
-      location.hash = `#/course/session?number=${sessionNumber}`;
+      
+      // Small delay to ensure cache is cleared
+      setTimeout(() => {
+        location.hash = `#/course/session?number=${sessionNumber}`;
+      }, 10);
+      
     } catch (error) {
       console.error("Navigation error:", error);
+      // Fallback navigation
+      window.dispatchEvent(new CustomEvent('force-rerender'));
       sessionStorage.setItem("current_session_number", sessionNumber);
       location.hash = `#/course/session?number=${sessionNumber}`;
     }
@@ -110,6 +119,8 @@ const SessionView = {
   },
 
   async render(sessionNumberRaw) {
+    console.log(`🔄 SessionView.render called with session: ${sessionNumberRaw}`);
+    
     const main = document.getElementById("main-content");
     if (!main) return;
 
@@ -159,8 +170,13 @@ const SessionView = {
     const validSessionNumber = Math.min(sessionNumber, maxSessionNumber);
 
     if (sessionNumber > maxSessionNumber) {
+      console.log(`🔄 Redirecting from session ${sessionNumber} to max session ${maxSessionNumber}`);
       sessionStorage.setItem("current_session_number", maxSessionNumber);
-      location.hash = `#/course/session?number=${maxSessionNumber}`;
+      
+      // Use timeout to prevent immediate re-render
+      setTimeout(() => {
+        location.hash = `#/course/session?number=${maxSessionNumber}`;
+      }, 100);
       return;
     }
 
@@ -267,6 +283,9 @@ const SessionView = {
     const progressPercentage = Math.round((checkpoint / sessions.length) * 100);
 
     this.sidebarState = false;
+
+    // Log untuk debugging
+    console.log(`📖 Rendering session ${validSessionNumber}: ${session.title}`);
 
     main.innerHTML = `
       <div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
@@ -485,11 +504,14 @@ const SessionView = {
           statusBadge = `<span class="text-xs font-medium px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full">🔒 Terkunci</span>`;
         }
 
-        return `
+                        return `
                   <div class="relative group">
-                    <a href="#/course/session?number=${s.session_number}"
-                      class="block p-4 rounded-xl border-2 ${cardClasses} transition-all duration-200 ${isLocked ? "cursor-not-allowed" : "hover:scale-[1.02] hover:shadow-md"}"
-                      ${isLocked ? 'onclick="return false;"' : ""}
+                    <button 
+                      class="session-nav-btn block w-full p-4 rounded-xl border-2 ${cardClasses} transition-all duration-200 ${isLocked ? "cursor-not-allowed" : "cursor-pointer hover:scale-[1.02] hover:shadow-md active:scale-[0.98]"} text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      data-session-number="${s.session_number}"
+                      data-is-locked="${isLocked}"
+                      ${isLocked ? 'disabled' : ''}
+                      title="${isLocked ? 'Sesi ini masih terkunci' : `Buka Chapter ${s.session_number}: ${s.title}`}"
                     >
                       <div class="flex items-start gap-4">
                         ${statusIcon}
@@ -508,7 +530,7 @@ const SessionView = {
                           </div>
                         </div>
                       </div>
-                    </a>
+                    </button>
                   </div>
                 `;
       }).join("")}
@@ -593,14 +615,14 @@ const SessionView = {
 
               setTimeout(() => {
                 if (validSessionNumber < maxSessionNumber) {
-                  location.hash = `#/course/session?number=${nextSessionNumber}`;
+                  this.navigateToSession(nextSessionNumber, false);
                 } else {
                   location.reload();
                 }
               }, 300);
             } catch (error) {
               if (validSessionNumber < maxSessionNumber) {
-                location.hash = `#/course/session?number=${nextSessionNumber}`;
+                this.navigateToSession(nextSessionNumber, false);
               } else {
                 location.reload();
               }
@@ -682,6 +704,55 @@ const SessionView = {
     closeBtn?.addEventListener("click", closeSidebar);
     backdrop?.addEventListener("click", closeSidebar);
 
+    // Session navigation event delegation
+    const moduleList = document.querySelector("#module-sidebar .space-y-2");
+    const handleSessionNavigation = async (e) => {
+      const sessionBtn = e.target.closest(".session-nav-btn");
+      if (!sessionBtn) return;
+
+      const sessionNumber = parseInt(sessionBtn.dataset.sessionNumber);
+      const isLocked = sessionBtn.dataset.isLocked === "true";
+
+      console.log(`🖱️ Sidebar clicked - Session: ${sessionNumber}, Locked: ${isLocked}`);
+
+      if (isLocked || isNaN(sessionNumber)) {
+        console.log(`❌ Cannot navigate to locked/invalid session: ${sessionNumber}`);
+        showToastNotification("Sesi ini masih terkunci", "warning");
+        return;
+      }
+
+      // Visual feedback - add loading state
+      sessionBtn.style.opacity = "0.7";
+      sessionBtn.style.pointerEvents = "none";
+
+      console.log(`🎯 Sidebar navigation to session: ${sessionNumber}`);
+      
+      // Close sidebar first
+      closeSidebar();
+      
+      // Navigate to session
+      try {
+        await SessionView.navigateToSession(sessionNumber, true);
+      } catch (error) {
+        console.error("Sidebar navigation error:", error);
+        // Fallback navigation
+        window.dispatchEvent(new CustomEvent('force-rerender'));
+        sessionStorage.setItem("current_session_number", sessionNumber);
+        
+        setTimeout(() => {
+          location.hash = `#/course/session?number=${sessionNumber}`;
+        }, 100);
+      } finally {
+        // Reset button state
+        setTimeout(() => {
+          sessionBtn.style.opacity = "";
+          sessionBtn.style.pointerEvents = "";
+        }, 1000);
+      }
+    };
+
+    moduleList?.addEventListener("click", handleSessionNavigation);
+
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
         closeSidebar();
@@ -692,9 +763,26 @@ const SessionView = {
 
     const cleanup = () => {
       document.removeEventListener("keydown", handleKeyDown);
+      moduleList?.removeEventListener("click", handleSessionNavigation);
     };
 
     SessionView.cleanup = cleanup;
+
+    // Expose SessionView to window for accessibility
+    window.SessionView = SessionView;
+
+    // Debug: Log all session buttons
+    setTimeout(() => {
+      const sessionBtns = document.querySelectorAll('.session-nav-btn');
+      console.log(`🔍 Debug: Found ${sessionBtns.length} session navigation buttons`);
+      sessionBtns.forEach((btn, index) => {
+        const sessionNum = btn.dataset.sessionNumber;
+        const isLocked = btn.dataset.isLocked;
+        console.log(`   Button ${index + 1}: Session ${sessionNum}, Locked: ${isLocked}, Disabled: ${btn.disabled}`);
+      });
+    }, 500);
+
+    console.log(`✅ Session ${validSessionNumber} rendered successfully`);
   },
 };
 

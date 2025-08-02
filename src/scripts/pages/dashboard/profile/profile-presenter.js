@@ -1,6 +1,8 @@
 // pages/dashboard/profile/profile-presenter.js
+import { showToastNotification } from '../../../utils/index.js';
 import ProfileModel from './profile-model.js';
 import ProfileView from './profile-view.js';
+import customPrompt, { promptText, promptTextarea } from '../../../utils/prompt.js';
 
 class ProfilePresenter {
   constructor() {
@@ -514,8 +516,10 @@ class ProfilePresenter {
 
   // Student Class Methods
   async handleJoinClass() {
-    const classCode = prompt('Enter class code:');
-    if (!classCode) return;
+    const classCode = await promptText(
+      'Masukkan kode kelas untuk bergabung:',
+      ''
+    ); if (!classCode) return;
 
     try {
       await this.model.joinClass(classCode.trim());
@@ -527,7 +531,7 @@ class ProfilePresenter {
 
     } catch (error) {
       console.error('Error joining class:', error);
-      alert(error.message || 'Failed to join class');
+      showToastNotification(error.message || 'Failed to join class', 'error');
     }
   }
 
@@ -535,24 +539,34 @@ class ProfilePresenter {
     if (!this.model.roleProfile?.kelas) return;
 
     const className = this.model.roleProfile.kelas;
-    const confirmation = prompt(`To leave class "${className}", please type the class name exactly:`);
-
-    if (confirmation !== className) {
-      alert('Class name does not match. Please try again.');
-      return;
-    }
 
     try {
+      // Menggunakan customPrompt.show() dengan opsi lengkap
+      const confirmation = await customPrompt.show({
+        title: 'Konfirmasi Keluar Kelas',
+        message: `Untuk keluar dari kelas "${className}", ketik nama kelas dengan tepat:`,
+        type: 'text',
+        placeholder: className,
+        validator: (value) => {
+          if (value !== className) {
+            return 'Nama kelas tidak sesuai. Ketik nama kelas dengan tepat.';
+          }
+          return true;
+        },
+        confirmText: 'Keluar Kelas',
+        cancelText: 'Batal',
+        required: true
+      });
+
+      if (!confirmation) return; // User cancelled
+
       await this.model.leaveClass(className);
       this.view.showSuccessMessage('Successfully left class!');
-
-      // Re-render profile content
       await this.renderProfileContent();
       this.bindEvents();
-
     } catch (error) {
       console.error('Error leaving class:', error);
-      alert(error.message || 'Failed to leave class');
+      showToastNotification(error.message || 'Failed to leave class', 'error');
     }
   }
 
@@ -630,7 +644,7 @@ class ProfilePresenter {
 
     } catch (error) {
       console.error('❌ Error refreshing profile:', error);
-      alert('Failed to refresh profile: ' + (error.message || 'Unknown error'));
+      showToastNotification('Failed to refresh profile: ' + (error.message || 'Unknown error'), 'error');
     } finally {
       // Always restore button state
       if (refreshBtn) {

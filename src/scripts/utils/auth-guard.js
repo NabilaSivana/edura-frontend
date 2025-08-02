@@ -479,9 +479,9 @@ const AuthGuard = {
         "/status": ["student"],
 
         // Teacher specific routes
-        "/class": ["teacher", "admin"],
-        "/grade": ["teacher", "admin"],
-        "/teacher/course-detail": ["teacher", "admin"],
+        "/class": ["teacher"],
+        "/grade": ["teacher"],
+        "/teacher/course-detail": ["teacher"],
 
         // Admin specific routes
         "/manage-users": ["admin"],

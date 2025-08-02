@@ -113,7 +113,7 @@ export class TeacherAPI extends coreAPI.constructor {
         if (!courseId) throw new Error('Course ID is required');
 
         const response = await this._fetchWithOfflineSupport(`${CONFIG.BASE_URL}/teacher/courses/${courseId}/verify`, {
-            method: 'PATCH',
+            method: 'PUT',
             headers: this._getHeaders(),
             body: JSON.stringify({})
         });
@@ -130,7 +130,7 @@ export class TeacherAPI extends coreAPI.constructor {
         if (!courseId) throw new Error('Course ID is required');
 
         const response = await this._fetchWithOfflineSupport(`${CONFIG.BASE_URL}/teacher/courses/${courseId}`, {
-            method: 'PATCH',
+            method: 'PUT',
             headers: this._getHeaders(),
             body: JSON.stringify(data)
         });
@@ -148,7 +148,7 @@ export class TeacherAPI extends coreAPI.constructor {
         if (!courseId) throw new Error('Course ID is required');
 
         const response = await this._fetchWithOfflineSupport(`${CONFIG.BASE_URL}/teacher/courses/${courseId}/revert`, {
-            method: 'PATCH',
+            method: 'PUT',
             headers: this._getHeaders(),
             body: JSON.stringify(data)
         });
@@ -186,7 +186,7 @@ export class TeacherAPI extends coreAPI.constructor {
         }
 
         const response = await this._fetchWithOfflineSupport(`${CONFIG.BASE_URL}/teacher/courses/${courseId}/sessions/${sessionNumber}`, {
-            method: 'PATCH',
+            method: 'PUT',
             headers: this._getHeaders(),
             body: JSON.stringify(data)
         });

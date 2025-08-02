@@ -56,7 +56,7 @@
 //           p-6 rounded-xl border dark:border-gray-700 shadow-lg hover:shadow-2xl 
 //           hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden
 //         `;
-        
+
 //         card.innerHTML = `
 //           <div class="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-bl-full"></div>
 //           <div class="relative z-10">
@@ -171,7 +171,7 @@
 //       const statsContainer = document.createElement("div");
 //       statsContainer.id = "class-stats";
 //       statsContainer.className = "mb-6";
-      
+
 //       // Insert after back button or at the beginning
 //       const backButton = document.getElementById("back-to-class-list");
 //       if (backButton && backButton.parentNode) {
@@ -184,7 +184,7 @@
 //       const bulkContainer = document.createElement("div");
 //       bulkContainer.id = "bulk-actions";
 //       bulkContainer.className = "hidden mb-4";
-      
+
 //       // Insert before table
 //       const table = document.querySelector("table");
 //       if (table && table.parentNode) {
@@ -203,7 +203,7 @@
 //       const controlsContainer = document.createElement("div");
 //       controlsContainer.id = "enhanced-controls";
 //       controlsContainer.className = "flex flex-wrap items-center gap-4 mb-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg";
-      
+
 //       controlsContainer.innerHTML = `
 //         <div class="flex-1 min-w-[200px]">
 //           <div class="relative">
@@ -226,7 +226,7 @@
 //           Export Excel
 //         </button>
 //       `;
-      
+
 //       // Insert before table
 //       const table = document.querySelector("table");
 //       if (table && table.parentNode) {
@@ -250,7 +250,7 @@
 //     // Enhanced search functionality
 //     const enhancedSearch = document.getElementById("enhanced-search");
 //     const originalSearch = document.getElementById("student-search");
-    
+
 //     const searchHandler = (e) => {
 //       const keyword = e.target.value.toLowerCase();
 //       this.filteredData = this.studentsData.filter(
@@ -282,7 +282,7 @@
 //         if (icon) {
 //           icon.className = this.sortAsc ? "fas fa-sort-alpha-down mr-2" : "fas fa-sort-alpha-up mr-2";
 //         }
-        
+
 //         this.filteredData.sort((a, b) => {
 //           return this.sortAsc
 //             ? a.full_name.localeCompare(b.full_name)
@@ -507,7 +507,7 @@
 
 //     tbody.appendChild(tr);
 //     this.attachActionListeners(tr);
-    
+
 //     // Add checkbox listener if exists
 //     const checkbox = tr.querySelector(".student-checkbox");
 //     if (checkbox) {
@@ -529,7 +529,7 @@
 //         const originalText = btn.innerHTML;
 //         btn.disabled = true;
 //         btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Memproses...';
-        
+
 //         const payload = {
 //           course_id: btn.dataset.course,
 //           student_id: btn.dataset.student,
@@ -554,7 +554,7 @@
 //         const email = btn.dataset.email;
 //         const name = btn.dataset.name;
 //         const courseId = btn.dataset.course;
-        
+
 //         const reason = prompt(`Masukkan pesan pengingat untuk ${name}:`);
 //         if (!reason || reason.trim().length === 0) {
 //           this.showNotification("❌ Pesan tidak boleh kosong.", "error");
@@ -635,7 +635,7 @@
 //     if (!bulkActionsContainer) return;
 
 //     const selectedCount = this.selectedStudents.size;
-    
+
 //     if (selectedCount > 0) {
 //       bulkActionsContainer.classList.remove("hidden");
 //       bulkActionsContainer.innerHTML = `
@@ -674,7 +674,7 @@
 //   bulkNotifyStudents() {
 //     const selectedStudentIds = Array.from(this.selectedStudents);
 //     const selectedStudentsData = this.filteredData.filter(s => selectedStudentIds.includes(s.student_id));
-    
+
 //     const message = prompt("Masukkan pesan untuk semua siswa yang dipilih:");
 //     if (!message || message.trim().length === 0) {
 //       this.showNotification("❌ Pesan tidak boleh kosong.", "error");
@@ -720,7 +720,7 @@
 //   bulkExportStudents() {
 //     const selectedStudentIds = Array.from(this.selectedStudents);
 //     const selectedStudentsData = this.filteredData.filter(s => selectedStudentIds.includes(s.student_id));
-    
+
 //     this.exportToExcel(`${this.currentClassName}_selected_students.xlsx`, selectedStudentsData);
 //   },
 
@@ -757,7 +757,7 @@
 //     try {
 //       // Prepare data for Excel with the exact format from the image
 //       const excelData = [];
-      
+
 //       data.forEach((student) => {
 //         if (student.courses && student.courses.length > 0) {
 //           student.courses.forEach((course) => {
@@ -788,7 +788,7 @@
 //       // Create workbook
 //       const ws = XLSX.utils.json_to_sheet(excelData);
 //       const wb = XLSX.utils.book_new();
-      
+
 //       // Set column widths to match the table format
 //       const colWidths = [
 //         {wch: 20}, // Nama
@@ -819,7 +819,7 @@
 //         for (let C = range.s.c; C <= range.e.c; ++C) {
 //           const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
 //           if (!ws[cellAddress]) continue;
-          
+
 //           ws[cellAddress].s = ws[cellAddress].s || {};
 //           ws[cellAddress].s.border = {
 //             top: { style: "thin", color: { rgb: "000000" } },
@@ -841,7 +841,7 @@
 
 //       // Save file with proper Excel format
 //       XLSX.writeFile(wb, filename, { bookType: 'xlsx', type: 'binary' });
-      
+
 //       this.showNotification(`✅ File Excel berhasil diunduh: ${filename}`, "success");
 //     } catch (error) {
 //       console.error("Export Excel error:", error);
@@ -899,7 +899,7 @@
 //     a.click();
 //     document.body.removeChild(a);
 //     window.URL.revokeObjectURL(url);
-    
+
 //     this.showNotification(`✅ File CSV berhasil diunduh: ${filename}`, "success");
 //   },
 
@@ -972,7 +972,7 @@
 
 //     const notification = document.createElement('div');
 //     notification.className = `notification-toast fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full`;
-    
+
 //     let bgColor, textColor, icon;
 //     switch (type) {
 //       case 'success':
@@ -1081,7 +1081,7 @@ const TeacherGradePresenter = {
           shadow-sm hover:shadow-xl hover:border-blue-300 dark:hover:border-blue-600
           transition-all duration-300 cursor-pointer overflow-hidden
         `;
-        
+
         card.innerHTML = `
           <div class="p-6">
             <!-- Header Section -->
@@ -1175,15 +1175,15 @@ const TeacherGradePresenter = {
 
     try {
       const students = await TeacherGradeModel.getStudentsByClass(classId);
-      
+
       // 🔥 FILTER: Hanya siswa yang sudah mengikuti course
-      const activeStudents = students.filter(student => 
+      const activeStudents = students.filter(student =>
         student.courses && student.courses.length > 0
       );
 
       this.studentsData = activeStudents;
       this.filteredData = [...activeStudents];
-      
+
       if (activeStudents.length === 0) {
         tbody.innerHTML = `
           <tr>
@@ -1242,7 +1242,7 @@ const TeacherGradePresenter = {
       const headerContainer = document.createElement("div");
       headerContainer.id = "class-header";
       headerContainer.className = "mb-8";
-      
+
       headerContainer.innerHTML = `
         <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white shadow-xl">
           <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -1259,7 +1259,7 @@ const TeacherGradePresenter = {
           </div>
         </div>
       `;
-      
+
       const backButton = document.getElementById("back-to-class-list");
       if (backButton && backButton.parentNode) {
         backButton.parentNode.insertBefore(headerContainer, backButton.nextSibling);
@@ -1273,7 +1273,7 @@ const TeacherGradePresenter = {
       const statsContainer = document.createElement("div");
       statsContainer.id = "class-stats";
       statsContainer.className = "mb-8";
-      
+
       const table = document.querySelector("table");
       if (table && table.parentNode) {
         table.parentNode.insertBefore(statsContainer, table);
@@ -1287,7 +1287,7 @@ const TeacherGradePresenter = {
       const controlsContainer = document.createElement("div");
       controlsContainer.id = "enhanced-controls";
       controlsContainer.className = "mb-6";
-      
+
       controlsContainer.innerHTML = `
         <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
           <div class="flex flex-col lg:flex-row lg:items-center gap-4">
@@ -1328,7 +1328,7 @@ const TeacherGradePresenter = {
           </div>
         </div>
       `;
-      
+
       table.parentNode.insertBefore(controlsContainer, table);
     }
   },
@@ -1458,18 +1458,18 @@ const TeacherGradePresenter = {
     // Grade
     const gradeCell = `
       <td class="px-4 py-4 align-top text-center">
-        ${course.score_final_exam !== null && course.score_final_exam !== undefined ? 
-          (() => {
-            const grade = course.score_final_exam;
-            let colorClass = "bg-gray-100 text-gray-800";
-            if (grade >= 85) colorClass = "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
-            else if (grade >= 70) colorClass = "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
-            else if (grade >= 60) colorClass = "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
-            else colorClass = "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
-            return `<span class="inline-flex items-center px-3 py-1.5 rounded-lg text-base font-semibold ${colorClass}">${grade}</span>`;
-          })()
-          : '<span class="text-gray-400 text-base">-</span>'
-        }
+        ${course.score_final_exam !== null && course.score_final_exam !== undefined ?
+        (() => {
+          const grade = course.score_final_exam;
+          let colorClass = "bg-gray-100 text-gray-800";
+          if (grade >= 85) colorClass = "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
+          else if (grade >= 70) colorClass = "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
+          else if (grade >= 60) colorClass = "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
+          else colorClass = "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+          return `<span class="inline-flex items-center px-3 py-1.5 rounded-lg text-base font-semibold ${colorClass}">${grade}</span>`;
+        })()
+        : '<span class="text-gray-400 text-base">-</span>'
+      }
       </td>
     `;
 
@@ -1488,21 +1488,20 @@ const TeacherGradePresenter = {
     // Status
     const statusCell = `
       <td class="px-4 py-4 align-top text-center">
-        ${course.status_kelulusan ? 
-          (() => {
-            const isLulus = course.status_kelulusan.toLowerCase().includes('lulus');
-            return `<span class="inline-flex items-center px-3 py-1.5 rounded-lg text-base font-medium ${
-              isLulus 
-                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
-                : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+        ${course.status_kelulusan ?
+        (() => {
+          const isLulus = course.status_kelulusan.toLowerCase().includes('lulus');
+          return `<span class="inline-flex items-center px-3 py-1.5 rounded-lg text-base font-medium ${isLulus
+              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+              : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
             }">
               ${course.status_kelulusan}
             </span>`;
-          })()
-          : `<span class="inline-flex items-center px-3 py-1.5 rounded-lg text-base font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+        })()
+        : `<span class="inline-flex items-center px-3 py-1.5 rounded-lg text-base font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
                Berlangsung
              </span>`
-        }
+      }
       </td>
     `;
 
@@ -1510,8 +1509,8 @@ const TeacherGradePresenter = {
     const actionCell = `
       <td class="px-4 py-4 align-top">
         <div class="flex flex-col space-y-2">
-          ${course.is_completed && course.score_final_exam !== null ? 
-            `<button 
+          ${course.is_completed && course.score_final_exam !== null ?
+        `<button 
               class="print-cert-btn inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium min-w-[120px]"
               data-course="${course.course_id}"
               data-student="${student.student_id}"
@@ -1519,9 +1518,9 @@ const TeacherGradePresenter = {
               <i class="fas fa-certificate mr-2"></i>
               Kirim Sertifikat
             </button>` : ''
-          }
-          ${(course.score_final_exam === null || course.score_final_exam === undefined) && student.email ? 
-            `<button 
+      }
+          ${(course.score_final_exam === null || course.score_final_exam === undefined) && student.email ?
+        `<button 
               class="notify-student-btn inline-flex items-center justify-center px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm font-medium min-w-[120px]"
               data-email="${student.email}"
               data-name="${student.full_name}"
@@ -1529,7 +1528,7 @@ const TeacherGradePresenter = {
               <i class="fas fa-envelope mr-2"></i>
               Kirim Notifikasi
             </button>` : ''
-          }
+      }
         </div>
       </td>
     `;
@@ -1546,7 +1545,7 @@ const TeacherGradePresenter = {
         const originalText = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Mengirim...';
-        
+
         const payload = {
           course_id: btn.dataset.course,
           student_id: btn.dataset.student,
@@ -1571,21 +1570,26 @@ const TeacherGradePresenter = {
         const email = btn.dataset.email;
         const name = btn.dataset.name;
         const courseId = btn.dataset.course;
-        
-        const reason = prompt(`Kirim pesan pengingat untuk ${name}:\n\n(Contoh: "Mohon segera menyelesaikan course untuk mendapatkan sertifikat")`);
-        if (!reason || reason.trim().length === 0) {
-          this.showNotification("❌ Pesan tidak boleh kosong", "error");
-          return;
-        }
-
-        const originalText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Mengirim...';
 
         try {
+          const reason = await promptTextarea(
+            `Kirim pesan pengingat untuk ${name}:`,
+            'Mohon segera menyelesaikan course untuk mendapatkan sertifikat.'
+          );
+
+          if (!reason || reason.trim().length === 0) {
+            this.showNotification("❌ Pesan tidak boleh kosong", "error");
+            return;
+          }
+
+          const originalText = btn.innerHTML;
+          btn.disabled = true;
+          btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Mengirim...';
+
           const result = await TeacherGradeModel.notifyStudent({
             email, name, reason, course_id: courseId
           });
+
           this.showNotification("✅ Notifikasi berhasil dikirim ke email siswa", "success");
         } catch (err) {
           this.showNotification(`❌ Gagal mengirim notifikasi: ${err.message}`, "error");
@@ -1600,12 +1604,12 @@ const TeacherGradePresenter = {
   updateStats() {
     const statsContainer = document.getElementById("class-stats");
     const headerCount = document.getElementById("header-student-count");
-    
+
     const totalStudents = this.filteredData.length;
-    const completedStudents = this.filteredData.filter(s => 
+    const completedStudents = this.filteredData.filter(s =>
       s.courses?.some(c => c.is_completed)
     ).length;
-    
+
     // Calculate average score for completed courses
     let totalScores = 0;
     let scoreCount = 0;
@@ -1678,7 +1682,7 @@ const TeacherGradePresenter = {
 
     try {
       const excelData = [];
-      
+
       data.forEach((student) => {
         student.courses.forEach((course) => {
           excelData.push({
@@ -1696,22 +1700,22 @@ const TeacherGradePresenter = {
 
       const ws = XLSX.utils.json_to_sheet(excelData);
       const wb = XLSX.utils.book_new();
-      
+
       // Set column widths
       ws['!cols'] = [
-        {wch: 25}, // Nama Siswa
-        {wch: 15}, // NIM
-        {wch: 25}, // Program Studi
-        {wch: 40}, // Judul Course
-        {wch: 12}, // Nilai Akhir
-        {wch: 12}, // Progress
-        {wch: 15}, // Status
-        {wch: 15}  // Kelulusan
+        { wch: 25 }, // Nama Siswa
+        { wch: 15 }, // NIM
+        { wch: 25 }, // Program Studi
+        { wch: 40 }, // Judul Course
+        { wch: 12 }, // Nilai Akhir
+        { wch: 12 }, // Progress
+        { wch: 15 }, // Status
+        { wch: 15 }  // Kelulusan
       ];
 
       XLSX.utils.book_append_sheet(wb, ws, "Data Nilai Siswa");
       XLSX.writeFile(wb, filename);
-      
+
       this.showNotification(`✅ File Excel berhasil diunduh: ${filename}`, "success");
     } catch (error) {
       console.error("Export error:", error);
@@ -1725,7 +1729,7 @@ const TeacherGradePresenter = {
 
     const notification = document.createElement('div');
     notification.className = `notification-toast fixed top-6 right-6 z-50 p-4 rounded-xl shadow-2xl transform transition-all duration-300 translate-x-full max-w-md`;
-    
+
     let bgColor, textColor, icon;
     switch (type) {
       case 'success':

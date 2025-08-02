@@ -21,7 +21,7 @@ export const CACHE_TTL = {
     COURSE_CONTENT: 15 * 60 * 1000, // 15 menit
     RECOMMENDATIONS: 30 * 60 * 1000, // 30 menit
     ENUMS: 60 * 60 * 1000,         // 1 jam
-    CLASSES: 10 * 60 * 1000,       // 10 menit
+    CLASSES: 10 * 60 * 100,       // 1 menit
     STUDENTS: 5 * 60 * 1000,       // 5 menit
     DEFAULT: 5 * 60 * 1000         // 5 menit default
 };

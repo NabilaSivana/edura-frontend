@@ -219,29 +219,90 @@ const routes = {
     }
   },
 
+  // Updated route definition for /course/session
   "/course/session": {
     async render() {
-      const view = await import("../pages/student/course/sessions/view.js");
+      console.log('🔄 Course session route called');
 
-      // Ambil query parameter jika ada
+      // Get session number from URL parameters
       const urlParams = new URLSearchParams(window.location.hash.split("?")[1]);
       const numberParam = urlParams.get("number");
 
-      // Gunakan query param jika ada, fallback ke sessionStorage
-      const currentSessionNumber =
-        parseInt(numberParam) ||
-        parseInt(sessionStorage.getItem("current_session_number"));
+      // Fallback to sessionStorage if URL param not found
+      const currentSessionNumber = parseInt(numberParam) ||
+        parseInt(sessionStorage.getItem("current_session_number")) || 1;
+
+      console.log(`📍 Session route: number=${numberParam}, resolved=${currentSessionNumber}`);
 
       if (!currentSessionNumber) {
         const container = document.querySelector("#main-content");
-        container.innerHTML = `<p class="text-center text-red-500">Sesi belum dipilih.</p>`;
+        container.innerHTML = `
+        <div class="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 px-4">
+          <div class="text-center p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg max-w-sm w-full">
+            <div class="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-800/30 rounded-full flex items-center justify-center">
+              <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+              </svg>
+            </div>
+            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Sesi Tidak Dipilih</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Silakan pilih sesi yang ingin dipelajari.</p>
+            <a href="#/course/notes" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+              Kembali ke Daftar
+            </a>
+          </div>
+        </div>
+      `;
         return;
       }
 
-      await view.default.render(currentSessionNumber);
-    },
-  },
+      // Update sessionStorage to match current session
+      sessionStorage.setItem("current_session_number", currentSessionNumber);
 
+      // Dynamic import SessionView
+      try {
+        const view = await import("../pages/student/course/sessions/view.js");
+        console.log(`🎯 Rendering session ${currentSessionNumber} via SessionView`);
+        await view.default.render(currentSessionNumber);
+      } catch (error) {
+        console.error('❌ Error loading SessionView:', error);
+        const container = document.querySelector("#main-content");
+        container.innerHTML = `
+        <div class="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 px-4">
+          <div class="text-center p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg max-w-sm w-full">
+            <div class="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-800/30 rounded-full flex items-center justify-center">
+              <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Gagal Memuat Sesi</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Terjadi kesalahan saat memuat halaman sesi: ${error.message}</p>
+            <div class="space-y-2">
+              <button 
+                onclick="location.reload()"
+                class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
+              >
+                Muat Ulang
+              </button>
+              <a href="#/course/notes" class="block w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition duration-200 text-center">
+                Kembali ke Daftar
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+      }
+    },
+
+    // Add cleanup method for when leaving the route
+    destroy() {
+      if (window.SessionView && window.SessionView.cleanup) {
+        window.SessionView.cleanup();
+      }
+    }
+  },
   "/teacher/course-detail": CourseDetailPage,
   "/status": PaymentStatusPage,
   "/class": TeacherClassPage,

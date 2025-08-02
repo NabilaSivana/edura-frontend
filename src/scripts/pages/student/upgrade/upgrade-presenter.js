@@ -1,3 +1,4 @@
+import { showToastNotification } from "../../../utils/index.js";
 import { loadMidtransSnap } from "../../../utils/load-midtrans.js";
 import PaymentModel from "./upgrade-model.js";
 
@@ -27,13 +28,13 @@ const PaymentPresenter = {
                         window.location.href = "#/status?status=failed";
                     },
                     onClose: () => {
-                        alert("Transaksi dibatalkan.");
+                        showToastNotification("Transaksi dibatalkan.", "info");
                         // Tetap di halaman sekarang
                     },
                 });
             } catch (err) {
                 // console.error(err);
-                alert("❌ Gagal memproses pembayaran. Coba lagi nanti.");
+                showToastNotification("❌ Gagal memproses pembayaran. Coba lagi nanti.", "error");
             } finally {
                 button.disabled = false;
                 button.textContent = "Upgrade ke Premium";

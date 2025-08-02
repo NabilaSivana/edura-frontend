@@ -113,7 +113,7 @@ const LandingPage = {
                   <div class="absolute inset-0 bg-gradient-to-br from-blue-100/20 to-purple-100/20 dark:from-blue-900/10 dark:to-purple-900/10 rounded-3xl"></div>
                   <p class="relative text-gray-700 dark:text-gray-300 text-lg sm:text-xl md:text-2xl leading-relaxed font-medium text-left">
                     EduraApp merupakan sebuah platform kerangka kerja AI yang dapat terintegrasi dengan LMS, 
-                    sehingga mampu <span class="font-bold text-blue-600 dark:text-blue-400">menyusun rekomendasi materi secara otomatis</span> 
+                    sehingga mampu <span class="font-bold text-blue-600 dark:text-blue-400">menyusun materi secara otomatis</span> 
                     yang diharapkan platform ini dapat menambah pengetahuan mahasiswa di samping materi kurikulum.
                   </p>
                   
@@ -133,7 +133,7 @@ const LandingPage = {
                     </div>
                     <div class="flex items-center space-x-3">
                       <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse" style="animation-delay: 1.5s"></div>
-                      <span class="text-gray-600 dark:text-gray-300 font-medium">Auto Recommendations</span>
+                      <span class="text-gray-600 dark:text-gray-300 font-medium">Generated Quiz dan Ujian Akhir</span>
                     </div>
                   </div>
                 </div>

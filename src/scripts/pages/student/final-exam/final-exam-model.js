@@ -1,8 +1,3 @@
-
-// ========================================
-// 1. FIXED MODEL - src/scripts/pages/student/final-exam/final-exam-model.js
-// ========================================
-
 class FinalExamModel {
   constructor() {
     this.courseId = null;
@@ -111,11 +106,94 @@ class FinalExamModel {
     return true;
   }
 
+  // ===== ENHANCED SUBMIT VALIDATION =====
+  
+  /**
+   * Validate exam before submission - ALL QUESTIONS MUST BE ANSWERED
+   * @returns {Object} Validation result with detailed info
+   */
+  validateExamForSubmission() {
+    const validation = {
+      isValid: false,
+      totalQuestions: this.examData ? this.examData.length : 0,
+      answeredCount: 0,
+      unansweredQuestions: [],
+      doubtfulQuestions: [],
+      missingAnswers: []
+    };
+
+    if (!this.examData || !Array.isArray(this.examData)) {
+      validation.error = "No exam data available";
+      return validation;
+    }
+
+    // Check each question
+    for (let i = 0; i < this.examData.length; i++) {
+      const answer = this.answers[i];
+      const isAnswered = answer !== null && answer !== undefined;
+      
+      if (isAnswered) {
+        validation.answeredCount++;
+      } else {
+        validation.unansweredQuestions.push(i);
+        validation.missingAnswers.push({
+          questionIndex: i,
+          questionText: this.examData[i].question
+        });
+      }
+
+      // Track doubtful questions
+      if (this.doubtFlags[i] === true) {
+        validation.doubtfulQuestions.push(i);
+      }
+    }
+
+    // CRITICAL: ALL questions must be answered
+    validation.isValid = validation.answeredCount === validation.totalQuestions;
+    
+    console.log('📝 Exam Validation Result:', {
+      isValid: validation.isValid,
+      totalQuestions: validation.totalQuestions,
+      answeredCount: validation.answeredCount,
+      unansweredCount: validation.unansweredQuestions.length,
+      doubtfulCount: validation.doubtfulQuestions.length
+    });
+
+    return validation;
+  }
+
   async submitExam() {
     try {
       this._validateExamInProgress();
 
+      // MANDATORY VALIDATION: ALL QUESTIONS MUST BE ANSWERED
+      const validation = this.validateExamForSubmission();
+      
+      if (!validation.isValid) {
+        const unansweredCount = validation.unansweredQuestions.length;
+        throw new Error(
+          `Cannot submit exam: ${unansweredCount} question(s) are unanswered. ` +
+          `All ${validation.totalQuestions} questions must be completed before submission.`
+        );
+      }
+
+      console.log('✅ Exam validation passed - all questions answered');
+
+      // Format ALL answers for submission
       const formattedAnswers = this._formatAnswersForSubmission();
+      
+      console.log('📤 Submitting answers:', {
+        totalAnswers: formattedAnswers.length,
+        expectedAnswers: this.examData.length,
+        answers: formattedAnswers
+      });
+
+      // Ensure we have the correct number of answers
+      if (formattedAnswers.length !== this.examData.length) {
+        throw new Error(
+          `Answer count mismatch: Expected ${this.examData.length} answers, got ${formattedAnswers.length}`
+        );
+      }
 
       // Check if online before submitting
       if (!navigator.onLine) {
@@ -146,6 +224,7 @@ class FinalExamModel {
         result: this.result
       };
     } catch (error) {
+      console.error('❌ Submit exam error:', error);
       return {
         success: false,
         error: error.message || "Failed to submit exam"
@@ -196,11 +275,12 @@ class FinalExamModel {
   setAnswer(questionIndex, answer) {
     if (this._isValidQuestionIndex(questionIndex)) {
       this.answers[questionIndex] = answer;
+      console.log(`📝 Answer set: Q${questionIndex + 1} = ${answer} (${String.fromCharCode(65 + answer)})`);
     }
   }
 
   getAnswer(questionIndex) {
-    return this.answers[questionIndex] || null;
+    return this.answers[questionIndex] !== undefined ? this.answers[questionIndex] : null;
   }
 
   // ===== DOUBT FLAG METHODS =====
@@ -227,7 +307,7 @@ class FinalExamModel {
       .map(key => parseInt(key));
   }
 
-  // ===== QUESTION STATUS METHODS =====
+  // ===== ENHANCED QUESTION STATUS METHODS =====
 
   getAnsweredQuestions() {
     return Object.keys(this.answers).filter(
@@ -236,9 +316,16 @@ class FinalExamModel {
   }
 
   getUnansweredQuestions() {
-    return Object.keys(this.answers).filter(
-      key => this.answers[key] === null || this.answers[key] === undefined
-    ).map(key => parseInt(key));
+    if (!this.examData) return [];
+    
+    const unanswered = [];
+    for (let i = 0; i < this.examData.length; i++) {
+      const answer = this.answers[i];
+      if (answer === null || answer === undefined) {
+        unanswered.push(i);
+      }
+    }
+    return unanswered;
   }
 
   getQuestionStatus(questionIndex) {
@@ -263,6 +350,29 @@ class FinalExamModel {
     const totalQuestions = this.examData ? this.examData.length : 0;
     const answeredQuestions = this.getAnsweredQuestions().length;
     return answeredQuestions === totalQuestions;
+  }
+
+  /**
+   * Get detailed exam completion statistics
+   * @returns {Object} Detailed completion stats
+   */
+  getExamCompletionStats() {
+    const totalQuestions = this.examData ? this.examData.length : 0;
+    const answeredQuestions = this.getAnsweredQuestions();
+    const unansweredQuestions = this.getUnansweredQuestions();
+    const doubtfulQuestions = this.getDoubtfulQuestions();
+
+    return {
+      totalQuestions,
+      answeredCount: answeredQuestions.length,
+      unansweredCount: unansweredQuestions.length,
+      doubtfulCount: doubtfulQuestions.length,
+      progressPercentage: totalQuestions > 0 ? Math.round((answeredQuestions.length / totalQuestions) * 100) : 0,
+      isComplete: answeredQuestions.length === totalQuestions,
+      answeredQuestions,
+      unansweredQuestions,
+      doubtfulQuestions
+    };
   }
 
   // ===== TIMER METHODS =====
@@ -448,7 +558,7 @@ class FinalExamModel {
     this.doubtFlags = {};
     if (this.examData) {
       this.examData.forEach((_, index) => {
-        this.answers[index] = null;
+        this.answers[index] = null; // Initialize as null
         this.doubtFlags[index] = false;
       });
     }
@@ -469,7 +579,7 @@ class FinalExamModel {
   }
 
   _isValidQuestionIndex(index) {
-    return index >= 0 && index < this.examData.length;
+    return this.examData && index >= 0 && index < this.examData.length;
   }
 
   _validateExamInProgress() {
@@ -478,35 +588,54 @@ class FinalExamModel {
     }
   }
 
+  /**
+   * ENHANCED: Format ALL answers for submission - MANDATORY ALL QUESTIONS
+   * @returns {Array} Complete answers array for all questions
+   */
   _formatAnswersForSubmission() {
     const formattedAnswers = [];
 
+    if (!this.examData || !Array.isArray(this.examData)) {
+      throw new Error("No exam data available for formatting answers");
+    }
+
+    // Process ALL questions - MANDATORY
     this.examData.forEach((question, index) => {
       const userAnswer = this.answers[index];
 
-      if (userAnswer !== null && userAnswer !== undefined) {
-        const answerText = this._getAnswerText(question, userAnswer);
-
-        formattedAnswers.push({
-          question: question.question,
-          answer: answerText
-        });
+      // Validation: ALL questions must have answers
+      if (userAnswer === null || userAnswer === undefined) {
+        throw new Error(`Question ${index + 1} is not answered. All questions must be completed.`);
       }
+
+      const answerText = this._getAnswerText(question, userAnswer);
+
+      formattedAnswers.push({
+        question: question.question,
+        answer: answerText
+      });
+
+      console.log(`📝 Q${index + 1}: "${question.question}" => "${answerText}"`);
     });
 
+    console.log(`✅ Formatted ${formattedAnswers.length} complete answers for submission`);
     return formattedAnswers;
   }
 
   _getAnswerText(question, answerIndex) {
+    // Handle string answers directly
     if (typeof answerIndex === 'string' && isNaN(answerIndex)) {
       return answerIndex;
     }
 
+    // Convert to number and get option text
     const index = parseInt(answerIndex);
+    
     if (question.options && question.options[index]) {
       return question.options[index];
     }
 
+    // Fallback to letter notation
     return String.fromCharCode(65 + index);
   }
 
@@ -519,6 +648,8 @@ class FinalExamModel {
       score: response.score || 0,
       wrong_answers: (response.total_questions || response.total || 0) - (response.correct_answers || response.correct || 0)
     };
+
+    console.log('✅ Exam submitted successfully:', this.result);
   }
 
   _isValidState(state) {

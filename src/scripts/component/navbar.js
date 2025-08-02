@@ -335,42 +335,34 @@ let lastNavbarRender = null;
 // Custom function untuk navbar yang tidak redirect
 async function getCurrentUserForNavbar() {
   const cacheKey = 'api_/me';
-
   // Check memory cache first
   if (cachedNavbarUser) {
     return cachedNavbarUser;
   }
-
   // Check storage cache
   const cachedData = Cache.get(cacheKey);
   if (cachedData) {
     cachedNavbarUser = cachedData;
     return cachedData;
   }
-
   // If no cache, fetch manually without redirect
   const token = localStorage.getItem('token');
   if (!token) {
     throw new Error('No token');
   }
-
   const response = await fetch(`${CONFIG.BASE_URL}/me`, {
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
     }
   });
-
   if (!response.ok) {
     throw new Error('Not authenticated');
   }
-
   const userData = await response.json();
-
   // Cache the result
   Cache.set(cacheKey, userData, 5 * 60 * 1000); // 5 minutes
   cachedNavbarUser = userData;
-
   return userData;
 }
 
@@ -387,19 +379,17 @@ function renderNavbar() {
       <div class="px-4 py-3 flex justify-between items-center bg-white dark:bg-gray-800 text-gray-800 dark:text-white">
         
         <div class="flex items-center gap-4">
-          <!-- Universal Sidebar Toggle -->
+          <!-- Universal Sidebar Toggle - Will be hidden on landing page -->
           <button id="sidebar-toggle" class="flex items-center justify-center w-10 h-10 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
             <i class="fas fa-bars text-lg"></i>
           </button>
         </div>
-
         <div>
           <!-- Guest Links -->
           <div id="nav-guest" class="flex gap-4 hidden">
             <a href="/#/login" class="px-4 py-2 rounded border border-gray-300 text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Login</a>
             <a href="/#/register" class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">Daftar</a>
           </div>
-
           <!-- User Profile -->
           <div id="nav-user" class="relative hidden">
             <button id="profile-toggle" class="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center">
@@ -415,11 +405,9 @@ function renderNavbar() {
             </div>
           </div>
         </div>
-
       </div>
     </nav>
   `;
-
   // Cache the render result
   lastNavbarRender = navbarContent;
   return navbarContent;
@@ -431,31 +419,25 @@ function updateNavbarPosition() {
   if (updatePositionTimeout) {
     return; // Skip if update is already scheduled
   }
-
   updatePositionTimeout = setTimeout(() => {
     const navbar = document.getElementById('main-navbar');
     const navUser = document.getElementById('nav-user');
-
     if (!navbar || !navUser) {
       updatePositionTimeout = null;
       return;
     }
-
     const isDesktop = window.innerWidth >= 768;
     const isLoggedIn = !navUser.classList.contains("hidden");
     const isLanding = isLandingPage();
-
     if (isDesktop && isLoggedIn && !isLanding) {
       const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
       const sidebarWidth = isCollapsed ? '80px' : '256px';
-
       navbar.style.marginLeft = sidebarWidth;
       navbar.style.width = `calc(100% - ${sidebarWidth})`;
     } else {
       navbar.style.marginLeft = '0';
       navbar.style.width = '100%';
     }
-
     updatePositionTimeout = null;
   }, 16); // ~60fps throttling
 }
@@ -463,15 +445,14 @@ function updateNavbarPosition() {
 function updateSidebarToggleVisibility() {
   const sidebarToggle = document.getElementById("sidebar-toggle");
   const navUser = document.getElementById("nav-user");
-
   if (!sidebarToggle || !navUser) {
     return;
   }
-
   const isLoggedIn = !navUser.classList.contains("hidden");
   const isLanding = isLandingPage();
-
-  if (isLoggedIn && isLanding) {
+  
+  // Hide hamburger menu on landing page regardless of login status
+  if (isLanding) {
     sidebarToggle.style.display = 'none';
   } else {
     sidebarToggle.style.display = 'flex';
@@ -485,29 +466,28 @@ async function afterRenderNavbar() {
   if (existingToggle) {
     existingToggle.replaceWith(existingToggle.cloneNode(true));
   }
-
+  
   // Universal Sidebar Toggle Handler
   const sidebarToggle = document.getElementById("sidebar-toggle");
   if (sidebarToggle) {
     sidebarToggle.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-
       const isDesktop = window.innerWidth >= 768;
       const isLoggedIn = !document.getElementById("nav-user").classList.contains("hidden");
       const isLanding = isLandingPage();
-
-      // Don't do anything if on landing page when logged in
-      if (isLanding && isLoggedIn) {
+      
+      // Don't do anything if on landing page
+      if (isLanding) {
         return;
       }
-
+      
       if (isDesktop && isLoggedIn) {
         // Desktop: Toggle collapse/expand
         const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
         const newState = !isCollapsed;
         localStorage.setItem('sidebarCollapsed', newState);
-
+        
         // Update sidebar state
         const sidebar = document.getElementById('sidebar');
         if (sidebar) {
@@ -519,16 +499,16 @@ async function afterRenderNavbar() {
             sidebar.style.width = '256px';
           }
         }
-
+        
         // Update navbar position
         updateNavbarPosition();
-
+        
         // Update icon
         const icon = sidebarToggle.querySelector('i');
         if (icon) {
           icon.className = newState ? 'fas fa-chevron-right text-lg' : 'fas fa-bars text-lg';
         }
-
+        
         // Dispatch event untuk sidebar component
         window.dispatchEvent(new CustomEvent('sidebar-toggle', {
           detail: { collapsed: newState }
@@ -537,14 +517,11 @@ async function afterRenderNavbar() {
         // Mobile: Toggle slide in/out
         const sidebarWrapper = document.getElementById("sidebar-wrapper");
         const overlay = document.getElementById("sidebar-overlay");
-
         if (sidebarWrapper) {
           const sidebar = sidebarWrapper.querySelector("#sidebar");
-
           if (sidebar) {
             sidebar.classList.toggle("-translate-x-full");
             sidebar.classList.toggle("lg:translate-x-0");
-
             if (overlay) {
               overlay.classList.toggle("hidden");
             }
@@ -553,51 +530,37 @@ async function afterRenderNavbar() {
       }
     });
   }
-
+  
   // Check login status
+  let isAuthenticated = false;
   try {
     const user = await getCurrentUserForNavbar();
-
+    isAuthenticated = true;
+    
     // Hide guest panel, show user panel
-    document.getElementById("nav-guest").classList.add("hidden");
+    const navGuest = document.getElementById("nav-guest");
     const navUser = document.getElementById("nav-user");
-    navUser.classList.remove("hidden");
-
+    
+    if (navGuest) navGuest.classList.add("hidden");
+    if (navUser) navUser.classList.remove("hidden");
+    
     const profileName = document.getElementById("profile-name");
     if (profileName && profileName.textContent !== user.full_name) {
       profileName.textContent = user.full_name;
     }
-
-    // Update navbar position for desktop
-    updateNavbarPosition();
-    updateSidebarToggleVisibility();
-
-    // Set initial sidebar toggle icon for desktop when logged in
-    const sidebarToggle = document.getElementById("sidebar-toggle");
-    if (sidebarToggle && window.innerWidth >= 768) {
-      const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-      const isLanding = isLandingPage();
-      const icon = sidebarToggle.querySelector('i');
-
-      if (icon && !isLanding) {
-        icon.className = isCollapsed ? 'fas fa-chevron-right text-lg' : 'fas fa-bars text-lg';
-      }
-    }
-
+    
     // Profile popup toggle (remove existing listeners first)
     const toggleBtn = document.getElementById("profile-toggle");
     const popup = document.getElementById("profile-popup");
-
     if (toggleBtn && popup) {
       // Clone to remove existing listeners
       const newToggleBtn = toggleBtn.cloneNode(true);
       toggleBtn.parentNode.replaceChild(newToggleBtn, toggleBtn);
-
       newToggleBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         popup.classList.toggle("hidden");
       });
-
+      
       // Document click handler (remove existing first)
       document.removeEventListener("click", window.profilePopupClickHandler);
       window.profilePopupClickHandler = (e) => {
@@ -607,67 +570,71 @@ async function afterRenderNavbar() {
       };
       document.addEventListener("click", window.profilePopupClickHandler);
     }
-
+    
     // Logout (remove existing listeners first)
     const logoutBtn = document.getElementById("logout-button");
     if (logoutBtn) {
       const newLogoutBtn = logoutBtn.cloneNode(true);
       logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
-
       newLogoutBtn.addEventListener("click", () => {
         // Clear all caches
         Cache.clear();
         Api.clearAllCache();
         cachedNavbarUser = null;
         lastNavbarRender = null;
-
         localStorage.removeItem("token");
         localStorage.removeItem("sidebarCollapsed");
-
         // Clear navigation cache
         window.dispatchEvent(new CustomEvent('clear-navigation-cache'));
-
+        // Dispatch logout event
+        window.dispatchEvent(new CustomEvent('logout'));
         window.location.hash = "#/login";
         window.location.reload();
       });
     }
-
   } catch {
+    isAuthenticated = false;
+    
     // Show guest panel, hide user panel
-    document.getElementById("nav-user").classList.add("hidden");
-    document.getElementById("nav-guest").classList.remove("hidden");
-
-    // Reset navbar position when not logged in
-    updateNavbarPosition();
-    updateSidebarToggleVisibility();
-
-    // Reset sidebar toggle icon to hamburger when not logged in
-    const sidebarToggle = document.getElementById("sidebar-toggle");
-    if (sidebarToggle) {
-      const icon = sidebarToggle.querySelector('i');
-      if (icon) {
-        icon.className = 'fas fa-bars text-lg';
-      }
+    const navUser = document.getElementById("nav-user");
+    const navGuest = document.getElementById("nav-guest");
+    
+    if (navUser) navUser.classList.add("hidden");
+    if (navGuest) navGuest.classList.remove("hidden");
+  }
+  
+  // Update navbar position and sidebar visibility
+  updateNavbarPosition();
+  updateSidebarToggleVisibility();
+  
+  // Set initial sidebar toggle icon for desktop when logged in
+  const sidebarToggleBtn = document.getElementById("sidebar-toggle");
+  if (sidebarToggleBtn && window.innerWidth >= 768) {
+    const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    const isLanding = isLandingPage();
+    const icon = sidebarToggleBtn.querySelector('i');
+    if (icon && !isLanding && isAuthenticated) {
+      icon.className = isCollapsed ? 'fas fa-chevron-right text-lg' : 'fas fa-bars text-lg';
+    } else if (icon) {
+      icon.className = 'fas fa-bars text-lg';
     }
   }
-
+  
   // Throttled resize handler
   let resizeTimeout = null;
   const handleResize = () => {
     if (resizeTimeout) {
       clearTimeout(resizeTimeout);
     }
-
     resizeTimeout = setTimeout(() => {
-      const sidebarToggle = document.getElementById("sidebar-toggle");
+      const sidebarToggleEl = document.getElementById("sidebar-toggle");
       const isLoggedIn = !document.getElementById("nav-user").classList.contains("hidden");
       const isLanding = isLandingPage();
-
       updateNavbarPosition();
-      updateSidebarToggleVisibility();
-
-      if (sidebarToggle) {
-        const icon = sidebarToggle.querySelector('i');
+      updateSidebarToggleVisibility(); // This will hide hamburger on landing page
+      
+      if (sidebarToggleEl) {
+        const icon = sidebarToggleEl.querySelector('i');
         if (window.innerWidth >= 768 && isLoggedIn && !isLanding) {
           const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
           if (icon) {
@@ -681,18 +648,17 @@ async function afterRenderNavbar() {
       }
     }, 100);
   };
-
+  
   // Remove existing resize listener
   window.removeEventListener('resize', window.navbarResizeHandler);
   window.navbarResizeHandler = handleResize;
   window.addEventListener('resize', window.navbarResizeHandler);
-
-  // Hash change handler
+  
+  // Hash change handler - IMPORTANT: This ensures hamburger is hidden when navigating to landing page
   const handleHashChange = () => {
     updateNavbarPosition();
-    updateSidebarToggleVisibility();
+    updateSidebarToggleVisibility(); // This will hide hamburger when navigating to landing page
   };
-
   window.removeEventListener('hashchange', window.navbarHashChangeHandler);
   window.navbarHashChangeHandler = handleHashChange;
   window.addEventListener('hashchange', window.navbarHashChangeHandler);
@@ -703,8 +669,25 @@ window.addEventListener('profile-updated', async () => {
   // Clear user cache
   Cache.clear('api_/me');
   cachedNavbarUser = null;
-
   // Re-run afterRenderNavbar to update UI
+  afterRenderNavbar();
+});
+
+// Listen for login success to refresh navbar immediately
+window.addEventListener('login-success', async () => {
+  // Clear user cache
+  Cache.clear('api_/me');
+  cachedNavbarUser = null;
+  // Re-run afterRenderNavbar to update UI immediately
+  setTimeout(afterRenderNavbar, 100); // Small delay to ensure token is saved
+});
+
+// Listen for logout to refresh navbar immediately  
+window.addEventListener('logout', async () => {
+  // Clear user cache
+  Cache.clear('api_/me');
+  cachedNavbarUser = null;
+  // Re-run afterRenderNavbar to update UI immediately
   afterRenderNavbar();
 });
 
@@ -717,5 +700,11 @@ export default function navbar() {
   return {
     render: renderNavbar,
     afterRender: afterRenderNavbar,
+    // Helper function to force refresh navbar
+    forceRefresh: async () => {
+      Cache.clear('api_/me');
+      cachedNavbarUser = null;
+      await afterRenderNavbar();
+    }
   };
 }
