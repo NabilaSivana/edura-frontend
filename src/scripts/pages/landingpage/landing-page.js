@@ -153,56 +153,52 @@ const LandingPage = {
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
               ${[
-                {
-                  number: 1,
-                  title: "Generative Study Material",
-                  description:
-                    "Rancang topik dan level yang disesuaikan dengan rencana belajarmu maka automatisasi akan dibuat oleh AI",
-                  icon: "🤖",
-                  color: "from-blue-500 to-blue-600",
-                },
-                {
-                  number: 2,
-                  title: "Chapter Material-AI",
-                  description:
-                    "Bikin materi belajar yang pas buat kamu, cepat dan gampang dan pantau progres belajarmu melalui chartbar",
-                  icon: "📚",
-                  color: "from-purple-500 to-purple-600",
-                },
-                {
-                  number: 3,
-                  title: "Flashcard",
-                  description:
-                    "Terdapat alat bantu belajar berupa flashcard untuk membantumu menghafal atau mempelajari materi dengan cepat",
-                  icon: "🎴",
-                  color: "from-pink-500 to-pink-600",
-                },
-                {
-                  number: 4,
-                  title: "Quiz",
-                  description:
-                    "Mengakses ujian dengan mudah dan dapatkan hasil dengan cepat untuk evaluasi belajarmu",
-                  icon: "🎯",
-                  color: "from-green-500 to-green-600",
-                },
-              ]
-                .map(
-                  (feature, index) => `
-                <div class="group relative p-8 bg-white dark:bg-gray-800 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-gray-100 dark:border-gray-700 animate-fade-in-up overflow-hidden" style="animation-delay: ${
-                  index * 0.2
-                }s">
+        {
+          number: 1,
+          title: "Generative Study Material",
+          description:
+            "Rancang topik dan level yang disesuaikan dengan rencana belajarmu maka automatisasi akan dibuat oleh AI",
+          icon: "🤖",
+          color: "from-blue-500 to-blue-600",
+        },
+        {
+          number: 2,
+          title: "Chapter Material-AI",
+          description:
+            "Bikin materi belajar yang pas buat kamu, cepat dan gampang dan pantau progres belajarmu melalui chartbar",
+          icon: "📚",
+          color: "from-purple-500 to-purple-600",
+        },
+        {
+          number: 3,
+          title: "Flashcard",
+          description:
+            "Terdapat alat bantu belajar berupa flashcard untuk membantumu menghafal atau mempelajari materi dengan cepat",
+          icon: "🎴",
+          color: "from-pink-500 to-pink-600",
+        },
+        {
+          number: 4,
+          title: "Quiz",
+          description:
+            "Mengakses ujian dengan mudah dan dapatkan hasil dengan cepat untuk evaluasi belajarmu",
+          icon: "🎯",
+          color: "from-green-500 to-green-600",
+        },
+      ]
+        .map(
+          (feature, index) => `
+                <div class="group relative p-8 bg-white dark:bg-gray-800 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-gray-100 dark:border-gray-700 animate-fade-in-up overflow-hidden" style="animation-delay: ${index * 0.2
+            }s">
                   <!-- Large Icon in top-right corner -->
-                  <div class="absolute -top-4 -right-4 text-8xl opacity-10 group-hover:opacity-20 transition-opacity duration-500 group-hover:scale-110 transform">${
-                    feature.icon
-                  }</div>
+                  <div class="absolute -top-4 -right-4 text-8xl opacity-10 group-hover:opacity-20 transition-opacity duration-500 group-hover:scale-110 transform">${feature.icon
+            }</div>
                   
                   <!-- Number badge -->
-                  <div class="w-14 h-14 bg-gradient-to-r ${
-                    feature.color
-                  } rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                    <span class="text-white font-bold text-xl">${
-                      feature.number
-                    }</span>
+                  <div class="w-14 h-14 bg-gradient-to-r ${feature.color
+            } rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                    <span class="text-white font-bold text-xl">${feature.number
+            }</span>
                   </div>
                   
                   <!-- Content -->
@@ -210,19 +206,17 @@ const LandingPage = {
                     <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                       ${feature.title}
                     </h3>
-                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed text-base">${
-                      feature.description
-                    }</p>
+                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed text-base">${feature.description
+            }</p>
                   </div>
                   
                   <!-- Hover effect overlay -->
-                  <div class="absolute inset-0 bg-gradient-to-br ${
-                    feature.color
-                  } opacity-0 group-hover:opacity-5 dark:group-hover:opacity-10 transition-opacity duration-500 rounded-3xl"></div>
+                  <div class="absolute inset-0 bg-gradient-to-br ${feature.color
+            } opacity-0 group-hover:opacity-5 dark:group-hover:opacity-10 transition-opacity duration-500 rounded-3xl"></div>
                 </div>
               `
-                )
-                .join("")}
+        )
+        .join("")}
             </div>
           </div>
         </section>
@@ -242,7 +236,7 @@ const LandingPage = {
                 <iframe
                   width="760"
                   height="415"
-                  src="https://www.youtube.com/embed/bB-dovQnBk4"
+                  src="https://www.youtube.com/embed/EsQ169hkmEA?si=mwmqOg_RcRTVURLA"                  
                   title="Panduan EduraApp"
                   frameborder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
