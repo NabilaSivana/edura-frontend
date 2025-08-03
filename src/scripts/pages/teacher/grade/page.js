@@ -1,167 +1,3 @@
-// // FILE: class-page.js
-// import createSidebar from "../../../component/sidebar.js";
-// import TeacherGradePresenter from "./presenter.js";
-
-// const TeacherGradePage = {
-//   async render() {
-//     return `
-//     <div class="h-screen w-screen flex flex-col">
-//       <div id="navbar-container" class="z-50"></div>
-
-//       <div class="flex flex-1 overflow-hidden">
-//         <div id="sidebar-wrapper"></div>
-//         <main class="flex-1 overflow-y-auto p-6 md:p-10">
-//           <div class="max-w-7xl mx-auto">
-//             <div class="mb-8">
-//               <h1 class="text-2xl font-bold text-gray-900 dark:text-white mt-16">📊 Manajemen Nilai</h1>
-//               <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Kelola nilai siswa per kelas.</p>
-//             </div>
-
-//             <section id="grade-class-list-section">
-//               <div id="class-loading" class="text-center py-6 text-blue-600 dark:text-blue-400 animate-pulse">Memuat kelas...</div>
-//               <div id="class-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-4"></div>
-//             </section>
-
-//             <section id="grade-detail-section" class="hidden mt-4">
-//               <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-//                 <div class="flex items-center gap-2">
-//                   <button id="back-to-class-list" class="text-blue-600 hover:underline text-sm">&larr; Kembali</button>
-//                 </div>
-//               </div>
-//               <div class="overflow-x-auto">
-//                 <table class="min-w-full border text-sm text-left">
-//                   <thead class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
-//                     <tr>
-                     
-//                       <th class="px-4 py-2 border cursor-pointer select-none" id="sort-by-name">
-//                         <div class="flex items-center gap-1">
-//                           NAME
-//                           <div class="flex flex-col">
-//                             <span class="text-xs leading-[0.75rem] -mb-1">▲</span>
-//                             <span class="text-xs leading-[0.75rem]">▼</span>
-//                           </div>
-//                         </div>
-//                       </th>
-//                       <th class="px-4 py-2">NIM</th>
-//                       <th class="px-4 py-2">Prodi</th>
-//                       <th class="px-4 py-2">Course</th>
-//                       <th class="px-4 py-2">Nilai</th>
-//                       <th class="px-4 py-2">Progress</th> 
-//                       <th class="px-4 py-2">Status</th>  
-//                       <th class="px-4 py-2">Aksi</th>
-
-//                     </tr>
-//                   </thead>
-//                   <tbody id="grade-detail-body">
-//                     <!-- Dynamic rows will be injected here by presenter -->
-//                   </tbody>
-//                 </table>
-//               </div>
-//             </section>
-//           </div>
-//         </main>
-//       </div>
-//     </div>`;
-//   },
-
-//   async afterRender() {
-//     const sidebarWrapper = document.getElementById("sidebar-wrapper");
-//     sidebarWrapper.innerHTML = "";
-//     const sidebar = await createSidebar();
-//     sidebarWrapper.appendChild(sidebar);
-
-//     const navbarModule = (await import("../../../component/navbar.js")).default;
-//     const navbarContainer = document.getElementById("navbar-container");
-//     navbarContainer.innerHTML = navbarModule().render();
-//     navbarModule().afterRender();
-
-//     TeacherGradePresenter.init();
-//   },
-// };
-
-// export default TeacherGradePage;
-// // FILE: class-page.js
-// import createSidebar from "../../../component/sidebar.js";
-// import TeacherGradePresenter from "./presenter.js";
-
-// const TeacherGradePage = {
-//   async render() {
-//     return `
-//     <div class="h-screen w-screen flex flex-col">
-//       <div id="navbar-container" class="z-50"></div>
-
-//       <div class="flex flex-1 overflow-hidden">
-//         <div id="sidebar-wrapper"></div>
-//         <main class="flex-1 overflow-y-auto p-6 md:p-10">
-//           <div class="max-w-7xl mx-auto">
-//             <div class="mb-8">
-//               <h1 class="text-2xl font-bold text-gray-900 dark:text-white mt-16">📊 Manajemen Nilai</h1>
-//               <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Kelola nilai siswa per kelas.</p>
-//             </div>
-
-//             <section id="grade-class-list-section">
-//               <div id="class-loading" class="text-center py-6 text-blue-600 dark:text-blue-400 animate-pulse">Memuat kelas...</div>
-//               <div id="class-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-4"></div>
-//             </section>
-
-//             <section id="grade-detail-section" class="hidden mt-4">
-//               <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-//                 <div class="flex items-center gap-2">
-//                   <button id="back-to-class-list" class="text-blue-600 hover:underline text-sm">&larr; Kembali</button>
-//                 </div>
-//               </div>
-//               <div class="overflow-x-auto">
-//                 <table class="min-w-full border text-sm text-left">
-//                   <thead class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
-//                     <tr>
-
-//                       <th class="px-4 py-2 border cursor-pointer select-none" id="sort-by-name">
-//                         <div class="flex items-center gap-1">
-//                           NAME
-//                           <div class="flex flex-col">
-//                             <span class="text-xs leading-[0.75rem] -mb-1">▲</span>
-//                             <span class="text-xs leading-[0.75rem]">▼</span>
-//                           </div>
-//                         </div>
-//                       </th>
-//                       <th class="px-4 py-2">NIM</th>
-//                       <th class="px-4 py-2">Prodi</th>
-//                       <th class="px-4 py-2">Course</th>
-//                       <th class="px-4 py-2">Nilai</th>
-//                       <th class="px-4 py-2">Progress</th> 
-//                       <th class="px-4 py-2">Status</th>  
-//                       <th class="px-4 py-2">Aksi</th>
-
-//                     </tr>
-//                   </thead>
-//                   <tbody id="grade-detail-body">
-//                     <!-- Dynamic rows will be injected here by presenter -->
-//                   </tbody>
-//                 </table>
-//               </div>
-//             </section>
-//           </div>
-//         </main>
-//       </div>
-//     </div>`;
-//   },
-
-//   async afterRender() {
-//     const sidebarWrapper = document.getElementById("sidebar-wrapper");
-//     sidebarWrapper.innerHTML = "";
-//     const sidebar = await createSidebar();
-//     sidebarWrapper.appendChild(sidebar);
-
-//     const navbarModule = (await import("../../../component/navbar.js")).default;
-//     const navbarContainer = document.getElementById("navbar-container");
-//     navbarContainer.innerHTML = navbarModule().render();
-//     navbarModule().afterRender();
-
-//     TeacherGradePresenter.init();
-//   },
-// };
-
-// export default TeacherGradePage;
 import createSidebar from "../../../component/sidebar.js";
 import TeacherGradePresenter from "./presenter.js";
 
@@ -178,13 +14,26 @@ const TeacherGradePage = {
             
             <!-- Page Header -->
             <div class="mb-8 pt-16">
-              <div class="flex items-center space-x-3 mb-4">
-                <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
-                  <i class="fas fa-chart-line text-white text-xl"></i>
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div class="flex items-center space-x-3">
+                  <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
+                    <i class="fas fa-chart-line text-white text-xl"></i>
+                  </div>
+                  <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Manajemen Nilai</h1>
+                    <p class="text-base text-gray-600 dark:text-gray-300 mt-1">Kelola nilai dan progress belajar siswa per kelas</p>
+                  </div>
                 </div>
-                <div>
-                  <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Manajemen Nilai</h1>
-                  <p class="text-base text-gray-600 dark:text-gray-300 mt-1">Kelola nilai dan progress belajar siswa per kelas</p>
+
+                <!-- 🔄 NEW: Refresh Button -->
+                <div class="hidden sm:flex gap-2">
+                  <button id="refresh-grade-btn" class="p-2 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Refresh Data">
+                    <svg class="w-4 h-4 text-gray-600 dark:text-gray-300 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>
@@ -288,6 +137,10 @@ const TeacherGradePage = {
                         <i class="fas fa-search text-blue-600 dark:text-blue-400 mt-1 flex-shrink-0"></i>
                         <span><strong>Pencarian:</strong> Cari siswa berdasarkan nama, NIM, atau program studi</span>
                       </li>
+                      <li class="flex items-start space-x-2">
+                        <i class="fas fa-sync-alt text-blue-600 dark:text-blue-400 mt-1 flex-shrink-0"></i>
+                        <span><strong>Refresh:</strong> Klik tombol refresh untuk memperbarui data terbaru dari server</span>
+                      </li>
                     </ul>
                   </div>
                 </div>
@@ -317,14 +170,50 @@ const TeacherGradePage = {
         }
       }
     } catch (error) {
-      console.log("Navbar module not found, continuing without navbar");
+      //console.log("Navbar module not found, continuing without navbar");
     }
+
+    // 🔄 Setup refresh button functionality
+    this.setupRefreshButton();
 
     // Initialize presenter
     TeacherGradePresenter.init();
 
     // Add responsive table scroll hint
     this.addScrollHint();
+  },
+
+  // 🔄 NEW: Setup refresh button functionality
+  setupRefreshButton() {
+    const refreshBtn = document.getElementById("refresh-grade-btn");
+    
+    if (refreshBtn) {
+      refreshBtn.addEventListener("click", async () => {
+        const icon = refreshBtn.querySelector("svg");
+        
+        // Disable button and show loading
+        refreshBtn.disabled = true;
+        icon.classList.add("animate-spin");
+        refreshBtn.title = "Refreshing...";
+        
+        try {
+          //console.log("🔄 User clicked refresh button for grades");
+          
+          // Call presenter refresh method
+          await TeacherGradePresenter.refreshAllData();
+          
+        } catch (error) {
+          console.error("❌ Refresh error:", error);
+          // Show error notification
+          TeacherGradePresenter.showNotification("❌ Gagal menyegarkan data. Coba lagi nanti.", "error");
+        } finally {
+          // Re-enable button
+          refreshBtn.disabled = false;
+          icon.classList.remove("animate-spin");
+          refreshBtn.title = "Refresh Data";
+        }
+      });
+    }
   },
 
   addScrollHint() {

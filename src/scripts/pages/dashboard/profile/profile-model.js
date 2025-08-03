@@ -1,5 +1,6 @@
-// pages/dashboard/profile/profile-model.js
+// pages/dashboard/profile/profile-model.js - Enhanced with Password Validation
 import Api from '../../../data/api.js';
+import { PasswordValidation } from '../../../utils/password-validation.js';
 
 class ProfileModel {
     constructor() {
@@ -27,9 +28,9 @@ class ProfileModel {
     async loadBasicProfile(forceRefresh = false) {
         try {
             this.isLoading = true;
-            
+
             const response = await Api.getProfile(forceRefresh);
-            
+
             // Handle both formats:
             // 1. Backend format: { profile: {...} }
             // 2. Transformed format: {...} (direct object)
@@ -45,7 +46,7 @@ class ProfileModel {
                 this.basicProfile = null;
                 console.warn('⚠️ Basic profile data format not recognized:', response);
             }
-            
+
             return this.basicProfile;
         } catch (error) {
             console.error('❌ Error loading basic profile:', error);
@@ -96,10 +97,10 @@ class ProfileModel {
             this.errors.basicProfile = null;
 
             const result = await Api.updateProfile(data);
-            
+
             // Reload basic profile after update
             await this.loadBasicProfile(true);
-            
+
             return result;
         } catch (error) {
             console.error('Error updating basic profile:', error);
@@ -125,7 +126,7 @@ class ProfileModel {
 
             // Reload role profile after update
             await this.loadRoleProfile(true);
-            
+
             return result;
         } catch (error) {
             console.error('Error updating student profile:', error);
@@ -151,7 +152,7 @@ class ProfileModel {
 
             // Reload role profile after update
             await this.loadRoleProfile(true);
-            
+
             return result;
         } catch (error) {
             console.error('Error updating teacher profile:', error);
@@ -167,10 +168,10 @@ class ProfileModel {
         try {
             this.isLoading = true;
             const result = await Api.joinStudentClass(classCode);
-            
+
             // Reload student profile after joining class
             await this.loadRoleProfile(true);
-            
+
             return result;
         } catch (error) {
             console.error('Error joining class:', error);
@@ -185,10 +186,10 @@ class ProfileModel {
         try {
             this.isLoading = true;
             const result = await Api.leaveStudentClass(className);
-            
+
             // Reload student profile after leaving class
             await this.loadRoleProfile(true);
-            
+
             return result;
         } catch (error) {
             console.error('Error leaving class:', error);
@@ -207,7 +208,7 @@ class ProfileModel {
 
         try {
             console.log('🔍 Validating class code:', code);
-            
+
             // Use getClassCodeInfo to get class details
             const classInfo = await Api.getClassCodeInfo(code);
             console.log('✅ Class info retrieved:', classInfo);
@@ -231,14 +232,14 @@ class ProfileModel {
 
         } catch (error) {
             console.error('❌ Error validating class code:', error);
-            
+
             // Handle specific error cases
             if (error.status === 404 || error.message?.includes('not found') || error.message?.includes('tidak ditemukan')) {
                 return { valid: false, error: 'Class code not found' };
             }
-            
-            return { 
-                valid: false, 
+
+            return {
+                valid: false,
                 error: error.message || 'Failed to validate class code'
             };
         }
@@ -246,15 +247,16 @@ class ProfileModel {
 
     // Check if class code provides complete info
     isClassCodeComplete(classInfo) {
-        return classInfo && 
-               classInfo.program_studi && 
-               classInfo.perguruan_tinggi;
+        return classInfo &&
+            classInfo.program_studi &&
+            classInfo.perguruan_tinggi;
     }
 
-    // Validation helpers
+    // 🔐 ENHANCED: Basic profile validation with improved password validation
     validateBasicProfile(data) {
         const errors = {};
 
+        // Basic field validation
         if (data.full_name && data.full_name.trim().length < 3) {
             errors.full_name = 'Full name must be at least 3 characters';
         }
@@ -263,12 +265,113 @@ class ProfileModel {
             errors.email = 'Please enter a valid email address';
         }
 
-        if (data.new_password && data.new_password.length < 6) {
-            errors.new_password = 'Password must be at least 6 characters';
+        // 🔐 Enhanced password validation
+        if (data.new_password) {
+            console.log('🔐 Validating new password with enhanced validation...');
+
+            // Use PasswordValidation utility for comprehensive validation
+            const passwordValidation = PasswordValidation.validatePassword(data.new_password);
+
+            if (!passwordValidation.isValid) {
+                const missingReqs = passwordValidation.missingRequirements;
+                errors.new_password = `Password must meet all requirements: ${missingReqs.join(', ')}`;
+                console.log('❌ Password validation failed:', missingReqs);
+            } else {
+                console.log('✅ Password validation passed with strength:', passwordValidation.strengthText);
+            }
+
+            // Ensure old password is provided when changing password
+            if (!data.old_password) {
+                errors.old_password = 'Current password is required when changing password';
+            }
         }
 
-        if (data.new_password && !data.old_password) {
-            errors.old_password = 'Current password is required when changing password';
+        return Object.keys(errors).length > 0 ? errors : null;
+    }
+
+    // 🔐 NEW: Password strength validation method
+    validatePasswordStrength(password) {
+        if (!password) {
+            return {
+                isValid: false,
+                strength: 'empty',
+                message: 'Password is required'
+            };
+        }
+
+        const validation = PasswordValidation.validatePassword(password);
+
+        return {
+            isValid: validation.isValid,
+            strength: validation.strength,
+            strengthText: validation.strengthText,
+            score: validation.score,
+            percentage: validation.percentage,
+            requirements: validation.requirements,
+            missingRequirements: validation.missingRequirements,
+            message: validation.isValid
+                ? `Strong password (${validation.strengthText})`
+                : `Weak password: ${validation.missingRequirements.join(', ')}`
+        };
+    }
+
+    // 🔐 NEW: Password match validation
+    validatePasswordMatch(password, confirmPassword) {
+        if (!password && !confirmPassword) {
+            return {
+                isValid: true,
+                message: 'No password change'
+            };
+        }
+
+        if (!confirmPassword) {
+            return {
+                isValid: false,
+                message: 'Please confirm your password'
+            };
+        }
+
+        const isMatching = password === confirmPassword;
+
+        return {
+            isValid: isMatching,
+            message: isMatching
+                ? 'Passwords match'
+                : 'Password confirmation does not match'
+        };
+    }
+
+    // 🔐 NEW: Comprehensive password validation
+    validatePasswordChange(oldPassword, newPassword, confirmPassword) {
+        const errors = {};
+
+        // Check if password change is attempted
+        if (!newPassword && !oldPassword && !confirmPassword) {
+            // No password change - valid
+            return null;
+        }
+
+        // If new password is provided, validate all aspects
+        if (newPassword) {
+            // Validate new password strength
+            const strengthValidation = this.validatePasswordStrength(newPassword);
+            if (!strengthValidation.isValid) {
+                errors.new_password = strengthValidation.message;
+            }
+
+            // Validate old password is provided
+            if (!oldPassword) {
+                errors.old_password = 'Current password is required when setting new password';
+            }
+
+            // Validate password confirmation
+            const matchValidation = this.validatePasswordMatch(newPassword, confirmPassword);
+            if (!matchValidation.isValid) {
+                errors.confirm_password = matchValidation.message;
+            }
+        } else if (oldPassword) {
+            // Old password provided but no new password
+            errors.new_password = 'New password is required when current password is provided';
         }
 
         return Object.keys(errors).length > 0 ? errors : null;
@@ -324,6 +427,22 @@ class ProfileModel {
         return emailRegex.test(email);
     }
 
+    // 🔐 NEW: Password security utilities
+    isSecurePassword(password) {
+        const validation = PasswordValidation.validatePassword(password);
+        return validation.isValid && validation.score >= 4; // Strong or very strong
+    }
+
+    getPasswordSecurityLevel(password) {
+        const validation = PasswordValidation.validatePassword(password);
+        return {
+            level: validation.strength,
+            text: validation.strengthText,
+            score: validation.score,
+            isSecure: validation.score >= 4
+        };
+    }
+
     // Get error for specific field
     getError(section, field) {
         return this.errors[section]?.[field] || this.errors[field];
@@ -350,7 +469,7 @@ class ProfileModel {
             // Try to get enums from API first
             const enums = await Api.getEnums();
             console.log('✅ Enums loaded from API:', enums);
-            
+
             return {
                 PROGRAM_STUDI: enums.program_studi || this.getFallbackProgramStudi(),
                 PERGURUAN_TINGGI: enums.perguruan_tinggi || this.getFallbackPerguruanTinggi()
@@ -408,6 +527,34 @@ class ProfileModel {
             'Universitas Negeri Yogyakarta',
             'Bina Sarana Informatika'
         ];
+    }
+
+    // 🔐 NEW: Password validation utilities for debugging
+    debugPasswordValidation(password) {
+        const validation = PasswordValidation.validatePassword(password);
+
+        console.log('🔐 Password Debug Info:', {
+            password: password ? '***' : 'empty',
+            isValid: validation.isValid,
+            strength: validation.strength,
+            strengthText: validation.strengthText,
+            score: validation.score,
+            requirements: validation.requirements,
+            missingRequirements: validation.missingRequirements
+        });
+
+        return validation;
+    }
+
+    // 🔐 NEW: Get password requirements
+    getPasswordRequirements() {
+        return PasswordValidation.REQUIREMENTS;
+    }
+
+    // 🔐 NEW: Check if password meets minimum requirements
+    meetsMinimumRequirements(password) {
+        const validation = PasswordValidation.validatePassword(password);
+        return validation.isValid;
     }
 }
 

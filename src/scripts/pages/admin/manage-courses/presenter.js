@@ -28,7 +28,7 @@ const AdminCoursePresenter = {
 
   async loadInitialData() {
     try {
-      console.log('🔄 Loading initial data...');
+      //console.log('🔄 Loading initial data...');
       this.view.showLoading();
 
       // Load statistics
@@ -48,7 +48,7 @@ const AdminCoursePresenter = {
       // Load courses
       await this.loadCourses();
 
-      console.log('✅ Initial data loaded successfully');
+      //console.log('✅ Initial data loaded successfully');
     } catch (error) {
       console.error('❌ Error loading initial data:', error);
       this.view.showError('Gagal memuat data kursus: ' + error.message);
@@ -87,13 +87,13 @@ const AdminCoursePresenter = {
   },
 
   async handleSearchChange(search) {
-    console.log('🔍 Search changed:', search);
+    //console.log('🔍 Search changed:', search);
     this.view.updateFilters({ search, page: 1 });
     await this.loadCourses();
   },
 
   async handleFilterChange(filterType, value) {
-    console.log(`🔧 Filter changed: ${filterType} = ${value}`);
+    //console.log(`🔧 Filter changed: ${filterType} = ${value}`);
     const update = { page: 1 };
     update[filterType] = value;
     this.view.updateFilters(update);
@@ -101,14 +101,14 @@ const AdminCoursePresenter = {
   },
 
   async handlePageChange(page) {
-    console.log('📄 Page changed:', page);
+    //console.log('📄 Page changed:', page);
     this.view.updateFilters({ page });
     await this.loadCourses();
   },
 
   async handleViewCourse(courseId) {
     try {
-      console.log('👁️ Viewing course:', courseId);
+      //console.log('👁️ Viewing course:', courseId);
       const courseDetail = await AdminCourseModel.getCourseDetail(courseId);
 
       // Create a proper course detail modal
@@ -261,7 +261,7 @@ const AdminCoursePresenter = {
 
   async handleEditCourse(courseId) {
     try {
-      console.log('✏️ Editing course:', courseId);
+      //console.log('✏️ Editing course:', courseId);
       const courseDetail = await AdminCourseModel.getCourseDetail(courseId);
       this.view.showCourseModal(courseDetail.course);
     } catch (error) {
@@ -272,7 +272,7 @@ const AdminCoursePresenter = {
 
   async handleDeleteCourse(courseId) {
     try {
-      console.log('🗑️ Delete course requested:', courseId);
+      //console.log('🗑️ Delete course requested:', courseId);
 
       // Get course details for confirmation
       const courseDetail = await AdminCourseModel.getCourseDetail(courseId);
@@ -285,7 +285,7 @@ const AdminCoursePresenter = {
 
   async handleConfirmDelete(courseId) {
     try {
-      console.log('✅ Confirming delete course:', courseId);
+      //console.log('✅ Confirming delete course:', courseId);
 
       await AdminCourseModel.deleteCourse(courseId);
       this.view.showSuccess('Kursus berhasil dihapus');
@@ -303,13 +303,13 @@ const AdminCoursePresenter = {
   },
 
   async handleAddCourse() {
-    console.log('➕ Add course requested');
+    //console.log('➕ Add course requested');
     this.view.showCourseModal(); // Show empty modal for new course
   },
 
   async handleCreateCourse(formData) {
     try {
-      console.log('💾 Creating course:', formData);
+      //console.log('💾 Creating course:', formData);
 
       // Note: Backend belum ada endpoint create course
       // Implementasikan jika diperlukan
@@ -323,7 +323,7 @@ const AdminCoursePresenter = {
 
   async handleUpdateCourse(courseId, formData) {
     try {
-      console.log('💾 Updating course:', courseId, formData);
+      //console.log('💾 Updating course:', courseId, formData);
 
       await AdminCourseModel.updateCourse(courseId, formData);
       this.view.showSuccess('Kursus berhasil diperbarui');
@@ -342,7 +342,7 @@ const AdminCoursePresenter = {
 
   async handleExportCourses() {
     try {
-      console.log('📤 Exporting courses...');
+      //console.log('📤 Exporting courses...');
 
       this.view.startRefreshAnimation();
 
@@ -367,7 +367,7 @@ const AdminCoursePresenter = {
 
   async handleRefresh() {
     try {
-      console.log('🔄 Refreshing data...');
+      //console.log('🔄 Refreshing data...');
 
       this.view.startRefreshAnimation();
 

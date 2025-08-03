@@ -1,6 +1,6 @@
 // src/scripts/data/utils.js - Utility functions and common APIs
-import coreAPI, { CACHE_TTL } from './core.js';
 import CONFIG from './config.js';
+import coreAPI, { CACHE_TTL } from './core.js';
 
 export class UtilsAPI extends coreAPI.constructor {
     constructor() {
@@ -68,7 +68,7 @@ export class UtilsAPI extends coreAPI.constructor {
                 ]
             };
 
-            console.log('✅ Enums data loaded successfully:', validatedData);
+            //console.log('✅ Enums data loaded successfully:', validatedData);
             return validatedData;
 
         } catch (error) {
@@ -288,7 +288,7 @@ export class UtilsAPI extends coreAPI.constructor {
             const Cache = (await import('./cache.js')).default;
             await Cache.clear();
             this.profileCache = { basic: null, student: null, teacher: null, timestamp: null };
-            console.log('✅ All cache cleared');
+            //console.log('✅ All cache cleared');
         } catch (error) {
             console.error('❌ Failed to clear cache:', error);
         }
@@ -299,7 +299,7 @@ export class UtilsAPI extends coreAPI.constructor {
         try {
             const Cache = (await import('./cache.js')).default;
             await Cache.clearPattern(pattern);
-            console.log(`✅ Cache pattern cleared: ${pattern}`);
+            //console.log(`✅ Cache pattern cleared: ${pattern}`);
         } catch (error) {
             console.error(`❌ Failed to clear cache pattern ${pattern}:`, error);
         }
@@ -417,10 +417,10 @@ export class UtilsAPI extends coreAPI.constructor {
 
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                console.log(`🔄 Attempt ${attempt}/${maxRetries}${context ? ` for ${context}` : ''}`);
+                //console.log(`🔄 Attempt ${attempt}/${maxRetries}${context ? ` for ${context}` : ''}`);
                 const result = await fn();
                 if (attempt > 1) {
-                    console.log(`✅ Success on attempt ${attempt}${context ? ` for ${context}` : ''}`);
+                    //console.log(`✅ Success on attempt ${attempt}${context ? ` for ${context}` : ''}`);
                 }
                 return result;
             } catch (error) {
@@ -433,7 +433,7 @@ export class UtilsAPI extends coreAPI.constructor {
 
                 // Calculate delay with exponential backoff and jitter
                 const delay = baseDelay * Math.pow(2, attempt - 1) + Math.random() * 1000;
-                console.log(`⏳ Waiting ${Math.round(delay)}ms before retry...`);
+                //console.log(`⏳ Waiting ${Math.round(delay)}ms before retry...`);
                 await new Promise(resolve => setTimeout(resolve, delay));
             }
         }
@@ -503,7 +503,7 @@ export class UtilsAPI extends coreAPI.constructor {
                 console.debug(`[${timestamp}] DEBUG:`, message, data);
                 break;
             default:
-                console.log(`[${timestamp}] LOG:`, message, data);
+                //console.log(`[${timestamp}] LOG:`, message, data);
         }
 
         // In production, you might want to send logs to a logging service

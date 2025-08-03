@@ -661,7 +661,7 @@ class FinalExamPage {
     const currentAnswer = this.presenter.model.getAnswer(current.index);
     const isDoubtful = this.presenter.model.getDoubtFlag(current.index);
 
-    console.log(`🔍 Question ${current.index + 1}: currentAnswer = ${currentAnswer} (type: ${typeof currentAnswer})`);
+    //console.log(`🔍 Question ${current.index + 1}: currentAnswer = ${currentAnswer} (type: ${typeof currentAnswer})`);
 
     // Render question with COMPLETELY FIXED answer selection logic
     if (questionEl) {
@@ -691,7 +691,7 @@ class FinalExamPage {
             
             const optionLetter = String.fromCharCode(65 + idx);
 
-            console.log(`   Option ${optionLetter} (index ${idx}): isSelected = ${isSelected}, currentAnswer = "${currentAnswer}"`);
+            //console.log(`   Option ${optionLetter} (index ${idx}): isSelected = ${isSelected}, currentAnswer = "${currentAnswer}"`);
 
             return `
               <div class="option-wrapper" data-option-index="${idx}">
@@ -770,7 +770,7 @@ class FinalExamPage {
 
       const answerIndex = parseInt(optionWrapper.dataset.optionIndex);
       
-      console.log(`🎯 Clicked option ${String.fromCharCode(65 + answerIndex)} (index: ${answerIndex}) for question ${questionIndex}`);
+      //console.log(`🎯 Clicked option ${String.fromCharCode(65 + answerIndex)} (index: ${answerIndex}) for question ${questionIndex}`);
 
       // Prevent double-clicking same option
       e.preventDefault();
@@ -799,7 +799,7 @@ class FinalExamPage {
 
   // ===== FORCE VISUAL UPDATE =====
   forceUpdateSelection(questionIndex, selectedIndex) {
-    console.log(`🔄 Force updating selection: Q${questionIndex}, Option ${String.fromCharCode(65 + selectedIndex)}`);
+    //console.log(`🔄 Force updating selection: Q${questionIndex}, Option ${String.fromCharCode(65 + selectedIndex)}`);
 
     // Update all options for this question
     document.querySelectorAll('.option-wrapper').forEach((wrapper, idx) => {
@@ -1706,28 +1706,28 @@ class FinalExamPage {
     
     const currentAnswer = this.presenter.model.getAnswer(current.index);
     
-    console.log('=== DEBUG EXAM STATE ===');
-    console.log('Current Question:', current.index + 1);
-    console.log('Current Answer:', currentAnswer, '(type:', typeof currentAnswer, ')');
-    console.log('Options:', current.question.options);
-    console.log('Expected A:', 0, 'Expected B:', 1, 'Expected C:', 2, 'Expected D:', 3);
+    //console.log('=== DEBUG EXAM STATE ===');
+    //console.log('Current Question:', current.index + 1);
+    //console.log('Current Answer:', currentAnswer, '(type:', typeof currentAnswer, ')');
+    //console.log('Options:', current.question.options);
+    //console.log('Expected A:', 0, 'Expected B:', 1, 'Expected C:', 2, 'Expected D:', 3);
     
     // Check DOM state
     document.querySelectorAll('.option-wrapper').forEach((wrapper, idx) => {
       const isVisuallySelected = wrapper.querySelector('.option-label').classList.contains('selected-option');
       const radioChecked = wrapper.querySelector('.radio-input').checked;
-      console.log(`Option ${String.fromCharCode(65 + idx)}: visually=${isVisuallySelected}, radio=${radioChecked}, shouldBe=${String(currentAnswer) === String(idx)}`);
+      //console.log(`Option ${String.fromCharCode(65 + idx)}: visually=${isVisuallySelected}, radio=${radioChecked}, shouldBe=${String(currentAnswer) === String(idx)}`);
     });
-    console.log('========================');
+    //console.log('========================');
   }
 
   // ===== TEST METHOD FOR DEBUGGING =====
   testOptionSelection() {
-    console.log('🧪 Testing option selection...');
+    //console.log('🧪 Testing option selection...');
     
     // Test selecting each option
     [0, 1, 2, 3].forEach(idx => {
-      console.log(`Testing option ${String.fromCharCode(65 + idx)} (index ${idx})`);
+      //console.log(`Testing option ${String.fromCharCode(65 + idx)} (index ${idx})`);
       const current = this.presenter.model.getCurrentQuestion();
       if (current) {
         this.presenter.setAnswer(current.index, idx);
@@ -1735,7 +1735,7 @@ class FinalExamPage {
         
         // Verify selection
         const answer = this.presenter.model.getAnswer(current.index);
-        console.log(`✅ Set answer ${idx}, got back ${answer}`);
+        //console.log(`✅ Set answer ${idx}, got back ${answer}`);
       }
     });
   }

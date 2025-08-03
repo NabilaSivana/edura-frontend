@@ -33,12 +33,12 @@ class IndexedDBManager {
 
             request.onsuccess = () => {
                 this.db = request.result;
-                console.log('✅ IndexedDB opened successfully');
+                //console.log('✅ IndexedDB opened successfully');
                 resolve(this.db);
             };
 
             request.onupgradeneeded = (event) => {
-                console.log('🔄 IndexedDB upgrade needed');
+                //console.log('🔄 IndexedDB upgrade needed');
                 const db = event.target.result;
                 this.createStores(db);
             };
@@ -94,7 +94,7 @@ class IndexedDBManager {
             assetsStore.createIndex('size', 'size', { unique: false });
         }
 
-        console.log('✅ IndexedDB stores created successfully');
+        //console.log('✅ IndexedDB stores created successfully');
     }
 
     // Generic store operations
@@ -176,7 +176,7 @@ class IndexedDBManager {
 
         try {
             await this.addToStore(this.stores.apiCache, cacheData);
-            console.log(`💾 API response cached: ${endpoint}`);
+            //console.log(`💾 API response cached: ${endpoint}`);
         } catch (error) {
             console.error('❌ Failed to cache API response:', error);
         }
@@ -194,7 +194,7 @@ class IndexedDBManager {
                 return null;
             }
 
-            console.log(`💾 Using cached API response: ${cached.endpoint}`);
+            //console.log(`💾 Using cached API response: ${cached.endpoint}`);
             return cached.data;
         } catch (error) {
             console.error('❌ Failed to get cached API response:', error);
@@ -213,7 +213,7 @@ class IndexedDBManager {
 
         try {
             await this.addToStore(this.stores.profiles, data);
-            console.log(`👤 Profile cached: ${type}`);
+            //console.log(`👤 Profile cached: ${type}`);
         } catch (error) {
             console.error('❌ Failed to cache profile:', error);
         }
@@ -245,7 +245,7 @@ class IndexedDBManager {
 
         try {
             await this.addToStore(this.stores.courses, data);
-            console.log(`📚 Course cached: ${courseData.id}`);
+            //console.log(`📚 Course cached: ${courseData.id}`);
         } catch (error) {
             console.error('❌ Failed to cache course:', error);
         }
@@ -300,7 +300,7 @@ class IndexedDBManager {
 
         try {
             await this.addToStore(this.stores.offlineQueue, queueItem);
-            console.log(`📥 Added to offline queue: ${action}`);
+            //console.log(`📥 Added to offline queue: ${action}`);
         } catch (error) {
             console.error('❌ Failed to add to offline queue:', error);
         }
@@ -319,7 +319,7 @@ class IndexedDBManager {
     async removeFromOfflineQueue(id) {
         try {
             await this.deleteFromStore(this.stores.offlineQueue, id);
-            console.log(`📤 Removed from offline queue: ${id}`);
+            //console.log(`📤 Removed from offline queue: ${id}`);
         } catch (error) {
             console.error('❌ Failed to remove from offline queue:', error);
         }
@@ -337,7 +337,7 @@ class IndexedDBManager {
 
         try {
             await this.addToStore(this.stores.staticAssets, data);
-            console.log(`🖼️ Static asset cached: ${url}`);
+            //console.log(`🖼️ Static asset cached: ${url}`);
         } catch (error) {
             console.error('❌ Failed to cache static asset:', error);
         }
@@ -356,7 +356,7 @@ class IndexedDBManager {
     // Cleanup methods
     async cleanupExpiredCache() {
         try {
-            console.log('🧹 Starting cache cleanup...');
+            //console.log('🧹 Starting cache cleanup...');
 
             // Clean API cache
             const apiCache = await this.getAllFromStore(this.stores.apiCache);
@@ -382,7 +382,7 @@ class IndexedDBManager {
                 }
             }
 
-            console.log('✅ Cache cleanup completed');
+            //console.log('✅ Cache cleanup completed');
         } catch (error) {
             console.error('❌ Cache cleanup failed:', error);
         }
@@ -420,7 +420,7 @@ class IndexedDBManager {
             for (const storeName of Object.values(this.stores)) {
                 await this.clearStore(storeName);
             }
-            console.log('🗑️ All IndexedDB data cleared');
+            //console.log('🗑️ All IndexedDB data cleared');
         } catch (error) {
             console.error('❌ Failed to clear all data:', error);
         }

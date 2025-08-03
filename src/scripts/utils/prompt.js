@@ -299,23 +299,97 @@ class CustomPrompt {
             options
         });
     }
-
     /**
-     * Confirmation dialog
+     * Confirmation dialog - shows only message with Confirm/Cancel buttons
      * @param {string} message - Confirmation message
      * @param {string} title - Dialog title
      * @returns {Promise<boolean>}
      */
     async confirm(message, title = 'Confirm Action') {
-        const result = await this.show({
-            title,
-            message,
-            type: 'text',
-            confirmText: 'Confirm',
-            cancelText: 'Cancel',
-            required: false
+        if (this.isOpen) {
+            throw new Error('Another prompt is already open');
+        }
+
+        return new Promise((resolve) => {
+            this.isOpen = true;
+
+            const modal = document.getElementById(this.modalId);
+            const backdrop = document.getElementById('prompt-backdrop');
+            const content = document.getElementById('prompt-content');
+            const titleEl = document.getElementById('prompt-title');
+            const messageEl = document.getElementById('prompt-message');
+            const inputContainer = document.getElementById('prompt-input-container');
+            const errorEl = document.getElementById('prompt-error');
+            const cancelBtn = document.getElementById('prompt-cancel');
+            const confirmBtn = document.getElementById('prompt-confirm');
+
+            // Set content
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            cancelBtn.textContent = 'Batal';
+            confirmBtn.textContent = 'Confirm';
+
+            // Hide input container and error for confirmation dialog
+            inputContainer.style.display = 'none';
+            errorEl.classList.add('hidden');
+
+            // Event handlers
+            const cleanup = () => {
+                this.isOpen = false;
+                modal.classList.add('hidden');
+                content.classList.remove('scale-100', 'opacity-100');
+                content.classList.add('scale-95', 'opacity-0');
+
+                // Show input container back for future prompts
+                inputContainer.style.display = 'block';
+
+                // Remove event listeners
+                cancelBtn.removeEventListener('click', handleCancel);
+                confirmBtn.removeEventListener('click', handleConfirm);
+                backdrop.removeEventListener('click', handleCancel);
+                document.removeEventListener('keydown', handleKeydown);
+            };
+
+            const handleCancel = () => {
+                cleanup();
+                resolve(false);
+            };
+
+            const handleConfirm = () => {
+                cleanup();
+                resolve(true);
+            };
+
+            const handleKeydown = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleConfirm();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    handleCancel();
+                }
+            };
+
+            // Attach event listeners
+            cancelBtn.addEventListener('click', handleCancel);
+            confirmBtn.addEventListener('click', handleConfirm);
+            backdrop.addEventListener('click', handleCancel);
+            document.addEventListener('keydown', handleKeydown);
+
+            // Show modal
+            modal.classList.remove('hidden');
+
+            // Trigger animation
+            requestAnimationFrame(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            });
+
+            // Focus confirm button
+            setTimeout(() => {
+                confirmBtn.focus();
+            }, 100);
         });
-        return result !== null;
     }
 }
 

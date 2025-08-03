@@ -1,10 +1,10 @@
 // src/scripts/data/api.js - Main API entry point (modular version)
+import adminAPI from './admin.js';
+import CONFIG from './config.js';
 import coreAPI from './core.js';
 import studentAPI from './student.js';
 import teacherAPI from './teacher.js';
-import adminAPI from './admin.js';
 import utilsAPI from './utils.js';
-import CONFIG from './config.js';
 
 /**
  * Main API class that combines all API modules
@@ -22,7 +22,7 @@ class MainAPI {
         // Expose CONFIG for backward compatibility
         this.CONFIG = CONFIG;
 
-        console.log('🚀 Modular API initialized successfully');
+        //console.log('🚀 Modular API initialized successfully');
     }
 
     // ============================================
@@ -648,12 +648,9 @@ const Api = new MainAPI();
 
 // Also export individual modules for direct access if needed
 export {
-    coreAPI as CoreAPI,
+    adminAPI as AdminAPI, CONFIG, coreAPI as CoreAPI,
     studentAPI as StudentAPI,
-    teacherAPI as TeacherAPI,
-    adminAPI as AdminAPI,
-    utilsAPI as UtilsAPI,
-    CONFIG
+    teacherAPI as TeacherAPI, utilsAPI as UtilsAPI
 };
 
 // Export main API as default

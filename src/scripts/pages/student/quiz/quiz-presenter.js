@@ -21,14 +21,14 @@ const QuizPresenter = {
 
   async handleGenerate({ courseId, sessionNumber, model }) {
     try {
-      console.log('🎯 Generating quiz...');
+      //console.log('🎯 Generating quiz...');
       
       // 1. Clear cache sebelum generate
       await model.clearAllQuizCache(courseId, sessionNumber);
       
       // 2. Generate kuis di backend (POST)
       const generateResponse = await model.generateQuiz(courseId, sessionNumber);
-      console.log('✅ Quiz generated:', generateResponse);
+      //console.log('✅ Quiz generated:', generateResponse);
 
       // 3. Wait sedikit untuk server processing
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -40,7 +40,7 @@ const QuizPresenter = {
         throw new Error('Generated quiz has no questions');
       }
 
-      console.log('✅ Quiz questions fetched:', quizQuestions.length);
+      //console.log('✅ Quiz questions fetched:', quizQuestions.length);
       return quizQuestions;
       
     } catch (error) {
@@ -51,7 +51,7 @@ const QuizPresenter = {
 
   async handleSubmit({ courseId, sessionNumber, answers, model, view }) {
     try {
-      console.log('📤 Submitting quiz answers...');
+      //console.log('📤 Submitting quiz answers...');
       
       // Submit dengan retry=false untuk submit normal
       // Menggunakan method baru yang langsung return fresh result
@@ -63,7 +63,7 @@ const QuizPresenter = {
       );
 
       if (result && result.data) {
-        console.log('✅ Quiz submitted and result retrieved:', result.data.score);
+        //console.log('✅ Quiz submitted and result retrieved:', result.data.score);
         view.showResult(result);
       } else {
         throw new Error('No result data received after submit');
@@ -77,14 +77,14 @@ const QuizPresenter = {
 
   async handleRetry({ courseId, sessionNumber, model, view }) {
     try {
-      console.log('🔄 Handling quiz retry...');
+      //console.log('🔄 Handling quiz retry...');
       view.showLoading();
       
       // Use model's retry method yang sudah improved
       const newQuestions = await model.retryQuiz(courseId, sessionNumber);
       
       if (newQuestions && newQuestions.length > 0) {
-        console.log('✅ Retry successful, showing new questions');
+        //console.log('✅ Retry successful, showing new questions');
         view.renderQuiz(newQuestions);
       } else {
         throw new Error('No questions received after retry');

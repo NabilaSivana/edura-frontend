@@ -1,4 +1,4 @@
-// File: routes/class-page.js - Optimized Version with Smaller Elements
+// File: routes/class-page.js - Enhanced Version with Refresh Button
 import createSidebar from "../../../component/sidebar.js";
 import TeacherClassPresenter from "./presenter.js";
 
@@ -31,9 +31,9 @@ const TeacherClassPage = {
                   
                   <!-- Quick Actions untuk desktop -->
                   <div class="hidden sm:flex gap-2">
-                    <button id="refresh-btn" class="p-2 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-all"
+                    <button id="refresh-btn" class="p-2 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Refresh Data">
-                      <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg class="w-4 h-4 text-gray-600 dark:text-gray-300 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                           d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                       </svg>
@@ -426,12 +426,30 @@ const TeacherClassPage = {
       });
     });
 
-    // Refresh button
-    document.getElementById("refresh-btn")?.addEventListener("click", () => {
-      TeacherClassPresenter.init();
+    // 🔄 Enhanced Refresh button with proper functionality
+    document.getElementById("refresh-btn")?.addEventListener("click", async () => {
+      const btn = document.getElementById("refresh-btn");
+      const icon = btn.querySelector("svg");
+      
+      // Disable button and show loading
+      btn.disabled = true;
+      icon.classList.add("animate-spin");
+      btn.title = "Refreshing...";
+      
+      try {
+        //console.log("🔄 User clicked refresh button");
+        // Clear cache and refresh data
+        await TeacherClassPresenter.refreshAllData();
+      } catch (error) {
+        console.error("❌ Refresh error:", error);
+      } finally {
+        // Re-enable button
+        btn.disabled = false;
+        icon.classList.remove("animate-spin");
+        btn.title = "Refresh Data";
+      }
     });
 
- 
     // Search functionality
     const searchInput = document.getElementById("search-input");
     searchInput?.addEventListener("input", (e) => {

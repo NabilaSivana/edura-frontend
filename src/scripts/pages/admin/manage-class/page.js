@@ -205,7 +205,7 @@ const AdminManageClassPage = {
   },
 
   async afterRender() {
-    console.log('🎯 Initializing Admin Manage Class Page...');
+    //console.log('🎯 Initializing Admin Manage Class Page...');
 
     // Reset initialization flag to allow re-initialization
     this._initialized = false;
@@ -250,7 +250,7 @@ const AdminManageClassPage = {
   setupEventListeners() {
     // Prevent duplicate event listeners
     if (this._eventListenersSetup) {
-      console.log('Event listeners already setup, skipping...');
+      //console.log('Event listeners already setup, skipping...');
       return;
     }
 
@@ -1271,7 +1271,7 @@ const AdminManageClassPage = {
       return;
     }
 
-    console.log('🧹 Cleaning up Admin Manage Class Page...');
+    //console.log('🧹 Cleaning up Admin Manage Class Page...');
     this._isCleaningUp = true;
 
     try {

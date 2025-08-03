@@ -1,6 +1,6 @@
-// src/scripts/data/student.js - Student-specific APIs
-import coreAPI, { CACHE_TTL } from './core.js';
+// src/scripts/data/student.js - Student-specific APIs with Enhanced Cache Management
 import CONFIG from './config.js';
+import coreAPI, { CACHE_TTL } from './core.js';
 
 export class StudentAPI extends coreAPI.constructor {
     constructor() {
@@ -174,12 +174,12 @@ export class StudentAPI extends coreAPI.constructor {
             if (from_recommendation && recommendation_id) {
                 payload.from_recommendation = true;
                 payload.recommendation_id = recommendation_id;
-                console.log(`🔄 Creating course from recommendation ID: ${recommendation_id}`);
+                //console.log(`🔄 Creating course from recommendation ID: ${recommendation_id}`);
             } else {
-                console.log(`🌐 Creating new course: ${subject} (${level})`);
+                //console.log(`🌐 Creating new course: ${subject} (${level})`);
             }
 
-            console.log('📡 DIRECT API call to /student/course/create:', payload);
+            //console.log('📡 DIRECT API call to /student/course/create:', payload);
 
             // Call API directly - NO OFFLINE MANAGER
             const response = await this._fetchWithOfflineSupport(`${CONFIG.BASE_URL}/student/course/create`, {
@@ -195,9 +195,9 @@ export class StudentAPI extends coreAPI.constructor {
 
             // Enhanced logging
             if (responseData.reused) {
-                console.log(`✅ Course reused successfully: ${responseData.course_id}`);
+                //console.log(`✅ Course reused successfully: ${responseData.course_id}`);
             } else {
-                console.log(`✅ New course created: ${responseData.course_id}`);
+                //console.log(`✅ New course created: ${responseData.course_id}`);
             }
 
             return responseData;
@@ -254,7 +254,7 @@ export class StudentAPI extends coreAPI.constructor {
             const courses = await this.getStudentCourses();
             const pendingCourses = courses.filter(course => course.is_generating === true);
 
-            console.log(`📋 Found ${pendingCourses.length} pending course generations`);
+            //console.log(`📋 Found ${pendingCourses.length} pending course generations`);
             return pendingCourses;
         } catch (error) {
             console.warn('⚠️ Failed to get pending generations:', error);
@@ -301,7 +301,7 @@ export class StudentAPI extends coreAPI.constructor {
         }
 
         try {
-            console.log('📡 DIRECT: Generating flashcards for course:', courseId);
+            //console.log('📡 DIRECT: Generating flashcards for course:', courseId);
 
             const response = await this._fetchWithOfflineSupport(`${CONFIG.BASE_URL}/student/flashcards/generate`, {
                 method: 'POST',
@@ -314,7 +314,7 @@ export class StudentAPI extends coreAPI.constructor {
             // Invalidate flashcards cache on success
             await this._invalidateCache('student/flashcards');
 
-            console.log('✅ Flashcards generated successfully:', result);
+            //console.log('✅ Flashcards generated successfully:', result);
             return result;
         } catch (error) {
             console.error('❌ Generate flashcards failed:', error);
@@ -362,7 +362,7 @@ export class StudentAPI extends coreAPI.constructor {
 
     // Enhanced invalidate cache dengan lebih spesifik dan comprehensive
     async _invalidateQuizCache(courseId, sessionNumber) {
-        console.log(`🧹 Invalidating quiz cache for course ${courseId}, session ${sessionNumber}`);
+        //console.log(`🧹 Invalidating quiz cache for course ${courseId}, session ${sessionNumber}`);
 
         const patterns = [
             // Cache patterns untuk quiz questions
@@ -385,7 +385,7 @@ export class StudentAPI extends coreAPI.constructor {
             try {
                 const Cache = (await import('./cache.js')).default;
                 await Cache.remove(pattern);
-                console.log(`✅ Removed cache: ${pattern}`);
+                //console.log(`✅ Removed cache: ${pattern}`);
             } catch (error) {
                 console.warn(`⚠️ Failed to remove cache: ${pattern}`, error);
             }
@@ -396,7 +396,7 @@ export class StudentAPI extends coreAPI.constructor {
             const Cache = (await import('./cache.js')).default;
             await Cache.clearPattern('student/quiz');
             await Cache.clearPattern('api_student/quiz');
-            console.log('✅ Cleared quiz cache patterns');
+            //console.log('✅ Cleared quiz cache patterns');
         } catch (error) {
             console.warn('⚠️ Error clearing quiz cache patterns:', error);
         }
@@ -406,7 +406,7 @@ export class StudentAPI extends coreAPI.constructor {
     async getQuiz(courseId, sessionNumber, forceRefresh = false) {
         try {
             if (forceRefresh) {
-                console.log(`🔄 Force refreshing quiz for course ${courseId}, session ${sessionNumber}`);
+                //console.log(`🔄 Force refreshing quiz for course ${courseId}, session ${sessionNumber}`);
                 // Clear cache first
                 await this._invalidateQuizCache(courseId, sessionNumber);
             }
@@ -428,7 +428,7 @@ export class StudentAPI extends coreAPI.constructor {
             const questions = data.data?.questions || data.questions || [];
 
             if (forceRefresh) {
-                console.log(`✅ Force refreshed quiz: ${questions.length} questions`);
+                //console.log(`✅ Force refreshed quiz: ${questions.length} questions`);
             }
 
             return questions;
@@ -442,7 +442,7 @@ export class StudentAPI extends coreAPI.constructor {
     async getQuizResult(courseId, sessionNumber, forceRefresh = false) {
         try {
             if (forceRefresh) {
-                console.log(`🔄 Force refreshing quiz result for course ${courseId}, session ${sessionNumber}`);
+                //console.log(`🔄 Force refreshing quiz result for course ${courseId}, session ${sessionNumber}`);
                 // Clear result cache specifically
                 const Cache = (await import('./cache.js')).default;
                 const resultCacheKeys = [
@@ -469,7 +469,7 @@ export class StudentAPI extends coreAPI.constructor {
             }, CACHE_TTL.COURSES);
 
             if (forceRefresh) {
-                console.log(`✅ Force refreshed quiz result: score ${data.data?.score}`);
+                //console.log(`✅ Force refreshed quiz result: score ${data.data?.score}`);
             }
 
             return data;
@@ -493,7 +493,7 @@ export class StudentAPI extends coreAPI.constructor {
         };
 
         try {
-            console.log(`📡 DIRECT: Submitting quiz (retry: ${retry}) for course ${courseId}, session ${sessionNumber}`);
+            //console.log(`📡 DIRECT: Submitting quiz (retry: ${retry}) for course ${courseId}, session ${sessionNumber}`);
 
             const response = await this._fetchWithOfflineSupport(`${CONFIG.BASE_URL}/student/quiz/submit`, {
                 method: 'PUT',
@@ -506,7 +506,7 @@ export class StudentAPI extends coreAPI.constructor {
             // Clear cache setelah submit berhasil
             await this._invalidateQuizCache(courseId, sessionNumber);
 
-            console.log(`✅ Quiz submitted successfully (retry: ${retry}):`, result);
+            //console.log(`✅ Quiz submitted successfully (retry: ${retry}):`, result);
             return result;
 
         } catch (error) {
@@ -518,7 +518,7 @@ export class StudentAPI extends coreAPI.constructor {
     // New method: submitQuizAndGetFreshResult  
     async submitQuizAndGetFreshResult(courseId, sessionNumber, answers, retry = false) {
         try {
-            console.log(`🎯 Submit quiz and get fresh result (retry: ${retry})`);
+            //console.log(`🎯 Submit quiz and get fresh result (retry: ${retry})`);
 
             // 1. Submit quiz
             const submitResponse = await this.submitQuiz(courseId, sessionNumber, answers, retry);
@@ -546,7 +546,7 @@ export class StudentAPI extends coreAPI.constructor {
     // New method: clearAllQuizRelatedCache
     async clearAllQuizRelatedCache(courseId, sessionNumber) {
         try {
-            console.log(`🧹 Clearing ALL quiz-related cache for course ${courseId}, session ${sessionNumber}`);
+            //console.log(`🧹 Clearing ALL quiz-related cache for course ${courseId}, session ${sessionNumber}`);
 
             // Clear specific quiz cache
             await this._invalidateQuizCache(courseId, sessionNumber);
@@ -567,14 +567,14 @@ export class StudentAPI extends coreAPI.constructor {
                 }
             }
 
-            console.log('✅ All quiz-related cache cleared');
+            //console.log('✅ All quiz-related cache cleared');
         } catch (error) {
             console.error('❌ Error clearing all quiz cache:', error);
         }
     }
 
     // ============================================
-    // FINAL EXAM APIs
+    // FINAL EXAM APIs (ENHANCED with Cache Management)
     // ============================================
 
     async retryWithBackoff(fn, maxRetries = 3, delay = 1000) {
@@ -608,16 +608,50 @@ export class StudentAPI extends coreAPI.constructor {
         return this.submitFinalExam(courseId, answers);
     }
 
-    async checkFinalExam(courseId) {
-        return this._getWithCache('/student/final-exam', {
-            params: { course_id: courseId }
-        }, CACHE_TTL.COURSES);
+    // 🔧 ENHANCED: Final exam checking with cache management
+    async checkFinalExam(courseId, forceRefresh = false) {
+        try {
+            const data = await this._getWithCache('/student/final-exam', {
+                params: {
+                    course_id: courseId,
+                    ...(forceRefresh && { _t: Date.now() })
+                }
+            }, CACHE_TTL.COURSES, forceRefresh);
+
+            return data;
+        } catch (error) {
+            // Clear cache on 404 or "not available" errors
+            if (error.message?.includes('404') ||
+                error.message?.includes('belum tersedia') ||
+                error.message?.includes('not available')) {
+
+                //console.log('🧹 Final exam not available - clearing cache');
+                await this._clearFinalExamCache(courseId);
+            }
+
+            throw error;
+        }
     }
 
-    async getFinalExam(courseId) {
-        return this._getWithCache('/student/final-exam/', {
-            params: { course_id: courseId }
-        }, CACHE_TTL.COURSES);
+    async getFinalExam(courseId, forceRefresh = false) {
+        try {
+            const data = await this._getWithCache('/student/final-exam/', {
+                params: {
+                    course_id: courseId,
+                    ...(forceRefresh && { _t: Date.now() })
+                }
+            }, CACHE_TTL.COURSES, forceRefresh);
+
+            return data;
+        } catch (error) {
+            // Clear cache on errors
+            if (error.message?.includes('404')) {
+                //console.log('🧹 Final exam data not found - clearing cache');
+                await this._clearFinalExamCache(courseId);
+            }
+
+            throw error;
+        }
     }
 
     // Direct final exam generation - never queue
@@ -627,7 +661,7 @@ export class StudentAPI extends coreAPI.constructor {
         }
 
         try {
-            console.log('📡 DIRECT: Generating final exam for course:', courseId);
+            //console.log('📡 DIRECT: Generating final exam for course:', courseId);
 
             const response = await this._fetchWithOfflineSupport(`${CONFIG.BASE_URL}/student/final-exam/generate`, {
                 method: 'POST',
@@ -638,9 +672,9 @@ export class StudentAPI extends coreAPI.constructor {
             const result = await response.json();
 
             // Invalidate final exam cache
-            await this._invalidateCache('student/final-exam');
+            await this._clearFinalExamCache(courseId);
 
-            console.log('✅ Final exam generated successfully:', result);
+            //console.log('✅ Final exam generated successfully:', result);
             return result;
         } catch (error) {
             console.error('❌ Generate final exam failed:', error);
@@ -648,10 +682,13 @@ export class StudentAPI extends coreAPI.constructor {
         }
     }
 
-    async checkFinalExamStatus(courseId) {
+    async checkFinalExamStatus(courseId, forceRefresh = false) {
         return this._getWithCache('/student/final-exam/status', {
-            params: { course_id: courseId }
-        }, CACHE_TTL.COURSES);
+            params: {
+                course_id: courseId,
+                ...(forceRefresh && { _t: Date.now() })
+            }
+        }, CACHE_TTL.COURSES, forceRefresh);
     }
 
     // Direct final exam submission - never queue
@@ -666,7 +703,7 @@ export class StudentAPI extends coreAPI.constructor {
         };
 
         try {
-            console.log('📡 DIRECT: Submitting final exam for course:', courseId);
+            //console.log('📡 DIRECT: Submitting final exam for course:', courseId);
 
             const response = await this._fetchWithOfflineSupport(`${CONFIG.BASE_URL}/student/final-exam/submit`, {
                 method: 'PUT',
@@ -677,9 +714,9 @@ export class StudentAPI extends coreAPI.constructor {
             const result = await response.json();
 
             // Invalidate cache on success
-            await this._invalidateCache('student/final-exam');
+            await this._clearFinalExamCache(courseId);
 
-            console.log('✅ Final exam submitted successfully:', result);
+            //console.log('✅ Final exam submitted successfully:', result);
             return result;
         } catch (error) {
             console.error('❌ Submit final exam failed:', error);
@@ -687,16 +724,198 @@ export class StudentAPI extends coreAPI.constructor {
         }
     }
 
-    async getFinalExamResult(courseId) {
-        return this._getWithCache('/student/final-exam/result', {
-            params: { course_id: courseId }
-        }, CACHE_TTL.COURSES);
+    // 🔧 ENHANCED: Get final exam result with better cache handling
+    async getFinalExamResult(courseId, forceRefresh = false) {
+        try {
+            const data = await this._getWithCache('/student/final-exam/result', {
+                params: {
+                    course_id: courseId,
+                    ...(forceRefresh && { _t: Date.now() })
+                }
+            }, CACHE_TTL.COURSES, forceRefresh);
+
+            return data;
+        } catch (error) {
+            // 🔧 CRITICAL: Clear result cache on 404 or "no result" errors
+            if (error.message?.includes('404') ||
+                error.message?.includes('Belum ada hasil') ||
+                error.message?.includes('No result found') ||
+                error.message?.includes('not found')) {
+
+                //console.log('🧹 Final exam result not found (404) - clearing result cache');
+                await this._clearFinalExamResultCache(courseId);
+            }
+
+            throw error;
+        }
     }
 
-    async getFinalExamLeaderboard(courseId, classId) {
+    async getFinalExamLeaderboard(courseId, classId, forceRefresh = false) {
         return this._getWithCache('/student/final-exam/leaderboard', {
-            params: { course_id: courseId, class_id: classId }
-        }, CACHE_TTL.STUDENTS);
+            params: {
+                course_id: courseId,
+                class_id: classId,
+                ...(forceRefresh && { _t: Date.now() })
+            }
+        }, CACHE_TTL.STUDENTS, forceRefresh);
+    }
+
+    // ============================================
+    // 🔧 NEW: Enhanced Cache Management Methods
+    // ============================================
+
+    /**
+     * Clear all final exam related cache for a course
+     * @param {string} courseId - Course ID
+     */
+    async _clearFinalExamCache(courseId) {
+        //console.log(`🧹 Clearing all final exam cache for course: ${courseId}`);
+
+        const patterns = [
+            // Final exam cache patterns
+            'student/final-exam',
+            'api_student/final-exam',
+
+            // Course-specific patterns
+            `final-exam-${courseId}`,
+            `finalExam_${courseId}`,
+
+            // Result patterns
+            'student/final-exam/result',
+            'api_student/final-exam/result',
+            `final-exam-result-${courseId}`,
+            `finalExamResult_${courseId}`,
+
+            // Status patterns
+            'student/final-exam/status',
+            'api_student/final-exam/status',
+
+            // Leaderboard patterns
+            'student/final-exam/leaderboard',
+            'api_student/final-exam/leaderboard'
+        ];
+
+        for (const pattern of patterns) {
+            try {
+                await this._invalidateCache(pattern);
+                //console.log(`✅ Cleared cache pattern: ${pattern}`);
+            } catch (error) {
+                console.warn(`⚠️ Failed to clear cache pattern ${pattern}:`, error);
+            }
+        }
+
+        // Also clear specific cache keys
+        try {
+            const Cache = (await import('./cache.js')).default;
+
+            const specificKeys = [
+                `api_student/final-exam_course_id=${courseId}`,
+                `api_student/final-exam/result_course_id=${courseId}`,
+                `api_student/final-exam/status_course_id=${courseId}`,
+            ];
+
+            for (const key of specificKeys) {
+                await Cache.remove(key);
+                //console.log(`✅ Removed specific cache key: ${key}`);
+            }
+        } catch (error) {
+            console.warn('⚠️ Failed to clear specific cache keys:', error);
+        }
+    }
+
+    /**
+     * Clear only final exam result cache for a course
+     * @param {string} courseId - Course ID
+     */
+    async _clearFinalExamResultCache(courseId) {
+        //console.log(`🧹 Clearing final exam RESULT cache for course: ${courseId}`);
+
+        const resultPatterns = [
+            'student/final-exam/result',
+            'api_student/final-exam/result',
+            `final-exam-result-${courseId}`,
+            `finalExamResult_${courseId}`
+        ];
+
+        for (const pattern of resultPatterns) {
+            try {
+                await this._invalidateCache(pattern);
+                //console.log(`✅ Cleared result cache pattern: ${pattern}`);
+            } catch (error) {
+                console.warn(`⚠️ Failed to clear result cache pattern ${pattern}:`, error);
+            }
+        }
+
+        // Also clear specific result cache keys
+        try {
+            const Cache = (await import('./cache.js')).default;
+
+            const resultKeys = [
+                `api_student/final-exam/result_course_id=${courseId}`,
+                `api_/student/final-exam/result_course_id=${courseId}&_t=`
+            ];
+
+            for (const key of resultKeys) {
+                await Cache.remove(key);
+                //console.log(`✅ Removed result cache key: ${key}`);
+            }
+        } catch (error) {
+            console.warn('⚠️ Failed to clear result cache keys:', error);
+        }
+    }
+
+    /**
+     * Force refresh final exam data by clearing cache first
+     * @param {string} courseId - Course ID
+     */
+    async refreshFinalExamData(courseId) {
+        //console.log(`🔄 Force refreshing all final exam data for course: ${courseId}`);
+
+        // Clear all cache first
+        await this._clearFinalExamCache(courseId);
+
+        // Then fetch fresh data
+        try {
+            const [examData, status, result] = await Promise.allSettled([
+                this.checkFinalExam(courseId, true),
+                this.checkFinalExamStatus(courseId, true),
+                this.getFinalExamResult(courseId, true).catch(() => null) // Result might not exist
+            ]);
+
+            //console.log('✅ Final exam data refreshed successfully');
+
+            return {
+                exam: examData.status === 'fulfilled' ? examData.value : null,
+                status: status.status === 'fulfilled' ? status.value : null,
+                result: result.status === 'fulfilled' ? result.value : null
+            };
+        } catch (error) {
+            console.error('❌ Failed to refresh final exam data:', error);
+            throw error;
+        }
+    }
+
+    // ============================================
+    // OVERRIDE: Enhanced _invalidateCache with final exam support
+    // ============================================
+
+    async _invalidateCache(pattern) {
+        //console.log(`🧹 Invalidating cache pattern: ${pattern}`);
+
+        try {
+            // Use parent's invalidate method
+            await super._invalidateCache(pattern);
+
+            // Additional cleanup for final exam patterns
+            if (pattern.includes('final-exam')) {
+                const Cache = (await import('./cache.js')).default;
+                await Cache.clearPattern('final-exam');
+                await Cache.clearPattern('finalExam');
+            }
+
+        } catch (error) {
+            console.warn(`⚠️ Cache invalidation failed for pattern ${pattern}:`, error);
+        }
     }
 }
 

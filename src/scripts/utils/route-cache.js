@@ -70,12 +70,12 @@ const RouteCache = {
         // Check cache first
         const cachedContent = this.getRouteContent(route);
         if (cachedContent) {
-            //console.log(`[RouteCache] Using cached content for ${route}`);
+            ////console.log(`[RouteCache] Using cached content for ${route}`);
             return cachedContent;
         }
 
         // If not cached, render normally
-        //console.log(`[RouteCache] Rendering fresh content for ${route}`);
+        ////console.log(`[RouteCache] Rendering fresh content for ${route}`);
         const content = await renderFunction();
 
         // Save to cache if applicable

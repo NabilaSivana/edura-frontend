@@ -1,6 +1,6 @@
 // create-course-presenter.js - Updated with Toast Notifications
+import { courseToast, removeToast, toast } from "../../../utils/toast.js";
 import CreateCourseModel from "./create-course-model.js";
-import { toast, courseToast, removeToast } from "../../../utils/toast.js";
 
 const CreateCoursePresenter = {
   model: CreateCourseModel,
@@ -11,7 +11,7 @@ const CreateCoursePresenter = {
   // Initialize presenter
   init() {
     try {
-      console.log('🚀 Initializing CreateCoursePresenter...');
+      //console.log('🚀 Initializing CreateCoursePresenter...');
 
       // Get DOM elements
       this.getElements();
@@ -29,7 +29,7 @@ const CreateCoursePresenter = {
       this.validateForm();
 
       this.isInitialized = true;
-      console.log('✅ CreateCoursePresenter initialized successfully');
+      //console.log('✅ CreateCoursePresenter initialized successfully');
 
     } catch (error) {
       console.error('❌ Failed to initialize CreateCoursePresenter:', error);
@@ -90,7 +90,7 @@ const CreateCoursePresenter = {
       this.currentLoadingToast = courseToast.creatingCourse(formData.subject);
       this.hideError();
 
-      console.log('📝 Submitting course creation:', formData);
+      //console.log('📝 Submitting course creation:', formData);
 
       // Create course
       const result = await this.model.createCourse(formData);
@@ -131,7 +131,7 @@ const CreateCoursePresenter = {
   // Handle recommendation request
   async handleRecommendationRequest() {
     try {
-      console.log('🎯 Loading recommendations...');
+      //console.log('🎯 Loading recommendations...');
 
       // Show loading toast
       const loadingToast = courseToast.loadingRecommendations();
@@ -163,7 +163,7 @@ const CreateCoursePresenter = {
 
   // Handle course creation result
   handleCreationResult(result) {
-    console.log('🎯 Handling creation result:', result);
+    //console.log('🎯 Handling creation result:', result);
 
     if (result.success) {
       this.handleSuccessResult(result);
@@ -174,7 +174,7 @@ const CreateCoursePresenter = {
 
   // Handle successful creation
   handleSuccessResult(result) {
-    console.log('✅ Course creation successful:', result);
+    //console.log('✅ Course creation successful:', result);
 
     this.setLoadingState(false);
 
@@ -373,7 +373,7 @@ const CreateCoursePresenter = {
 
   // Handle recommendation selection
   handleRecommendationSelect(rec) {
-    console.log('🎯 Recommendation selected:', rec);
+    //console.log('🎯 Recommendation selected:', rec);
 
     // Set in model
     this.model.selectRecommendation(rec);
@@ -493,7 +493,7 @@ const CreateCoursePresenter = {
 
   // Cleanup method
   destroy() {
-    console.log('🧹 Cleaning up CreateCoursePresenter...');
+    //console.log('🧹 Cleaning up CreateCoursePresenter...');
 
     // Remove any pending loading toast
     if (this.currentLoadingToast) {
@@ -508,7 +508,7 @@ const CreateCoursePresenter = {
     this.elements = {};
     this.isInitialized = false;
 
-    console.log('✅ CreateCoursePresenter cleaned up');
+    //console.log('✅ CreateCoursePresenter cleaned up');
   }
 };
 

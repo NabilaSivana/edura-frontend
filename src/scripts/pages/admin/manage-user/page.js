@@ -1,7 +1,7 @@
 // === File: pages/admin/manage-user/page.js (Updated) ===
 import createSidebar from "../../../component/sidebar.js";
-import ManageUserView from "./view.js";
 import ManageUserPresenter from "./presenter.js";
+import ManageUserView from "./view.js";
 
 const ManageUserPage = {
   async render() {
@@ -10,7 +10,7 @@ const ManageUserPage = {
 
   async afterRender() {
     try {
-      console.log('🎯 Initializing Manage User Page...');
+      //console.log('🎯 Initializing Manage User Page...');
 
       // Setup sidebar
       const sidebarWrapper = document.getElementById("sidebar-wrapper");

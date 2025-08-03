@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Edura App - Halaman Offline">
+    <meta name="theme-color" content="#2563eb">
+    <title>Offline - Edura App</title>
+    <link rel="shortcut icon" href="logo2.png">
+    <link rel="apple-touch-icon" href="logo2.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success-color: #16a34a;
+            --warning-color: #f59e0b;
+            --danger-color: #dc2626;
+            --bg-light: #f9fafb;
+            --bg-dark: #111827;
+            --text-light: #1f2937;
+            --text-dark: #f3f4f6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body,
+        html {
+            height: 100%;
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-light);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        html.dark body {
+            background-color: var(--bg-dark);
+            color: var(--text-dark);
+        }
+
+        .offline-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--bg-light) 0%, #e0e7ff 100%);
+        }
+
+        html.dark .offline-container {
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1e293b 100%);
+        }
+
+        .offline-content {
+            text-align: center;
+            max-width: 480px;
+            width: 100%;
+            background: white;
+            border-radius: 1rem;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        html.dark .offline-content {
+            background: #1f2937;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+            background: var(--primary-color);
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shine 3s ease-in-out infinite;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            color: white;
+            z-index: 1;
+        }
+
+        .offline-icon-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 2rem;
+        }
+
+        .offline-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3);
+        }
+
+        .offline-icon svg {
+            width: 40px;
+            height: 40px;
+            color: white;
+        }
+
+        .pulse-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            border: 2px solid #fbbf24;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .pulse-ring:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+
+        .pulse-ring:nth-child(3) {
+            animation-delay: 1s;
+        }
+
+        .offline-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.75rem;
+        }
+
+        html.dark .offline-title {
+            color: #f3f4f6;
+        }
+
+        .offline-subtitle {
+            font-size: 1rem;
+            color: #6b7280;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        html.dark .offline-subtitle {
+            color: #9ca3af;
+        }
+
+        .features-list {
+            background: #f9fafb;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        html.dark .features-list {
+            background: #374151;
+        }
+
+        .features-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        html.dark .features-title {
+            color: #d1d5db;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        html.dark .feature-item {
+            color: #9ca3af;
+        }
+
+        .feature-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .feature-icon {
+            width: 16px;
+            height: 16px;
+            color: var(--success-color);
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        html.dark .btn-secondary {
+            background: #4b5563;
+            color: #f3f4f6;
+            border-color: #6b7280;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+            transform: translateY(-1px);
+        }
+
+        html.dark .btn-secondary:hover {
+            background: #374151;
+        }
+
+        .btn-icon {
+            width: 18px;
+            height: 18px;
+            margin-right: 0.5rem;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 1.5rem;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .connection-offline {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        html.dark .connection-offline {
+            background: #7f1d1d;
+            color: #fca5a5;
+            border-color: #991b1b;
+        }
+
+        .connection-online {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+
+        html.dark .connection-online {
+            background: #14532d;
+            color: #86efac;
+            border-color: #166534;
+        }
+
+        .status-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1.4);
+                opacity: 0;
+            }
+        }
+
+        @keyframes shine {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+
+            50% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
+
+            100% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .offline-content {
+                padding: 2rem 1.5rem;
+                margin: 1rem;
+            }
+
+            .offline-title {
+                font-size: 1.5rem;
+            }
+
+            .button-container {
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="offline-container">
+        <div class="offline-content">
+            <!-- Logo Edura -->
+            <div class="logo-container">
+                <div class="logo">
+                    <svg class="logo-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Offline Icon -->
+            <div class="offline-icon-container">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+                <div class="offline-icon">
+                    <svg fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69 3.1 5.5l.34 3.7L1 12l2.44 2.79-.34 3.69 3.61.82 1.89 3.2L12 21.04l3.4 1.46 1.89-3.2 3.61-.82-.34-3.69L23 12zm-10 5h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                    </svg>
+                </div>
+            </div>
+
+            <h1 class="offline-title">Anda Sedang Offline</h1>
+            <p class="offline-subtitle">
+                Tidak dapat terhubung ke internet. Beberapa fitur Edura mungkin tidak tersedia,
+                tetapi Anda masih dapat mengakses konten yang telah disimpan.
+            </p>
+
+            <!-- Features Available Offline -->
+            <div class="features-list">
+                <h3 class="features-title">Tersedia Saat Offline:</h3>
+                <div class="feature-item">
+                    <svg class="feature-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                    </svg>
+                    <span>Materi kursus yang telah diunduh</span>
+                </div>
+                <div class="feature-item">
+                    <svg class="feature-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                    </svg>
+                    <span>Flashcards yang tersimpan</span>
+                </div>
+                <div class="feature-item">
+                    <svg class="feature-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                    </svg>
+                    <span>Progress belajar lokal</span>
+                </div>
+                <div class="feature-item">
+                    <svg class="feature-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                    </svg>
+                    <span>Catatan dan bookmark</span>
+                </div>
+            </div>
+
+            <!-- Connection Status -->
+            <div id="connectionStatus" class="connection-status connection-offline">
+                <svg class="status-icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69 3.1 5.5l.34 3.7L1 12l2.44 2.79-.34 3.69 3.61.82 1.89 3.2L12 21.04l3.4 1.46 1.89-3.2 3.61-.82-.34-3.69L23 12zm-10 5h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                </svg>
+                <span id="statusText">Tidak Ada Koneksi Internet</span>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="button-container">
+                <button onclick="checkConnection()" class="btn btn-primary">
+                    <svg class="btn-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+                    </svg>
+                    Coba Lagi
+                </button>
+                <a href="#/dashboard" class="btn btn-secondary">
+                    <svg class="btn-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+                    </svg>
+                    Kembali ke Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme handling
+        (function () {
+            const theme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            if (theme === 'dark' || (!theme && prefersDark)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+
+        // Connection status checking
+        function updateConnectionStatus() {
+            const statusElement = document.getElementById('connectionStatus');
+            const statusText = document.getElementById('statusText');
+
+            if (navigator.onLine) {
+                statusElement.className = 'connection-status connection-online';
+                statusText.textContent = 'Koneksi Internet Tersedia';
+                statusElement.innerHTML = `
+                    <svg class="status-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                    <span>Koneksi Internet Tersedia</span>
+                `;
+
+                // Auto redirect after 2 seconds if online
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                statusElement.className = 'connection-status connection-offline';
+                statusElement.innerHTML = `
+                    <svg class="status-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69 3.1 5.5l.34 3.7L1 12l2.44 2.79-.34 3.69 3.61.82 1.89 3.2L12 21.04l3.4 1.46 1.89-3.2 3.61-.82-.34-3.69L23 12zm-10 5h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                    </svg>
+                    <span>Tidak Ada Koneksi Internet</span>
+                `;
+            }
+        }
+
+        function checkConnection() {
+            updateConnectionStatus();
+
+            // Try to fetch a small resource to verify connection
+            fetch('/', {
+                method: 'HEAD',
+                cache: 'no-cache'
+            })
+                .then(() => {
+                    // If successful, reload the page
+                    window.location.reload();
+                })
+                .catch(() => {
+                    // Still offline, show feedback
+                    const button = event.target;
+                    const originalText = button.innerHTML;
+                    button.innerHTML = `
+                    <svg class="btn-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                    Masih Offline
+                `;
+                    button.style.background = '#dc2626';
+
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.style.background = '';
+                    }, 2000);
+                });
+        }
+
+        // Listen for online/offline events
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+
+        // Initial status check
+        updateConnectionStatus();
+
+        // Periodic connection check
+        setInterval(updateConnectionStatus, 30000); // Check every 30 seconds
+    </script>
+</body>
+
+</html>

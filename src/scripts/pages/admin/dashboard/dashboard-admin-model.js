@@ -20,7 +20,7 @@ const DashboardAdminModel = {
       const courses = results[3].status === 'fulfilled' ? results[3].value : null;
 
       // Debug log to see the actual structure
-      console.log("API Responses:", {
+      //console.log("API Responses:", {
         students,
         teachers,
         admins,

@@ -1,5 +1,6 @@
-// pages/dashboard/profile/profile-presenter.js
+// pages/dashboard/profile/profile-presenter.js - Fixed Password Toggle Integration
 import { showToastNotification } from '../../../utils/index.js';
+import { PasswordValidation } from '../../../utils/password-validation.js';
 import ProfileModel from './profile-model.js';
 import ProfileView from './profile-view.js';
 import customPrompt, { promptText, promptTextarea } from '../../../utils/prompt.js';
@@ -9,6 +10,10 @@ class ProfilePresenter {
     this.model = new ProfileModel();
     this.view = new ProfileView(this);
     this.isInitialized = false;
+    this.passwordValidationState = {
+      isValid: false,
+      isMatching: false
+    };
   }
 
   async init() {
@@ -206,6 +211,19 @@ class ProfilePresenter {
         // Focus first input when showing form
         const firstInput = formDiv.querySelector('input');
         if (firstInput) firstInput.focus();
+
+        // ✅ FIXED: Setup password validation with proper timing
+        console.log('🔐 Initializing password validation for basic profile form...');
+        
+        // Use setTimeout to ensure DOM is fully ready
+        setTimeout(() => {
+          try {
+            this.view.setupPasswordValidation();
+            console.log('✅ Password validation setup completed successfully');
+          } catch (error) {
+            console.error('❌ Error setting up password validation:', error);
+          }
+        }, 150); // Increased timeout to ensure all elements are ready
       }
     }
   }
@@ -218,10 +236,38 @@ class ProfilePresenter {
     const form = document.getElementById('basic-profile-form-element');
     if (form) {
       const profile = this.model.basicProfile;
-      form.querySelector('[name="full_name"]').value = profile?.full_name || '';
-      form.querySelector('[name="email"]').value = profile?.email || '';
-      form.querySelector('[name="old_password"]').value = '';
-      form.querySelector('[name="new_password"]').value = '';
+      
+      // Reset basic fields
+      const fullNameInput = form.querySelector('[name="full_name"]');
+      const emailInput = form.querySelector('[name="email"]');
+      const oldPasswordInput = form.querySelector('[name="old_password"]');
+      const newPasswordInput = form.querySelector('[name="new_password"]');
+      const confirmPasswordInput = form.querySelector('[name="confirm_password"]');
+
+      if (fullNameInput) fullNameInput.value = profile?.full_name || '';
+      if (emailInput) emailInput.value = profile?.email || '';
+      if (oldPasswordInput) oldPasswordInput.value = '';
+      if (newPasswordInput) newPasswordInput.value = '';
+      if (confirmPasswordInput) confirmPasswordInput.value = '';
+
+      // Reset password-related UI elements
+      const passwordStrengthContainer = document.getElementById('password-strength-container');
+      const passwordRequirements = document.getElementById('password-requirements');
+      const confirmPasswordContainer = document.getElementById('confirm-password-container');
+      const passwordMatchIndicator = document.getElementById('password-match-indicator');
+
+      if (passwordStrengthContainer) passwordStrengthContainer.classList.add('hidden');
+      if (passwordRequirements) passwordRequirements.classList.add('hidden');
+      if (confirmPasswordContainer) confirmPasswordContainer.classList.add('hidden');
+      if (passwordMatchIndicator) passwordMatchIndicator.classList.add('hidden');
+
+      // Reset password validation state
+      this.passwordValidationState = {
+        isValid: false,
+        isMatching: false
+      };
+
+      console.log('🔐 Basic profile form reset completed');
     }
   }
 
@@ -242,13 +288,49 @@ class ProfilePresenter {
     const email = formData.get('email')?.trim();
     const oldPassword = formData.get('old_password')?.trim();
     const newPassword = formData.get('new_password')?.trim();
+    const confirmPassword = formData.get('confirm_password')?.trim();
 
     if (fullName) updateData.full_name = fullName;
     if (email) updateData.email = email;
     if (oldPassword) updateData.old_password = oldPassword;
     if (newPassword) updateData.new_password = newPassword;
 
-    // Validate form data
+    // 🔐 Enhanced password validation with better error handling
+    if (newPassword) {
+      console.log('🔐 Validating password change...');
+
+      try {
+        // Validate password strength
+        const passwordValidation = PasswordValidation.validatePassword(newPassword);
+        if (!passwordValidation.isValid) {
+          console.log('❌ Password does not meet requirements:', passwordValidation.missingRequirements);
+          this.view.showFieldError('new_password', `Password requirements not met: ${passwordValidation.missingRequirements.join(', ')}`);
+          return;
+        }
+
+        // Validate password confirmation
+        if (confirmPassword !== newPassword) {
+          console.log('❌ Password confirmation does not match');
+          this.view.showFieldError('confirm_password', 'Password confirmation does not match');
+          return;
+        }
+
+        // Validate old password is provided
+        if (!oldPassword) {
+          console.log('❌ Current password is required for password change');
+          this.view.showFieldError('old_password', 'Current password is required when changing password');
+          return;
+        }
+
+        console.log('✅ Password validation passed');
+      } catch (error) {
+        console.error('❌ Error during password validation:', error);
+        this.view.showFieldError('new_password', 'Password validation error');
+        return;
+      }
+    }
+
+    // Basic validation using model
     const validationErrors = this.model.validateBasicProfile(updateData);
     if (validationErrors) {
       Object.entries(validationErrors).forEach(([field, message]) => {
@@ -266,6 +348,8 @@ class ProfilePresenter {
     try {
       this.view.showButtonLoading(submitBtn);
 
+      console.log('📤 Submitting basic profile update...', updateData);
+
       await this.model.updateBasicProfile(updateData);
 
       this.view.showSuccessMessage('Basic profile updated successfully!');
@@ -275,10 +359,12 @@ class ProfilePresenter {
       this.bindEvents();
 
     } catch (error) {
-      console.error('Error updating basic profile:', error);
+      console.error('❌ Error updating basic profile:', error);
 
       if (error.status === 401 && error.message?.includes('password')) {
         this.view.showFieldError('old_password', 'Current password is incorrect');
+      } else if (error.message?.includes('weak') || error.message?.includes('strength')) {
+        this.view.showFieldError('new_password', 'Password does not meet security requirements');
       } else {
         this.view.showFieldError('full_name', error.message || 'Failed to update profile');
       }
@@ -348,21 +434,33 @@ class ProfilePresenter {
     const profile = this.model.roleProfile;
 
     if (this.model.userRole === 'student') {
-      form.querySelector('[name="nim"]').value = profile.nim || '';
-      form.querySelector('[name="full_name"]').value = profile.full_name || '';
-      form.querySelector('[name="jurusan"]').value = profile.jurusan || '';
+      const nimInput = form.querySelector('[name="nim"]');
+      const fullNameInput = form.querySelector('[name="full_name"]');
+      const jurusanInput = form.querySelector('[name="jurusan"]');
+      const programSelect = form.querySelector('[name="program_studi"]');
+      const perguruanSelect = form.querySelector('[name="perguruan_tinggi"]');
+
+      if (nimInput) nimInput.value = profile.nim || '';
+      if (fullNameInput) fullNameInput.value = profile.full_name || '';
+      if (jurusanInput) jurusanInput.value = profile.jurusan || '';
 
       // Reset class code form
       this.view.resetClassCodeForm();
 
-      form.querySelector('[name="program_studi"]').value = profile.program_studi || '';
-      form.querySelector('[name="perguruan_tinggi"]').value = profile.perguruan_tinggi || '';
+      if (programSelect) programSelect.value = profile.program_studi || '';
+      if (perguruanSelect) perguruanSelect.value = profile.perguruan_tinggi || '';
     } else if (this.model.userRole === 'teacher') {
-      form.querySelector('[name="nidn"]').value = profile.nidn || '';
-      form.querySelector('[name="full_name"]').value = profile.full_name || '';
-      form.querySelector('[name="fakultas"]').value = profile.fakultas || '';
-      form.querySelector('[name="program_studi"]').value = profile.program_studi || '';
-      form.querySelector('[name="perguruan_tinggi"]').value = profile.perguruan_tinggi || '';
+      const nidnInput = form.querySelector('[name="nidn"]');
+      const fullNameInput = form.querySelector('[name="full_name"]');
+      const fakultasInput = form.querySelector('[name="fakultas"]');
+      const programSelect = form.querySelector('[name="program_studi"]');
+      const perguruanSelect = form.querySelector('[name="perguruan_tinggi"]');
+
+      if (nidnInput) nidnInput.value = profile.nidn || '';
+      if (fullNameInput) fullNameInput.value = profile.full_name || '';
+      if (fakultasInput) fakultasInput.value = profile.fakultas || '';
+      if (programSelect) programSelect.value = profile.program_studi || '';
+      if (perguruanSelect) perguruanSelect.value = profile.perguruan_tinggi || '';
     }
   }
 
@@ -519,7 +617,8 @@ class ProfilePresenter {
     const classCode = await promptText(
       'Masukkan kode kelas untuk bergabung:',
       ''
-    ); if (!classCode) return;
+    );
+    if (!classCode) return;
 
     try {
       await this.model.joinClass(classCode.trim());
@@ -662,9 +761,87 @@ class ProfilePresenter {
     }
   }
 
+  // 🔐 Password Validation Helper Methods - Enhanced
+  getPasswordValidationState() {
+    return this.passwordValidationState;
+  }
+
+  updatePasswordValidationState(state) {
+    this.passwordValidationState = {
+      isValid: state.password?.isValid || false,
+      isMatching: state.match?.isValid || false
+    };
+
+    console.log('🔐 Password validation state updated:', this.passwordValidationState);
+  }
+
+  isPasswordChangeValid() {
+    const newPasswordInput = document.getElementById('new-password-input');
+    const hasNewPassword = newPasswordInput && newPasswordInput.value.length > 0;
+
+    if (!hasNewPassword) {
+      // No password change attempted
+      return true;
+    }
+
+    // If password change is attempted, validate it
+    return this.passwordValidationState.isValid && this.passwordValidationState.isMatching;
+  }
+
+  // Utility method for debugging password validation
+  debugPasswordValidation() {
+    const newPasswordInput = document.getElementById('new-password-input');
+    const confirmPasswordInput = document.getElementById('confirm-password-input');
+
+    if (newPasswordInput && confirmPasswordInput) {
+      const passwordValue = newPasswordInput.value;
+      const confirmValue = confirmPasswordInput.value;
+
+      console.log('🔐 Password Debug Info:', {
+        passwordLength: passwordValue.length,
+        confirmLength: confirmValue.length,
+        isMatching: passwordValue === confirmValue,
+        validationState: this.passwordValidationState,
+        passwordValidation: PasswordValidation.validatePassword(passwordValue)
+      });
+    }
+  }
+
+  // ✅ NEW: Method to test password toggle functionality
+  testPasswordToggle() {
+    console.log('🔐 Testing password toggle functionality...');
+    
+    const toggleButtons = [
+      '#toggle-old-password',
+      '#toggle-new-password', 
+      '#toggle-confirm-password'
+    ];
+    
+    const inputElements = [
+      '#old-password-input',
+      '#new-password-input',
+      '#confirm-password-input'
+    ];
+    
+    toggleButtons.forEach((selector, index) => {
+      const button = document.querySelector(selector);
+      const input = document.querySelector(inputElements[index]);
+      
+      if (button && input) {
+        console.log(`✅ ${selector} and ${inputElements[index]} are available`);
+      } else {
+        console.warn(`⚠️ Missing elements: ${selector} = ${!!button}, ${inputElements[index]} = ${!!input}`);
+      }
+    });
+  }
+
   // Cleanup method
   destroy() {
     this.isInitialized = false;
+    this.passwordValidationState = {
+      isValid: false,
+      isMatching: false
+    };
     // Remove any global event listeners if needed
   }
 
@@ -675,6 +852,10 @@ class ProfilePresenter {
 
   get currentView() {
     return this.view;
+  }
+
+  get passwordState() {
+    return this.passwordValidationState;
   }
 }
 

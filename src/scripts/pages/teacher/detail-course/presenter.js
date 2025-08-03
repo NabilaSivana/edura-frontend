@@ -1,5 +1,5 @@
+import { promptText } from "../../../utils/prompt.js";
 import CourseDetailModel from "./model.js";
-import {promptText} from "../../../utils/prompt.js";
  
 function escapeHtml(text) {
   return String(text)
@@ -933,7 +933,7 @@ const CourseDetailPresenter = {
     const pre = document.createElement('pre');
     const code = document.createElement('code');
     code.className = 'language-javascript'; // Default to JavaScript
-    code.textContent = '// Masukkan kode di sini\nconsole.log("Hello World!");';
+    code.textContent = '// Masukkan kode di sini\n//console.log("Hello World!");';
 
     pre.appendChild(code);
     pre.style.cssText = `

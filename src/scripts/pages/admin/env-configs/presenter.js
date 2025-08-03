@@ -1,5 +1,6 @@
 // === File: pages/admin/env-config/presenter.js ===
 import { showToastNotification } from "../../../utils/index.js";
+import { promptConfirm, promptSelect } from "../../../utils/prompt.js";
 import EnvConfigModel from "./model.js";
 import EnvConfigView from "./view.js";
 
@@ -178,7 +179,7 @@ const EnvConfigPresenter = {
     },
 
     async handleDeleteConfig(key) {
-        if (!confirm(`Hapus konfigurasi ${key}?`)) return;
+        if (!promptConfirm(`Hapus konfigurasi ${key}?`)) return;
 
         try {
             await EnvConfigModel.deleteEnvByKey(key);
@@ -201,7 +202,7 @@ const EnvConfigPresenter = {
     handleRemoveApiKey(idx) {
         const item = this.envList.find(item => item.key === "GEMINI_API_KEYS");
         if (item && Array.isArray(item.value)) {
-            if (confirm(`Hapus API Key "${item.value[idx]?.api_key || 'kosong'}"?`)) {
+            if (promptConfirm(`Hapus API Key "${item.value[idx]?.api_key || 'kosong'}"?`)) {
                 item.value.splice(idx, 1);
                 this.renderConfigs();
             }

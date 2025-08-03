@@ -1,4 +1,6 @@
-// pages/dashboard/profile/profile-view.js
+// pages/dashboard/profile/profile-view.js - Fixed Password Visibility Toggle
+
+import { PasswordValidation } from '../../../utils/password-validation.js';
 
 class ProfileView {
     constructor(presenter) {
@@ -199,27 +201,129 @@ class ProfileView {
                 <div class="border-t pt-4">
                     <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Change Password (Optional)</h4>
                     
-                    <div class="space-y-3">
+                    <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Password</label>
-                            <input 
-                                type="password" 
-                                name="old_password"
-                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                placeholder="Enter current password"
-                            >
+                            <div class="relative">
+                                <input
+                                    type="password"
+                                    name="old_password"
+                                    id="old-password-input"
+                                    class="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                    placeholder="Enter current password"
+                                >
+                                <button type="button" id="toggle-old-password" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                    <svg class="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                </button>
+                            </div>
                             <div class="error-message text-red-500 text-sm mt-1 hidden"></div>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Password</label>
-                            <input 
-                                type="password" 
-                                name="new_password"
-                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                placeholder="Enter new password (min 6 chars)"
-                            >
+                            <div class="relative">
+                                <input 
+                                    type="password" 
+                                    name="new_password"
+                                    id="new-password-input"
+                                    class="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                    placeholder="Enter new password"
+                                >
+                                <button type="button" id="toggle-new-password" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                    <svg class="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                </button>
+                            </div>
                             <div class="error-message text-red-500 text-sm mt-1 hidden"></div>
+                            
+                            <!-- Enhanced Password Strength Indicator -->
+                            <div id="password-strength-container" class="mt-3 hidden">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Password Strength:</span>
+                                    <span id="password-strength-text" class="text-xs font-bold text-gray-500">Not Set</span>
+                                </div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                                    <div id="password-strength-bar" class="h-full transition-all duration-300 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Password Requirements List -->
+                            <div id="password-requirements" class="mt-3 hidden">
+                                <p class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Password Requirements:</p>
+                                <div class="space-y-1">
+                                    <div class="requirement flex items-center text-xs" id="length-req">
+                                        <div class="w-3 h-3 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center mr-2">
+                                            <svg class="w-2 h-2 text-green-500 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </div>
+                                        <span class="text-gray-600 dark:text-gray-400">Minimal 8 karakter</span>
+                                    </div>
+                                    <div class="requirement flex items-center text-xs" id="uppercase-req">
+                                        <div class="w-3 h-3 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center mr-2">
+                                            <svg class="w-2 h-2 text-green-500 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </div>
+                                        <span class="text-gray-600 dark:text-gray-400">Mengandung huruf besar</span>
+                                    </div>
+                                    <div class="requirement flex items-center text-xs" id="lowercase-req">
+                                        <div class="w-3 h-3 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center mr-2">
+                                            <svg class="w-2 h-2 text-green-500 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </div>
+                                        <span class="text-gray-600 dark:text-gray-400">Mengandung huruf kecil</span>
+                                    </div>
+                                    <div class="requirement flex items-center text-xs" id="number-req">
+                                        <div class="w-3 h-3 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center mr-2">
+                                            <svg class="w-2 h-2 text-green-500 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </div>
+                                        <span class="text-gray-600 dark:text-gray-400">Mengandung angka</span>
+                                    </div>
+                                    <div class="requirement flex items-center text-xs" id="special-req">
+                                        <div class="w-3 h-3 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center mr-2">
+                                            <svg class="w-2 h-2 text-green-500 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </div>
+                                        <span class="text-gray-600 dark:text-gray-400">Mengandung karakter khusus (!@#$%^&*)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Confirm New Password -->
+                        <div id="confirm-password-container" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm New Password</label>
+                            <div class="relative">
+                                <input 
+                                    type="password" 
+                                    name="confirm_password"
+                                    id="confirm-password-input"
+                                    class="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                    placeholder="Confirm your new password"
+                                >
+                                <button type="button" id="toggle-confirm-password" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                    <svg class="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <!-- Password Match Indicator -->
+                            <div id="password-match-indicator" class="mt-2 flex items-center hidden">
+                                <div id="password-match-circle" class="w-3 h-3 rounded-full bg-gray-300 mr-2"></div>
+                                <span id="password-match-text" class="text-xs text-gray-600 dark:text-gray-400">Enter password confirmation</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -234,7 +338,9 @@ class ProfileView {
                     </button>
                     <button 
                         type="submit"
+                        id="save-basic-profile"
                         class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                        disabled
                     >
                         <span class="loading-spinner hidden">
                             <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
@@ -249,6 +355,153 @@ class ProfileView {
         `;
     }
 
+    // Setup password validation after form is rendered - FIXED VERSION
+    setupPasswordValidation() {
+        console.log('🔐 Setting up password validation...');
+
+        // Wait for DOM to be ready
+        setTimeout(() => {
+            // ✅ FIXED: Correct method name for all password toggles
+            this.setupPasswordToggle('#toggle-old-password', '#old-password-input');
+            this.setupPasswordToggle('#toggle-new-password', '#new-password-input');
+            this.setupPasswordToggle('#toggle-confirm-password', '#confirm-password-input');
+
+            // Setup validation using PasswordValidation utility
+            PasswordValidation.setupPasswordValidation({
+                passwordInput: '#new-password-input',
+                confirmPasswordInput: '#confirm-password-input',
+                strengthSelectors: {
+                    strengthBar: '#password-strength-bar',
+                    strengthText: '#password-strength-text',
+                    requirements: {
+                        length: '#length-req',
+                        uppercase: '#uppercase-req',
+                        lowercase: '#lowercase-req',
+                        number: '#number-req',
+                        special: '#special-req'
+                    }
+                },
+                matchSelectors: {
+                    indicator: '#password-match-indicator',
+                    matchIndicator: '#password-match-circle',
+                    matchText: '#password-match-text',
+                    confirmInput: '#confirm-password-input'
+                },
+                onValidationChange: (validation) => {
+                    this.updatePasswordValidationState(validation);
+                }
+            });
+
+            // Show/hide additional elements based on password input
+            const newPasswordInput = document.getElementById('new-password-input');
+            const passwordStrengthContainer = document.getElementById('password-strength-container');
+            const passwordRequirements = document.getElementById('password-requirements');
+            const confirmPasswordContainer = document.getElementById('confirm-password-container');
+
+            if (newPasswordInput) {
+                newPasswordInput.addEventListener('input', (e) => {
+                    const hasPassword = e.target.value.length > 0;
+
+                    if (hasPassword) {
+                        passwordStrengthContainer?.classList.remove('hidden');
+                        passwordRequirements?.classList.remove('hidden');
+                        confirmPasswordContainer?.classList.remove('hidden');
+                    } else {
+                        passwordStrengthContainer?.classList.add('hidden');
+                        passwordRequirements?.classList.add('hidden');
+                        confirmPasswordContainer?.classList.add('hidden');
+
+                        // Clear confirm password
+                        const confirmInput = document.getElementById('confirm-password-input');
+                        if (confirmInput) confirmInput.value = '';
+                    }
+                });
+            }
+
+            console.log('✅ Password validation setup complete');
+        }, 50); // Small delay to ensure DOM is ready
+    }
+
+    // ✅ FIXED: Enhanced password toggle with better error handling and logging
+    setupPasswordToggle(toggleSelector, inputSelector) {
+        console.log(`🔐 Setting up password toggle for ${inputSelector}`);
+        
+        // Use setTimeout to ensure DOM elements exist
+        setTimeout(() => {
+            const toggleBtn = document.querySelector(toggleSelector);
+            const input = document.querySelector(inputSelector);
+
+            if (!toggleBtn || !input) {
+                console.warn(`⚠️ Password toggle elements not found: ${toggleSelector} or ${inputSelector}`);
+                return;
+            }
+
+            console.log(`✅ Found password toggle elements for ${inputSelector}`);
+
+            // Remove any existing event listeners
+            const newToggleBtn = toggleBtn.cloneNode(true);
+            toggleBtn.parentNode.replaceChild(newToggleBtn, toggleBtn);
+
+            // Add event listener to the new button
+            newToggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                console.log(`🔐 Password toggle clicked for ${inputSelector}`);
+                
+                const isPassword = input.type === 'password';
+                input.type = isPassword ? 'text' : 'password';
+
+                console.log(`🔐 Changed input type to: ${input.type}`);
+
+                // Update icon with better SVG
+                newToggleBtn.innerHTML = isPassword
+                    // Eye with slash (password visible, button to hide)
+                    ? `<svg class="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
+                       </svg>`
+                    // Eye open (password hidden, button to show)
+                    : `<svg class="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                       </svg>`;
+                
+                console.log(`✅ Password visibility toggled for ${inputSelector}: ${isPassword ? 'visible' : 'hidden'}`);
+            });
+
+            console.log(`✅ Password toggle setup complete for ${inputSelector}`);
+        }, 10); // Small delay to ensure DOM is ready
+    }
+
+    updatePasswordValidationState(validation) {
+        const saveButton = document.getElementById('save-basic-profile');
+
+        if (saveButton) {
+            const newPasswordInput = document.getElementById('new-password-input');
+            const hasNewPassword = newPasswordInput && newPasswordInput.value.length > 0;
+
+            if (hasNewPassword) {
+                // If user is trying to set new password, validate it
+                const isValid = validation.password.isValid && validation.match.isValid;
+                saveButton.disabled = !isValid;
+
+                if (isValid) {
+                    saveButton.classList.remove('opacity-50');
+                    saveButton.classList.add('hover:bg-blue-700');
+                } else {
+                    saveButton.classList.add('opacity-50');
+                    saveButton.classList.remove('hover:bg-blue-700');
+                }
+            } else {
+                // No password change, enable save for other fields
+                saveButton.disabled = false;
+                saveButton.classList.remove('opacity-50');
+                saveButton.classList.add('hover:bg-blue-700');
+            }
+        }
+    }
+
+    // Rest of the methods remain the same...
     renderRoleProfile(roleProfile, userRole) {
         if (userRole === 'student') {
             return this.renderStudentProfile(roleProfile);
@@ -845,7 +1098,7 @@ class ProfileView {
         }, 3000);
     }
 
-    // Class Code Validation UI Methods
+    // Class Code Validation UI Methods (remain the same)
     showClassCodeLoading() {
         this.hideAllClassCodeIndicators();
         document.getElementById('class-code-spinner')?.classList.remove('hidden');

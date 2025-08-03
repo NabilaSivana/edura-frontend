@@ -1,9 +1,3 @@
-
-
-// ========================================
-// 2. PRESENTER FIXES - src/scripts/presenters/final-exam-presenter.js
-// ========================================
-
 import { showToastNotification } from "../../../utils/index.js";
 
 class FinalExamPresenter {
@@ -313,7 +307,7 @@ class FinalExamPresenter {
       const state = this.model.saveState();
       const key = this.STORAGE_KEY_PREFIX + this.model.courseId;
       localStorage.setItem(key, JSON.stringify(state));
-      console.log('💾 Progress saved to localStorage.');
+      //console.log('💾 Progress saved to localStorage.');
     } catch (error) {
       console.error('❌ Failed to save progress:', error);
       showToastNotification('⚠️ Failed to save progress', 'warning');
@@ -335,7 +329,7 @@ class FinalExamPresenter {
     try {
       const key = this.STORAGE_KEY_PREFIX + this.model.courseId;
       localStorage.removeItem(key);
-      console.log('🗑️ Progress cleared from localStorage.');
+      //console.log('🗑️ Progress cleared from localStorage.');
     } catch (error) {
       console.error('❌ Failed to clear progress:', error);
     }
@@ -385,7 +379,7 @@ class FinalExamPresenter {
     this.stopTimer();
     this.stopAutoSave();
     this.stopPolling();
-    console.log('🧹 Presenter intervals cleaned up.');
+    //console.log('🧹 Presenter intervals cleaned up.');
   }
 }
 

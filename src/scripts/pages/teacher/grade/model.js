@@ -1,153 +1,103 @@
-// // FILE: model.js
-// import CONFIG from "../../../config.js";
-// import Api from "../../../data/api.js";
-
-// const TeacherGradeModel = {
-//   async getClasses() {
-//     try {
-//       return await Api.getTeacherClasses();
-//     } catch (error) {
-//       // console.error("[Model] Gagal mengambil kelas:", error);
-//       throw error;
-//     }
-//   },
-
-//   async getStudentsByClass(classId) {
-//     try {
-//       return await Api.getTeacherGrades(classId); // endpoint ambil nilai
-//     } catch (error) {
-//       // console.error("[Model] Gagal mengambil siswa:", error);
-//       throw error;
-//     }
-//   },
-
-//   async sendStudentCertificateByTeacher(payload) {
-//     try {
-//       const response = await fetch(`${CONFIG.BASE_URL}/teacher/send-certificate`, {
-//         method: 'POST',
-//         headers: {
-//           'Content-Type': 'application/json',
-//           Authorization: `Bearer ${localStorage.getItem('token')}`,
-//         },
-//         body: JSON.stringify(payload),
-//       });
-
-//       const result = await response.json();
-//       if (!response.ok) throw new Error(result.message || 'Gagal mengirim sertifikat');
-//       return result;
-//     } catch (error) {
-//       // console.error("[Model] Gagal mengirim sertifikat:", error);
-//       throw error;
-//     }
-//   },
-//   async notifyStudent(payload) {
-//     const response = await fetch(`${CONFIG.BASE_URL}/teacher/notify-student`, {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//         Authorization: `Bearer ${localStorage.getItem('token')}`,
-//       },
-//       body: JSON.stringify(payload),
-//     });
-
-//     const result = await response.json();
-//     if (!response.ok) throw new Error(result.message || 'Gagal mengirim notifikasi');
-//     return result;
-//   }
-// };
-
-// export default TeacherGradeModel;
-// // FILE: model.js
-// import CONFIG from "../../../config.js";
-// import Api from "../../../data/api.js";
-
-// const TeacherGradeModel = {
-//   async getClasses() {
-//     try {
-//       return await Api.getTeacherClasses();
-//     } catch (error) {
-//       // console.error("[Model] Gagal mengambil kelas:", error);
-//       throw error;
-//     }
-//   },
-
-//   async getStudentsByClass(classId) {
-//     try {
-//       return await Api.getTeacherGrades(classId); // endpoint ambil nilai
-//     } catch (error) {
-//       // console.error("[Model] Gagal mengambil siswa:", error);
-//       throw error;
-//     }
-//   },
-
-//   async sendStudentCertificateByTeacher(payload) {
-//     try {
-//       const response = await fetch(`${CONFIG.BASE_URL}/teacher/send-certificate`, {
-//         method: 'POST',
-//         headers: {
-//           'Content-Type': 'application/json',
-//           Authorization: `Bearer ${localStorage.getItem('token')}`,
-//         },
-//         body: JSON.stringify(payload),
-//       });
-
-//       const result = await response.json();
-//       if (!response.ok) throw new Error(result.message || 'Gagal mengirim sertifikat');
-//       return result;
-//     } catch (error) {
-//       // console.error("[Model] Gagal mengirim sertifikat:", error);
-//       throw error;
-//     }
-//   },
-//   async notifyStudent(payload) {
-//     const response = await fetch(`${CONFIG.BASE_URL}/teacher/notify-student`, {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//         Authorization: `Bearer ${localStorage.getItem('token')}`,
-//       },
-//       body: JSON.stringify(payload),
-//     });
-
-//     const result = await response.json();
-//     if (!response.ok) throw new Error(result.message || 'Gagal mengirim notifikasi');
-//     return result;
-//   }
-// };
-
-// export default TeacherGradeModel;
-
-// FILE: model.js
+// FILE: model.js - Enhanced with Cache Management and Refresh
 import CONFIG from "../../../config.js";
 import Api from "../../../data/api.js";
 
 const TeacherGradeModel = {
+  // Cache untuk optimasi performa
+  cache: {
+    classes: null,
+    students: new Map(), // classId -> students data
+    lastFetch: null,
+    CACHE_DURATION: 5 * 60 * 1000 // 5 menit
+  },
+
+  // Check if cache is valid
+  isCacheValid() {
+    return this.cache.lastFetch &&
+      (Date.now() - this.cache.lastFetch < this.cache.CACHE_DURATION);
+  },
+
+  // Clear cache
+  clearCache() {
+    //console.log("🧹 Clearing teacher grade cache...");
+    this.cache.classes = null;
+    this.cache.students.clear();
+    this.cache.lastFetch = null;
+    //console.log("✅ Teacher grade cache cleared");
+  },
+
+  // Clear specific class cache
+  clearClassCache(classId) {
+    //console.log(`🧹 Clearing cache for class ${classId}...`);
+    this.cache.students.delete(classId);
+    //console.log(`✅ Cache cleared for class ${classId}`);
+  },
+
   /**
-   * Get teacher classes with error handling
+   * Get teacher classes with caching support
    */
-  async getClasses() {
+  async getClasses(forceRefresh = false) {
     try {
-      console.log('📚 Fetching teacher classes...');
+      // Return cached data if valid and not forced refresh
+      if (!forceRefresh && this.isCacheValid() && this.cache.classes) {
+        //console.log('📚 Returning cached classes');
+        return this.cache.classes;
+      }
+
+      //console.log('📚 Fetching teacher classes from API...');
       const classes = await Api.getTeacherClasses();
-      console.log(`✅ Found ${classes?.length || 0} classes`);
-      return classes || [];
+      
+      // Update cache
+      this.cache.classes = classes || [];
+      this.cache.lastFetch = Date.now();
+      
+      //console.log(`✅ Found ${classes?.length || 0} classes`);
+      return this.cache.classes;
     } catch (error) {
       console.error('❌ [Model] Failed to fetch classes:', error);
+      
+      // Return cached data if available during error
+      if (this.cache.classes) {
+        //console.log('📚 Returning cached classes due to error');
+        return this.cache.classes;
+      }
+      
       throw new Error(error.message || 'Gagal mengambil data kelas');
     }
   },
 
   /**
-   * Get students by class ID with error handling
+   * Get students by class ID with caching support
    */
-  async getStudentsByClass(classId) {
+  async getStudentsByClass(classId, forceRefresh = false) {
     try {
-      console.log(`👥 Fetching students for class: ${classId}`);
+      if (!classId) {
+        throw new Error('Class ID is required');
+      }
+
+      // Check cache first (unless force refresh)
+      if (!forceRefresh && this.cache.students.has(classId)) {
+        //console.log(`👥 Returning cached students for class: ${classId}`);
+        return this.cache.students.get(classId);
+      }
+
+      //console.log(`👥 Fetching students for class: ${classId} from API`);
       const students = await Api.getTeacherGrades(classId);
-      console.log(`✅ Found ${students?.length || 0} students`);
+      
+      // Cache the result
+      this.cache.students.set(classId, students || []);
+      
+      //console.log(`✅ Found ${students?.length || 0} students`);
       return students || [];
     } catch (error) {
       console.error('❌ [Model] Failed to fetch students:', error);
+      
+      // Return cached data if available during error (and not force refresh)
+      if (!forceRefresh && this.cache.students.has(classId)) {
+        //console.log(`👥 Returning cached students due to error for class: ${classId}`);
+        return this.cache.students.get(classId);
+      }
+      
       throw new Error(error.message || 'Gagal mengambil data siswa');
     }
   },
@@ -157,7 +107,7 @@ const TeacherGradeModel = {
    */
   async sendStudentCertificateByTeacher(payload) {
     try {
-      console.log('📜 Sending certificate...', payload);
+      //console.log('📜 Sending certificate...', payload);
 
       // Validate payload
       if (!payload.course_id || !payload.student_id || !payload.class_id) {
@@ -179,7 +129,7 @@ const TeacherGradeModel = {
         throw new Error(result.message || result.error || 'Gagal mengirim sertifikat');
       }
 
-      console.log('✅ Certificate sent successfully');
+      //console.log('✅ Certificate sent successfully');
       return result;
     } catch (error) {
       console.error('❌ [Model] Failed to send certificate:', error);
@@ -204,7 +154,7 @@ const TeacherGradeModel = {
    */
   async notifyStudent(payload) {
     try {
-      console.log('📧 Sending notification...', payload);
+      //console.log('📧 Sending notification...', payload);
 
       // Validate payload
       if (!payload.email || !payload.name || !payload.reason) {
@@ -232,7 +182,7 @@ const TeacherGradeModel = {
         throw new Error(result.message || result.error || 'Gagal mengirim notifikasi');
       }
 
-      console.log('✅ Notification sent successfully');
+      //console.log('✅ Notification sent successfully');
       return result;
     } catch (error) {
       console.error('❌ [Model] Failed to send notification:', error);
@@ -249,6 +199,48 @@ const TeacherGradeModel = {
       }
 
       throw new Error(error.message || 'Gagal mengirim notifikasi');
+    }
+  },
+
+  /**
+   * 🔄 NEW: Force refresh all data
+   */
+  async refreshAllData() {
+    try {
+      //console.log("🔄 Force refreshing all grade data...");
+      
+      // Clear cache first
+      this.clearCache();
+      
+      // Fetch fresh classes data
+      const classes = await this.getClasses(true);
+      
+      //console.log("✅ All grade data refreshed successfully");
+      return classes;
+    } catch (error) {
+      console.error("❌ Failed to refresh all grade data:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * 🔄 NEW: Refresh specific class data
+   */
+  async refreshClassData(classId) {
+    try {
+      //console.log(`🔄 Refreshing data for class ${classId}...`);
+      
+      // Clear cache for this specific class
+      this.clearClassCache(classId);
+      
+      // Fetch fresh student data
+      const students = await this.getStudentsByClass(classId, true);
+      
+      //console.log(`✅ Class ${classId} data refreshed successfully`);
+      return students;
+    } catch (error) {
+      console.error(`❌ Failed to refresh class ${classId} data:`, error);
+      throw error;
     }
   },
 
@@ -300,6 +292,20 @@ const TeacherGradeModel = {
     }
 
     return { results, errors };
+  },
+
+  /**
+   * 🔄 NEW: Get cache information for debugging
+   */
+  getCacheInfo() {
+    return {
+      hasClasses: !!this.cache.classes,
+      classCount: this.cache.classes?.length || 0,
+      cachedStudentsClasses: this.cache.students.size,
+      lastFetch: this.cache.lastFetch,
+      cacheAge: this.cache.lastFetch ? Date.now() - this.cache.lastFetch : null,
+      isValid: this.isCacheValid()
+    };
   }
 };
 

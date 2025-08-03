@@ -15,12 +15,12 @@ const CreateCourseModel = {
   // Get course recommendations
   async getRecommendations() {
     try {
-      console.log('📋 Fetching course recommendations...');
+      //console.log('📋 Fetching course recommendations...');
       const result = await Api.getCourseRecommendations();
       
       // Ensure we return array
       const recommendations = result?.recommendations || result?.data || result || [];
-      console.log(`✅ Got ${recommendations.length} recommendations`);
+      //console.log(`✅ Got ${recommendations.length} recommendations`);
       
       return { recommendations: Array.isArray(recommendations) ? recommendations : [] };
     } catch (error) {
@@ -32,29 +32,29 @@ const CreateCourseModel = {
   // Set selected recommendation
   selectRecommendation(recommendation) {
     this.currentRecommendation = recommendation;
-    console.log('✅ Recommendation selected:', recommendation);
+    //console.log('✅ Recommendation selected:', recommendation);
   },
 
   // Clear selected recommendation
   clearRecommendation() {
     this.currentRecommendation = null;
-    console.log('🧹 Recommendation cleared');
+    //console.log('🧹 Recommendation cleared');
   },
 
   // Check for pending course generation
   async checkPendingGeneration() {
     try {
-      console.log('⏳ Checking for pending course generation...');
+      //console.log('⏳ Checking for pending course generation...');
       const pendingCourses = await Api.getPendingGenerations();
       
       if (pendingCourses && pendingCourses.length > 0) {
         this.pendingGeneration = pendingCourses[0];
-        console.log('⚠️ Found pending generation:', this.pendingGeneration);
+        //console.log('⚠️ Found pending generation:', this.pendingGeneration);
         return this.pendingGeneration;
       }
       
       this.pendingGeneration = null;
-      console.log('✅ No pending generation found');
+      //console.log('✅ No pending generation found');
       return null;
     } catch (error) {
       console.warn('⚠️ Failed to check pending generation:', error);
@@ -66,7 +66,7 @@ const CreateCourseModel = {
   // Main course creation method
   async createCourse({ subject, level }) {
     try {
-      console.log(`🚀 Starting course creation: "${subject}" (${level})`);
+      //console.log(`🚀 Starting course creation: "${subject}" (${level})`);
 
       // Validate input
       const validation = this.validateInput({ subject, level });
@@ -89,14 +89,14 @@ const CreateCourseModel = {
       if (this.currentRecommendation) {
         payload.from_recommendation = true;
         payload.recommendation_id = this.currentRecommendation.id;
-        console.log(`🔄 Creating from recommendation ID: ${this.currentRecommendation.id}`);
+        //console.log(`🔄 Creating from recommendation ID: ${this.currentRecommendation.id}`);
       }
 
       // Call API directly (no offline manager)
-      console.log('📡 Calling API.createCourse directly:', payload);
+      //console.log('📡 Calling API.createCourse directly:', payload);
       const result = await Api.createCourse(payload);
       
-      console.log('✅ Course creation response:', result);
+      //console.log('✅ Course creation response:', result);
 
       // Process result based on type
       return this.processCreationResult(result);
@@ -143,11 +143,11 @@ const CreateCourseModel = {
     };
 
     if (result.reused) {
-      console.log('🔄 Course reused successfully');
+      //console.log('🔄 Course reused successfully');
       response.type = 'reused';
       response.redirectTo = '#/course';
     } else {
-      console.log('🆕 New course created, will be generated');
+      //console.log('🆕 New course created, will be generated');
       response.type = 'created';
       response.redirectTo = '#/course';
       
@@ -215,7 +215,7 @@ const CreateCourseModel = {
       localStorage.setItem('generating_course_id', courseId);
       localStorage.setItem('generating_course_message', message);
       localStorage.setItem('generating_timestamp', Date.now().toString());
-      console.log('📦 Generation info stored for tracking');
+      //console.log('📦 Generation info stored for tracking');
     } catch (error) {
       console.warn('⚠️ Failed to store generation info:', error);
     }
@@ -228,7 +228,7 @@ const CreateCourseModel = {
       localStorage.removeItem('generating_course_id');
       localStorage.removeItem('generating_course_message');
       localStorage.removeItem('generating_timestamp');
-      console.log('🧹 Generation info cleared');
+      //console.log('🧹 Generation info cleared');
     } catch (error) {
       console.warn('⚠️ Failed to clear generation info:', error);
     }
@@ -264,7 +264,7 @@ const CreateCourseModel = {
   // Auto-cleanup stale generation info
   cleanupStaleGeneration() {
     if (this.isGenerationStale()) {
-      console.log('🧹 Cleaning up stale generation info');
+      //console.log('🧹 Cleaning up stale generation info');
       this.clearGenerationInfo();
       return true;
     }
@@ -282,7 +282,7 @@ const CreateCourseModel = {
       const similarity = this.calculateSimilarity(normalizedSubject, normalizedRec);
       
       if (similarity > 0.8 && rec.level === level) {
-        console.log(`🎯 Found similar recommendation: ${rec.subject} (similarity: ${similarity.toFixed(2)})`);
+        //console.log(`🎯 Found similar recommendation: ${rec.subject} (similarity: ${similarity.toFixed(2)})`);
         return rec;
       }
     }

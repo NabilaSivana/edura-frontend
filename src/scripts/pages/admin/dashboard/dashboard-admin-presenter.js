@@ -2,6 +2,7 @@
 // File: src/scripts/pages/admin/dashboard-admin-presenter.js
 import { showToastNotification } from "../../../utils/index.js";
 import DashboardAdminModel from "./dashboard-admin-model.js";
+import {promptConfirm, promptTextarea} from "../../../utils/prompt.js";
 
 const DashboardAdminPresenter = {
   async init() {
@@ -221,7 +222,7 @@ const DashboardAdminPresenter = {
     document.querySelectorAll('.approve-teacher-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         const id = e.target.dataset.id;
-        if (confirm('Setujui pengajuan guru ini?')) {
+        if (promptConfirm('Setujui pengajuan guru ini?')) {
           try {
             await DashboardAdminModel.updateTeacherRequestStatus(id, 'approved');
             this.init(); // Refresh

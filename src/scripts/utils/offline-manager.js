@@ -23,18 +23,18 @@ class OfflineManager {
             await this.processPendingOperations();
         }
 
-        console.log('🔄 Offline Manager initialized (GET operations only)');
+        //console.log('🔄 Offline Manager initialized (GET operations only)');
     }
 
     setupNetworkListeners() {
         window.addEventListener('online', () => {
-            console.log('🌐 Network: Online');
+            //console.log('🌐 Network: Online');
             this.isOnline = true;
             this.handleNetworkChange();
         });
 
         window.addEventListener('offline', () => {
-            console.log('📴 Network: Offline');
+            //console.log('📴 Network: Offline');
             this.isOnline = false;
             this.handleNetworkChange();
         });
@@ -83,7 +83,7 @@ class OfflineManager {
                 queueItem.priority
             );
 
-            console.log(`📥 Queued offline operation: ${queueItem.action}`);
+            //console.log(`📥 Queued offline operation: ${queueItem.action}`);
             return queueItem.id;
         } catch (error) {
             console.error('❌ Failed to queue operation:', error);
@@ -104,14 +104,14 @@ class OfflineManager {
                 return;
             }
 
-            console.log(`🔄 Processing ${queue.length} offline operations`);
+            //console.log(`🔄 Processing ${queue.length} offline operations`);
 
             for (const item of queue) {
                 try {
-                    console.log(`🚀 Executing queued operation: ${item.action}`, item.data);
+                    //console.log(`🚀 Executing queued operation: ${item.action}`, item.data);
                     await this.executeQueuedOperation(item);
                     await indexedDB.removeFromOfflineQueue(item.id);
-                    console.log(`✅ Processed: ${item.action}`);
+                    //console.log(`✅ Processed: ${item.action}`);
                 } catch (error) {
                     console.error(`❌ Failed to process ${item.action}:`, error);
 
@@ -119,7 +119,7 @@ class OfflineManager {
                     if (item.retries < item.maxRetries) {
                         item.retries++;
                         await indexedDB.addToStore(indexedDB.stores.offlineQueue, item);
-                        console.log(`🔄 Retry ${item.retries}/${item.maxRetries} for ${item.action}`);
+                        //console.log(`🔄 Retry ${item.retries}/${item.maxRetries} for ${item.action}`);
                     } else {
                         console.error(`❌ Max retries reached for ${item.action}, removing from queue`);
                         await indexedDB.removeFromOfflineQueue(item.id);
@@ -142,26 +142,26 @@ class OfflineManager {
     async executeQueuedOperation(item) {
         const { action, data } = item;
 
-        console.log(`🔧 Executing operation: ${action}`, data);
+        //console.log(`🔧 Executing operation: ${action}`, data);
 
         // Import API dynamically to avoid circular dependency
         const { default: Api } = await import('../data/api.js');
 
         switch (action) {
             case 'update_checkpoint':
-                console.log('📍 Updating checkpoint:', data);
+                //console.log('📍 Updating checkpoint:', data);
                 return await Api.updateStudentCheckpoint(data.courseId);
 
             case 'update_profile':
-                console.log('👤 Updating profile:', data);
+                //console.log('👤 Updating profile:', data);
                 return await Api._updateProfileDirect(data);
 
             case 'update_student_profile':
-                console.log('👨‍🎓 Updating student profile:', data);
+                //console.log('👨‍🎓 Updating student profile:', data);
                 return await Api._updateStudentProfileDirect(data);
 
             case 'update_teacher_profile':
-                console.log('👨‍🏫 Updating teacher profile:', data);
+                //console.log('👨‍🏫 Updating teacher profile:', data);
                 return await Api._updateTeacherProfileDirect(data);
 
             default:
@@ -174,7 +174,7 @@ class OfflineManager {
     // ============================================
 
     async directOperation(action, data) {
-        console.log(`🚨 DIRECT: Critical operation ${action}`, data);
+        //console.log(`🚨 DIRECT: Critical operation ${action}`, data);
 
         if (!this.isOnline) {
             throw new Error('Cannot perform this operation while offline - please connect to internet');
@@ -185,23 +185,23 @@ class OfflineManager {
 
             switch (action) {
                 case 'create_course':
-                    console.log('🚨 DIRECT: Creating course');
+                    //console.log('🚨 DIRECT: Creating course');
                     return await Api.createCourse(data);
 
                 case 'generate_flashcards':
-                    console.log('🚨 DIRECT: Generating flashcards');
+                    //console.log('🚨 DIRECT: Generating flashcards');
                     return await Api.generateFlashcards(data.courseId);
 
                 case 'generate_final_exam':
-                    console.log('🚨 DIRECT: Generating final exam');
+                    //console.log('🚨 DIRECT: Generating final exam');
                     return await Api.generateFinalExam(data.courseId);
 
                 case 'submit_quiz':
-                    console.log('🚨 DIRECT: Submitting quiz');
+                    //console.log('🚨 DIRECT: Submitting quiz');
                     return await Api.submitQuiz(data.courseId, data.sessionNumber, data.answers, data.retry);
 
                 case 'submit_final_exam':
-                    console.log('🚨 DIRECT: Submitting final exam');
+                    //console.log('🚨 DIRECT: Submitting final exam');
                     return await Api.submitFinalExam(data.courseId, data.answers);
 
                 default:
@@ -218,7 +218,7 @@ class OfflineManager {
     // ============================================
 
     async safeWriteOperation(action, data, priority = 1) {
-        console.log(`🚀 SafeWriteOperation called: ${action}`, data);
+        //console.log(`🚀 SafeWriteOperation called: ${action}`, data);
 
         // Define which operations can be queued vs must be direct
         const queueableOperations = [
@@ -246,7 +246,7 @@ class OfflineManager {
             try {
                 if (this.isOnline) {
                     // Try to execute immediately when online
-                    console.log(`🌐 Online - executing ${action} immediately`);
+                    //console.log(`🌐 Online - executing ${action} immediately`);
                     const { default: Api } = await import('../data/api.js');
 
                     let result;
@@ -267,11 +267,11 @@ class OfflineManager {
                             throw new Error(`Unknown action: ${action}`);
                     }
 
-                    console.log(`✅ Operation ${action} completed successfully:`, result);
+                    //console.log(`✅ Operation ${action} completed successfully:`, result);
                     return result;
                 } else {
                     // Queue for later when offline
-                    console.log(`📴 Offline - queuing ${action} for later`);
+                    //console.log(`📴 Offline - queuing ${action} for later`);
                     await this.queueOperation({ action, data, priority });
                     return { queued: true, message: 'Operation queued for when network is available' };
                 }
@@ -302,7 +302,7 @@ class OfflineManager {
 
     async refreshCriticalData() {
         try {
-            console.log('🔄 Refreshing critical data (GET operations only)...');
+            //console.log('🔄 Refreshing critical data (GET operations only)...');
 
             // Import API dynamically
             const { default: Api } = await import('../data/api.js');
@@ -345,7 +345,7 @@ class OfflineManager {
                 console.warn('⚠️ Failed to refresh courses:', error);
             }
 
-            console.log('✅ Critical data refreshed');
+            //console.log('✅ Critical data refreshed');
         } catch (error) {
             console.error('❌ Failed to refresh critical data:', error);
         }
@@ -467,7 +467,7 @@ class OfflineManager {
     async clearOfflineQueue() {
         try {
             await indexedDB.clearStore(indexedDB.stores.offlineQueue);
-            console.log('🗑️ Offline queue cleared');
+            //console.log('🗑️ Offline queue cleared');
         } catch (error) {
             console.error('❌ Failed to clear offline queue:', error);
         }

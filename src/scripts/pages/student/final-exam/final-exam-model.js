@@ -17,7 +17,7 @@ class FinalExamModel {
     try {
       this.courseId = courseId;
 
-      // Check result first
+      // Check result first - WITH CACHE INVALIDATION ON 404
       const resultData = await this._checkExistingResult();
       if (resultData) {
         this.result = resultData;
@@ -107,7 +107,7 @@ class FinalExamModel {
   }
 
   // ===== ENHANCED SUBMIT VALIDATION =====
-  
+
   /**
    * Validate exam before submission - ALL QUESTIONS MUST BE ANSWERED
    * @returns {Object} Validation result with detailed info
@@ -131,7 +131,7 @@ class FinalExamModel {
     for (let i = 0; i < this.examData.length; i++) {
       const answer = this.answers[i];
       const isAnswered = answer !== null && answer !== undefined;
-      
+
       if (isAnswered) {
         validation.answeredCount++;
       } else {
@@ -150,7 +150,7 @@ class FinalExamModel {
 
     // CRITICAL: ALL questions must be answered
     validation.isValid = validation.answeredCount === validation.totalQuestions;
-    
+
     console.log('📝 Exam Validation Result:', {
       isValid: validation.isValid,
       totalQuestions: validation.totalQuestions,
@@ -168,7 +168,7 @@ class FinalExamModel {
 
       // MANDATORY VALIDATION: ALL QUESTIONS MUST BE ANSWERED
       const validation = this.validateExamForSubmission();
-      
+
       if (!validation.isValid) {
         const unansweredCount = validation.unansweredQuestions.length;
         throw new Error(
@@ -181,7 +181,7 @@ class FinalExamModel {
 
       // Format ALL answers for submission
       const formattedAnswers = this._formatAnswersForSubmission();
-      
+
       console.log('📤 Submitting answers:', {
         totalAnswers: formattedAnswers.length,
         expectedAnswers: this.examData.length,
@@ -317,7 +317,7 @@ class FinalExamModel {
 
   getUnansweredQuestions() {
     if (!this.examData) return [];
-    
+
     const unanswered = [];
     for (let i = 0; i < this.examData.length; i++) {
       const answer = this.answers[i];
@@ -506,13 +506,19 @@ class FinalExamModel {
 
   // ===== PRIVATE HELPER METHODS =====
 
+  // 🔧 FIXED: Enhanced result checking with proper cache invalidation
   async _checkExistingResult() {
     try {
       const { default: Api } = await import('../../../data/api.js');
+
+      console.log('🔍 Checking existing final exam result...');
+
       const response = await Api.getFinalExamResult(this.courseId);
 
       if (response.result) {
         const result = response.result;
+        console.log('✅ Found existing result:', result);
+
         return {
           total: result.total || result.total_questions || 0,
           correct: result.correct || result.correct_answers || 0,
@@ -521,11 +527,64 @@ class FinalExamModel {
         };
       }
 
+      console.log('ℹ️ No existing result found');
       return null;
+
     } catch (error) {
-      if (error.message?.includes('404') || error.message?.includes('Belum ada hasil')) {
+      console.log('🔍 Result check error:', error.message);
+
+      // CRITICAL FIX: Clear cache when 404 or "no result" errors
+      if (error.message?.includes('404') ||
+        error.message?.includes('Belum ada hasil') ||
+        error.message?.includes('No result found')) {
+
+        console.log('🧹 404/No result detected - clearing result cache');
+
+        try {
+          // Clear final exam result cache
+          await this._clearFinalExamResultCache();
+          console.log('✅ Result cache cleared successfully');
+        } catch (cacheError) {
+          console.warn('⚠️ Failed to clear result cache:', cacheError);
+        }
+
         return null;
       }
+
+      // Re-throw other errors
+      throw error;
+    }
+  }
+
+  // 🔧 NEW: Method to clear final exam result cache
+  async _clearFinalExamResultCache() {
+    try {
+      const { default: Api } = await import('../../../data/api.js');
+
+      // Clear cache patterns related to final exam result
+      const cachePatterns = [
+        'student/final-exam/result',
+        'api_student/final-exam/result',
+        `final-exam-result-${this.courseId}`,
+        `finalExamResult_${this.courseId}`
+      ];
+
+      for (const pattern of cachePatterns) {
+        try {
+          await Api._invalidateCache(pattern);
+          console.log(`🧹 Cleared cache pattern: ${pattern}`);
+        } catch (error) {
+          console.warn(`⚠️ Failed to clear cache pattern ${pattern}:`, error);
+        }
+      }
+
+      // Also clear any memory cache
+      if (typeof Api.clearUserCache === 'function') {
+        Api.clearUserCache('student');
+      }
+
+    } catch (error) {
+      console.error('❌ Failed to clear final exam result cache:', error);
       throw error;
     }
   }
@@ -630,7 +689,7 @@ class FinalExamModel {
 
     // Convert to number and get option text
     const index = parseInt(answerIndex);
-    
+
     if (question.options && question.options[index]) {
       return question.options[index];
     }

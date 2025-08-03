@@ -197,7 +197,7 @@ const AdminCoursePage = {
   },
 
   async afterRender() {
-    console.log('🎯 Initializing Admin Course Page...');
+    //console.log('🎯 Initializing Admin Course Page...');
 
     // Store reference to this instance globally for onclick handlers
     window.AdminCoursePageInstance = this;

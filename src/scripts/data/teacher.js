@@ -1,6 +1,6 @@
 // src/scripts/data/teacher.js - Teacher-specific APIs (FIXED)
-import coreAPI, { CACHE_TTL } from './core.js';
 import CONFIG from './config.js';
+import coreAPI, { CACHE_TTL } from './core.js';
 
 export class TeacherAPI extends coreAPI.constructor {
     constructor() {
@@ -18,10 +18,10 @@ export class TeacherAPI extends coreAPI.constructor {
     // ============================================
 
     async getTeacherProfile(forceRefresh = false) {
-        console.log('📋 Getting teacher profile...');
+        //console.log('📋 Getting teacher profile...');
 
         if (!forceRefresh && this.profileCache.teacher && this.isCacheValid()) {
-            console.log('✅ Using cached teacher profile');
+            //console.log('✅ Using cached teacher profile');
             return this.profileCache.teacher;
         }
 
@@ -41,7 +41,7 @@ export class TeacherAPI extends coreAPI.constructor {
     }
 
     async createTeacherProfile(data) {
-        console.log('📝 Creating teacher profile:', data);
+        //console.log('📝 Creating teacher profile:', data);
 
         // Validate required fields
         const validation = this.validateTeacherProfileData(data);
@@ -61,7 +61,7 @@ export class TeacherAPI extends coreAPI.constructor {
             // Clear profile cache
             this.clearUserCache('teacher');
 
-            console.log('✅ Teacher profile created successfully');
+            //console.log('✅ Teacher profile created successfully');
             return result;
         } catch (error) {
             console.error('❌ Failed to create teacher profile:', error);
@@ -70,7 +70,7 @@ export class TeacherAPI extends coreAPI.constructor {
     }
 
     async updateTeacherProfile(data) {
-        console.log('📝 Updating teacher profile:', data);
+        //console.log('📝 Updating teacher profile:', data);
 
         try {
             const response = await this._fetchWithOfflineSupport(`${CONFIG.BASE_URL}/teacher/profile`, {
@@ -84,7 +84,7 @@ export class TeacherAPI extends coreAPI.constructor {
             // Clear profile cache
             this.clearUserCache('teacher');
 
-            console.log('✅ Teacher profile updated successfully');
+            //console.log('✅ Teacher profile updated successfully');
             return result;
         } catch (error) {
             console.error('❌ Failed to update teacher profile:', error);
@@ -213,7 +213,7 @@ export class TeacherAPI extends coreAPI.constructor {
     }
 
     async createTeacherClass(data) {
-        console.log('📝 Creating teacher class:', data);
+        //console.log('📝 Creating teacher class:', data);
 
         const validation = this.validateTeacherClassData(data);
         if (!validation.isValid) {
@@ -237,7 +237,7 @@ export class TeacherAPI extends coreAPI.constructor {
             // Clear classes cache
             await this._invalidateCache('teacher/classes');
 
-            console.log('✅ Teacher class created successfully');
+            //console.log('✅ Teacher class created successfully');
             return result;
         } catch (error) {
             console.error('❌ Failed to create teacher class:', error);
@@ -316,7 +316,7 @@ export class TeacherAPI extends coreAPI.constructor {
     // ============================================
 
     async submitTeacherRequest(data) {
-        console.log('📝 Submitting teacher request:', data);
+        //console.log('📝 Submitting teacher request:', data);
 
         // Validate request data
         const validation = this.validateTeacherRequestData(data);
@@ -337,7 +337,7 @@ export class TeacherAPI extends coreAPI.constructor {
 
             const result = await response.json();
 
-            console.log('✅ Teacher request submitted successfully');
+            //console.log('✅ Teacher request submitted successfully');
             return result;
         } catch (error) {
             console.error('❌ Failed to submit teacher request:', error);

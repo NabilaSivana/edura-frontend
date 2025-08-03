@@ -108,14 +108,14 @@ export class CoreAPI {
         const cacheKey = this._getCacheKey(endpoint, options.params);
 
         if (forceRefresh) {
-            console.log(`🔄 Force Refresh: Invalidating cache for ${cacheKey}`);
+            //console.log(`🔄 Force Refresh: Invalidating cache for ${cacheKey}`);
             await this._invalidateCache(cacheKey);
         }
 
         // Try cache first
         const cachedData = await Cache.get(cacheKey);
         if (cachedData) {
-            console.log(`[API Cache Hit] ${endpoint}`);
+            //console.log(`[API Cache Hit] ${endpoint}`);
 
             // Background refresh if online
             if (this._isOnline()) {
@@ -125,7 +125,7 @@ export class CoreAPI {
             return cachedData;
         }
 
-        console.log(`[API Cache Miss] ${endpoint} - fetching from server`);
+        //console.log(`[API Cache Miss] ${endpoint} - fetching from server`);
 
         // If offline and no cache, throw error
         if (!this._isOnline()) {
@@ -179,7 +179,7 @@ export class CoreAPI {
             if (response.ok) {
                 const data = await response.json();
                 await Cache.set(cacheKey, data, ttl);
-                console.log(`[Background Refresh] ${endpoint} updated`);
+                //console.log(`[Background Refresh] ${endpoint} updated`);
             }
         } catch (error) {
             console.warn(`[Background Refresh Failed] ${endpoint}:`, error);
@@ -218,7 +218,7 @@ export class CoreAPI {
             }
         } else {
             // Queue for later execution
-            console.log(`📴 Offline - queuing operation: ${endpoint}`);
+            //console.log(`📴 Offline - queuing operation: ${endpoint}`);
 
             const offlineManager = await getOfflineManager();
             await offlineManager.queueOperation({

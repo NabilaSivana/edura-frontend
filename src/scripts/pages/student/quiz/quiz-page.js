@@ -1,4 +1,3 @@
-import API from "../../../data/api.js";
 import QuizModel from "./quiz-model.js";
 import QuizPresenter from "./quiz-presenter.js";
 
@@ -107,7 +106,7 @@ const QuizPage = {
       const resultResponse = await this.checkQuizResult();
 
       if (resultResponse && resultResponse.data) {
-        console.log('📊 Found existing quiz result');
+        //console.log('📊 Found existing quiz result');
         this.showQuizResult(resultResponse.data);
         return;
       }
@@ -116,13 +115,13 @@ const QuizPage = {
       const quizResponse = await this.checkQuizQuestions();
 
       if (quizResponse && quizResponse.success && quizResponse.data) {
-        console.log('📝 Found quiz questions, showing interactive quiz');
+        //console.log('📝 Found quiz questions, showing interactive quiz');
         this.showInteractiveQuiz(quizResponse.data.questions);
         return;
       }
 
       // Jika tidak ada quiz, tampilkan generate prompt
-      console.log('🆕 No quiz found, showing generate prompt');
+      //console.log('🆕 No quiz found, showing generate prompt');
       this.renderGeneratePrompt();
     } catch (error) {
       console.error('❌ Error in initializeQuiz:', error);
@@ -283,7 +282,7 @@ const QuizPage = {
     this.showLoading();
 
     try {
-      console.log('🔄 Starting quiz retry...');
+      //console.log('🔄 Starting quiz retry...');
       
       // Reset internal state
       this._questions = null;
@@ -296,7 +295,7 @@ const QuizPage = {
       const newQuestions = await QuizModel.retryQuiz(this.courseId, this.sessionNumber);
 
       if (newQuestions && newQuestions.length > 0) {
-        console.log('✅ Got new questions, showing interactive quiz');
+        //console.log('✅ Got new questions, showing interactive quiz');
         this.showInteractiveQuiz(newQuestions);
       } else {
         this.showError('Gagal memuat soal kuis yang baru. Silakan muat ulang halaman.');
@@ -568,7 +567,7 @@ const QuizPage = {
       );
 
       if (result && result.data) {
-        console.log('✅ Got fresh result after submit:', result.data.score);
+        //console.log('✅ Got fresh result after submit:', result.data.score);
         this.renderQuiz(
           result.data.questions,
           result.data.answers,

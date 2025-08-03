@@ -1,32 +1,3 @@
-// // === File: pages/admin/monitor-backend/model.js ===
-// import CONFIG from "../../../config.js";
-
-// const MonitorBackendModel = {
-//     async fetchLogs(date) {
-//         try {
-//             const response = await fetch(`${CONFIG.BASE_URL}/admin/activity-logs?date=${date}`, {
-//                 method: 'GET',
-//                 headers: {
-//                     'Content-Type': 'application/json',
-//                     'Authorization': `Bearer ${localStorage.getItem("token")}`
-//                 }
-//             });
-
-//             if (!response.ok) {
-//                 const errorData = await response.json();
-//                 throw new Error(errorData.error || `HTTP ${response.status}: Gagal mengambil log aktivitas`);
-//             }
-
-//             const { logs } = await response.json();
-//             return logs || [];
-//         } catch (error) {
-//             console.error('Error fetching activity logs:', error);
-//             throw error;
-//         }
-//     }
-// };
-
-// export default MonitorBackendModel;
 // / === File: pages/admin / monitor - backend / model.js ===
 import CONFIG from "../../../config.js";
 

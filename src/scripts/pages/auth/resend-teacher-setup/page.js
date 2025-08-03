@@ -154,7 +154,7 @@ const ResendTeacherSetupPage = {
     this.setLoading(true);
 
     try {
-      console.log('📤 Resending teacher setup link for:', email);
+      //console.log('📤 Resending teacher setup link for:', email);
       
       const response = await API.postResendTeacherSetupLink({ email });
       

@@ -179,7 +179,7 @@ const ManagePaymentsPage = {
   },
 
   async afterRender() {
-    console.log('🎯 Initializing Manage Payments Page...');
+    //console.log('🎯 Initializing Manage Payments Page...');
 
     // Import and render navbar
     const navbarModule = (await import("../../../component/navbar.js")).default;

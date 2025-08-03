@@ -1,7 +1,8 @@
 // page.js - Updated CreateCoursePage with Toast Integration
-import CreateCoursePresenter from "./create-course-presenter.js";
 import WrapperLayout from "../../../component/wrapper-layout.js";
+import { promptConfirm } from "../../../utils/prompt.js";
 import { toast } from "../../../utils/toast.js";
+import CreateCoursePresenter from "./create-course-presenter.js";
 
 const CreateCoursePage = {
   // Current presenter instance
@@ -176,7 +177,7 @@ const CreateCoursePage = {
 
   async afterRender() {
     try {
-      console.log('🚀 CreateCoursePage afterRender started');
+      //console.log('🚀 CreateCoursePage afterRender started');
 
       // Clean up any existing presenter
       if (this.currentPresenter) {
@@ -201,7 +202,7 @@ const CreateCoursePage = {
       // Show welcome toast for first-time users
       this.showWelcomeToast();
 
-      console.log('✅ CreateCoursePage initialized successfully');
+      //console.log('✅ CreateCoursePage initialized successfully');
 
     } catch (error) {
       console.error('❌ Error in CreateCoursePage afterRender:', error);
@@ -252,7 +253,7 @@ const CreateCoursePage = {
     const resetBtn = document.getElementById('reset-btn');
     if (resetBtn && this.currentPresenter) {
       resetBtn.addEventListener('click', () => {
-        if (confirm('Apakah Anda yakin ingin mereset form?')) {
+        if (promptConfirm('Apakah Anda yakin ingin mereset form?','')) {
           this.currentPresenter.resetForm();
 
           // Reset character counter
@@ -486,7 +487,7 @@ const CreateCoursePage = {
 
   // Cleanup method called when leaving the page
   destroy() {
-    console.log('🧹 Cleaning up CreateCoursePage...');
+    //console.log('🧹 Cleaning up CreateCoursePage...');
 
     if (this.currentPresenter) {
       this.currentPresenter.destroy();
@@ -496,7 +497,7 @@ const CreateCoursePage = {
     // Clean up page-level variables
     this.charWarningShown = false;
 
-    console.log('✅ CreateCoursePage cleaned up');
+    //console.log('✅ CreateCoursePage cleaned up');
   }
 };
 

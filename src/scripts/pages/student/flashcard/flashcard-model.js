@@ -76,7 +76,7 @@ class FlashcardModel {
 
     try {
       const response = await API.getFlashcards(this.courseId);
-      //console.log("Data", response);
+      ////console.log("Data", response);
 
       if (response.flashcards && Array.isArray(response.flashcards)) {
         this.flashcards = response.flashcards.flatMap((session) =>

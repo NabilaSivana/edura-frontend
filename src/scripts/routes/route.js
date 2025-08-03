@@ -47,9 +47,9 @@ const routes = {
 
   "/course/flashcards": {
     async render() {
-      //console.log("=== FLASHCARD ROUTE DEBUG ===");
-      //console.log("Full URL:", window.location.href);
-      //console.log("Hash:", window.location.hash);
+      ////console.log("=== FLASHCARD ROUTE DEBUG ===");
+      ////console.log("Full URL:", window.location.href);
+      ////console.log("Hash:", window.location.hash);
 
       // Multiple ways to get course_id
       const hash = window.location.hash;
@@ -58,11 +58,11 @@ const routes = {
       // Method 1: Split by ?
       if (hash.includes("?")) {
         const queryPart = hash.split("?")[1];
-        //console.log("Query part:", queryPart);
+        ////console.log("Query part:", queryPart);
 
         const params = new URLSearchParams(queryPart);
         courseId = params.get("course_id");
-        //console.log("Method 1 courseId:", courseId);
+        ////console.log("Method 1 courseId:", courseId);
       }
 
       // Method 2: Manual parsing (backup)
@@ -70,7 +70,7 @@ const routes = {
         const match = hash.match(/course_id=([^&]+)/);
         if (match) {
           courseId = match[1];
-          //console.log("Method 2 courseId:", courseId);
+          ////console.log("Method 2 courseId:", courseId);
         }
       }
 
@@ -83,14 +83,14 @@ const routes = {
             window.location.hash.substring(1);
           const url = new URL(fullUrl);
           courseId = url.searchParams.get("course_id");
-          //console.log("Method 3 courseId:", courseId);
+          ////console.log("Method 3 courseId:", courseId);
         } catch (e) {
-          //console.log("Method 3 failed:", e);
+          ////console.log("Method 3 failed:", e);
         }
       }
 
-      //console.log("Final courseId:", courseId);
-      //console.log("=== END DEBUG ===");
+      ////console.log("Final courseId:", courseId);
+      ////console.log("=== END DEBUG ===");
 
       const container = document.querySelector("#main-content");
 
@@ -222,7 +222,7 @@ const routes = {
   // Updated route definition for /course/session
   "/course/session": {
     async render() {
-      console.log('🔄 Course session route called');
+      //console.log('🔄 Course session route called');
 
       // Get session number from URL parameters
       const urlParams = new URLSearchParams(window.location.hash.split("?")[1]);
@@ -232,7 +232,7 @@ const routes = {
       const currentSessionNumber = parseInt(numberParam) ||
         parseInt(sessionStorage.getItem("current_session_number")) || 1;
 
-      console.log(`📍 Session route: number=${numberParam}, resolved=${currentSessionNumber}`);
+      //console.log(`📍 Session route: number=${numberParam}, resolved=${currentSessionNumber}`);
 
       if (!currentSessionNumber) {
         const container = document.querySelector("#main-content");
@@ -264,7 +264,7 @@ const routes = {
       // Dynamic import SessionView
       try {
         const view = await import("../pages/student/course/sessions/view.js");
-        console.log(`🎯 Rendering session ${currentSessionNumber} via SessionView`);
+        //console.log(`🎯 Rendering session ${currentSessionNumber} via SessionView`);
         await view.default.render(currentSessionNumber);
       } catch (error) {
         console.error('❌ Error loading SessionView:', error);
@@ -340,7 +340,7 @@ const routes = {
         // Initialize page after render
         await SetupTeacherPasswordPage.afterRender();
 
-        console.log("✅ Setup Teacher Password page rendered successfully");
+        //console.log("✅ Setup Teacher Password page rendered successfully");
 
       } catch (error) {
         console.error("❌ Error rendering Setup Teacher Password page:", error);
@@ -401,7 +401,7 @@ const routes = {
         // Initialize page after render
         await ResendTeacherSetupPage.afterRender();
 
-        console.log("✅ Resend Teacher Setup page rendered successfully");
+        //console.log("✅ Resend Teacher Setup page rendered successfully");
 
       } catch (error) {
         console.error("❌ Error rendering Resend Teacher Setup page:", error);
