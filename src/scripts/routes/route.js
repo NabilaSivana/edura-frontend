@@ -37,7 +37,26 @@ const routes = {
   "/login": LoginPage,
   "/register": RegisterPage,
   "/verify": LoginPage,
-  "/otp": OtpPage,
+  "/otp": {
+    async render() {
+      const { default: OtpPage } = await import("../pages/auth/verify-otp/otp-page.js");
+      return await OtpPage.render();
+    },
+
+    async afterRender() {
+      const { default: OtpPage } = await import("../pages/auth/verify-otp/otp-page.js");
+      await OtpPage.afterRender();
+    },
+
+    destroy() {
+      // Cleanup when leaving OTP page
+      if (window.otpPageCleanup) {
+        window.otpPageCleanup();
+        delete window.otpPageCleanup;
+      }
+    }
+  },
+
   "/dashboard": DashboardPage,
   "/forgot-password": ForgotPasswordPage,
   "/reset-password": ResetPasswordPage,

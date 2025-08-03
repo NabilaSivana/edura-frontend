@@ -53,6 +53,16 @@ const OtpPage = {
             box-shadow: 0 0 0 2px rgba(134, 166, 223, 0.5);
             border-color: #86A6DF;
           }
+
+          .success-animation {
+            animation: successPulse 0.6s ease-in-out;
+          }
+
+          @keyframes successPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+          }
         </style>
       </section>
     `;
@@ -63,6 +73,7 @@ const OtpPage = {
     const inputs = document.querySelectorAll(".otp-box");
     const messageEl = document.querySelector("#otp-message");
     const resendBtn = document.getElementById("resend-btn");
+    const submitBtn = form.querySelector('button[type="submit"]');
     const email = sessionStorage.getItem("pendingOtpEmail");
 
     if (!email) {
@@ -192,6 +203,11 @@ const OtpPage = {
         return;
       }
 
+      // Disable form during submission
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Memverifikasi...";
+      inputs.forEach(input => input.disabled = true);
+
       // Clear any previous messages
       messageEl.textContent = "Memverifikasi...";
       messageEl.className = "text-blue-600 dark:text-blue-400 text-sm text-center mt-4";
@@ -202,24 +218,40 @@ const OtpPage = {
         (successMessage) => {
           // Success callback - only called for 200 OK responses
           messageEl.textContent = successMessage;
-          messageEl.className = "text-green-600 dark:text-green-400 text-sm text-center mt-4";
+          messageEl.className = "text-green-600 dark:text-green-400 text-sm text-center mt-4 success-animation";
 
-          // Clean up
+          // Update submit button to show success
+          submitBtn.textContent = "✓ Berhasil!";
+          submitBtn.classList.remove("bg-[#2C2F8C]", "hover:bg-[#1e1f6c]");
+          submitBtn.classList.add("bg-green-600", "hover:bg-green-700");
+
+          // Clean up session storage
           sessionStorage.removeItem("pendingOtpEmail");
           localStorage.removeItem(COUNTDOWN_KEY);
 
-          // Redirect to dashboard after delay
+          console.log('🎯 OTP verification successful, waiting for navbar update before redirect...');
+
+          // Wait a bit longer to ensure navbar has time to update
           setTimeout(() => {
-            window.location.href = "/#/dashboard";
-          }, 1500);
+            console.log('🚀 Redirecting to dashboard...');
+            window.location.hash = "#/dashboard";
+          }, 2000); // Increased delay to ensure smooth transition
+
         },
         (errorMessage) => {
           // Error callback - for non-200 responses or other errors
           messageEl.textContent = errorMessage;
           messageEl.className = "text-red-500 dark:text-red-400 text-sm text-center mt-4";
 
-          // Clear OTP inputs on error
-          inputs.forEach(input => input.value = "");
+          // Re-enable form on error
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Verifikasi";
+          inputs.forEach(input => {
+            input.disabled = false;
+            input.value = ""; // Clear inputs on error
+          });
+          
+          // Focus first input for retry
           inputs[0].focus();
         }
       );
@@ -227,6 +259,34 @@ const OtpPage = {
 
     // Focus first input on load
     inputs[0].focus();
+
+    // Listen for login success event to provide immediate feedback
+    const handleLoginSuccess = (event) => {
+      if (event.detail?.source === 'otp-verification') {
+        console.log('🎉 Login success event received from OTP verification');
+        
+        // Add visual feedback that navbar is updating
+        const container = form.closest('.bg-white');
+        if (container) {
+          container.classList.add('success-animation');
+        }
+      }
+    };
+
+    window.addEventListener('login-success', handleLoginSuccess);
+
+    // Cleanup event listener when page is destroyed
+    window.otpPageCleanup = () => {
+      window.removeEventListener('login-success', handleLoginSuccess);
+    };
+  },
+
+  // Cleanup method
+  destroy() {
+    if (window.otpPageCleanup) {
+      window.otpPageCleanup();
+      delete window.otpPageCleanup;
+    }
   }
 };
 

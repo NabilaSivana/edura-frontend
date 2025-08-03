@@ -18,6 +18,20 @@ const OtpPresenter = {
           localStorage.setItem("user_role", result.role);
         }
 
+        console.log('✅ OTP verification successful, updating navbar state');
+        
+        // Dispatch login success event to update navbar immediately
+        window.dispatchEvent(new CustomEvent('login-success', {
+          detail: {
+            user: result.user || null,
+            token: result.token,
+            source: 'otp-verification'
+          }
+        }));
+
+        // Clear any existing navigation cache to ensure fresh data
+        window.dispatchEvent(new CustomEvent('clear-navigation-cache'));
+
         onSuccess(result.message || "Verifikasi berhasil! Anda akan diarahkan...");
       } else {
         onError("Verifikasi gagal. Token tidak ditemukan.");
